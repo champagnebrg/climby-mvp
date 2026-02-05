@@ -2,136 +2,755 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#F7F3E6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Climby | Pro Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
-        :root { --primary: #00e676; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; --accent: #3b82f6; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; }
-        .view { display: none; min-height: 100vh; width: 100vw; }
+        :root {
+            /* Light theme: warm cream background + palette */
+            --bg: #F7F3E6;
+            --card: #FFFEF9;
+            --text: #2D3142;
+            --muted: #5c6378;
+            --border: #d4cfc4;
+            --primary: #FF6B35;
+            --primary-dim: rgba(255, 107, 53, 0.18);
+            --accent: #2EC4B6;
+            --danger: #ef4444;
+            --yellow: #FFD166;
+            --text-on-primary: #1a1a1a;
+            --touch: 44px;
+            --radius: 16px;
+            --radius-sm: 12px;
+            --safe-top: env(safe-area-inset-top, 0);
+            --safe-bottom: env(safe-area-inset-bottom, 0);
+            --safe-left: env(safe-area-inset-left, 0);
+            --safe-right: env(safe-area-inset-right, 0);
+        }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-size: 1rem;
+            line-height: 1.5;
+            min-height: 100dvh;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-left: var(--safe-left);
+            padding-right: var(--safe-right);
+            padding-bottom: var(--safe-bottom);
+        }
+        .view { display: none; min-height: 100dvh; min-height: 100vh; width: 100%; }
         .view.active { display: flex; flex-direction: column; }
-        .container { padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-        
-        /* UI Components */
-        .card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #334155; }
-        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: #020617; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .btn-sec { background: transparent; border: 1px solid #334155; color: #94a3b8; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-        .btn-update { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; }
-        .btn-danger { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; }
-        
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; box-sizing: border-box; }
-        
+        .container {
+            padding: 20px 20px calc(20px + var(--safe-bottom));
+            padding-left: max(20px, var(--safe-left));
+            padding-right: max(20px, var(--safe-right));
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* UI – touch-optimized */
+        .card {
+            background: var(--card);
+            padding: 18px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+            border: 1px solid var(--border);
+            min-height: var(--touch);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .card:active { opacity: 0.95; }
+        .btn-main {
+            width: 100%;
+            min-height: 52px;
+            padding: 16px 24px;
+            background: linear-gradient(180deg, #FF6B35 0%, #e85a28 100%);
+            color: var(--text-on-primary);
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 1.05rem;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+        }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-sec {
+            min-height: var(--touch);
+            padding: 12px 18px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-sec:active { background: #e8e4dc; }
+        .btn-update { min-height: 40px; padding: 10px 16px; background: var(--accent); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-size: 0.9rem; }
+        .btn-danger { min-height: 52px; background: var(--danger); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; width: 100%; margin-top: 12px; font-weight: 600; font-size: 1rem; }
+        input, select, textarea {
+            width: 100%;
+            min-height: 52px;
+            padding: 14px 18px;
+            margin: 10px 0;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+        textarea { min-height: 100px; resize: vertical; }
+
         /* Dashboard Admin Table */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #334155; }
-        th { color: var(--primary); }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.9rem; }
+        th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--border); }
+        th { color: var(--text); font-weight: 600; font-size: 0.9rem; }
 
         /* Overlays */
-        #loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #334155; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+        }
+        .spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Viewer */
-        #viewer-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; background: #000; display: none; }
+        #viewer-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            z-index: 1000;
+            background: #000;
+            display: none;
+        }
         model-viewer { width: 100%; height: 100%; }
-        .hotspot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
-        .bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; max-height: 75vh; background: var(--card); border-top: 3px solid var(--primary); border-radius: 25px 25px 0 0; padding: 25px; box-sizing: border-box; display: none; z-index: 1002; overflow-y: auto; }
-        
+        .hotspot {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            min-height: 28px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .bottom-sheet {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-height: 88vh;
+            max-height: 88dvh;
+            background: var(--card);
+            border-top: 3px solid var(--primary);
+            border-radius: 24px 24px 0 0;
+            padding: 20px;
+            padding-bottom: max(24px, var(--safe-bottom));
+            padding-left: max(20px, var(--safe-left));
+            padding-right: max(20px, var(--safe-right));
+            box-sizing: border-box;
+            display: none;
+            z-index: 1002;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .bottom-sheet::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 0 auto 8px auto;
+        }
         /* Star System */
-        .star-rating { display: flex; gap: 10px; font-size: 32px; margin: 10px 0; cursor: pointer; justify-content: center; }
-        .star-rating span { color: #334155; transition: 0.2s; }
-        .star-rating span.active { color: #fbbf24; }
+        .star-rating { display: flex; gap: 12px; font-size: 36px; margin: 12px 0; cursor: pointer; justify-content: center; }
+        .star-rating span { color: #c9c4b8; transition: transform 0.15s, color 0.15s; }
+        .star-rating span:active { transform: scale(1.15); }
+        .star-rating span.active { color: var(--yellow); }
+
+        /* Landing – catchy hero + how it works (reference style) */
+        #view-landing { padding: 0; min-height: 100dvh; }
+        .landing-hero {
+            min-height: 70vh;
+            min-height: 70dvh;
+            position: relative;
+            background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.15) 30%, rgba(247,243,230,0.6) 60%, var(--bg) 100%), url('https://images.unsplash.com/photo-1522163182402-834f871fd851?w=1200') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 24px 48px;
+            padding-top: max(28px, calc(12px + var(--safe-top)));
+            padding-left: max(24px, var(--safe-left));
+            padding-right: max(24px, var(--safe-right));
+            text-align: center;
+        }
+        .landing-hero-logo {
+            position: absolute;
+            top: max(24px, calc(8px + var(--safe-top)));
+            left: max(24px, var(--safe-left));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .landing-hero-logo-icon {
+            width: 28px;
+            height: 20px;
+            opacity: 0.95;
+        }
+        .landing-hero-logo .climby-wordmark {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 300;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .landing-hero .landing-hero-content { position: relative; z-index: 1; }
+        .landing-hero h1.climby-wordmark.landing-hero-title {
+            color: #fff;
+            font-size: clamp(3rem, 12vw, 5rem);
+            font-weight: 300;
+            margin: 0 0 12px 0;
+            letter-spacing: 0.06em;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+        }
+        .landing-hero .landing-tagline {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: rgba(255,255,255,0.95);
+            font-size: clamp(1rem, 2.5vw, 1.15rem);
+            max-width: 360px;
+            margin: 0 auto 28px;
+            line-height: 1.6;
+        }
+        .landing-hero .landing-tagline .highlight { color: var(--primary); font-weight: 600; text-shadow: 0 0 20px rgba(255,107,53,0.4); }
+        .landing-cta { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; max-width: 320px; }
+        .landing-cta .btn-main.landing-cta-primary {
+            background: linear-gradient(180deg, #FF6B35 0%, #e85a28 100%);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            min-height: 56px;
+            letter-spacing: 0.03em;
+            box-shadow: 0 4px 20px rgba(255,107,53,0.5);
+        }
+        .landing-cta .btn-sec.landing-cta-sec {
+            background: rgba(255,254,249,0.95);
+            border: 1px solid rgba(255,255,255,0.8);
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            min-height: 52px;
+            backdrop-filter: blur(8px);
+        }
+        .landing-gallery {
+            padding: 48px 20px 56px;
+            padding-left: max(20px, var(--safe-left));
+            padding-right: max(20px, var(--safe-right));
+            padding-bottom: max(56px, calc(28px + var(--safe-bottom)));
+            background: var(--bg);
+        }
+        .landing-gallery h3.headline-brand {
+            font-size: 1.5rem;
+            letter-spacing: 0.02em;
+            margin: 0 0 8px 0;
+            text-align: center;
+        }
+        .landing-gallery .headline-underline {
+            width: 48px;
+            height: 3px;
+            background: var(--accent);
+            margin: 0 auto 32px;
+            border-radius: 2px;
+        }
+        .landing-gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 880px; margin: 0 auto; }
+        @media (max-width: 600px) { .landing-gallery-grid { grid-template-columns: 1fr; gap: 28px; } }
+        .landing-feature-card {
+            position: relative;
+            border-radius: var(--radius);
+            overflow: visible;
+            background: #fff;
+            border: 2px solid var(--accent);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            padding-top: 36px;
+        }
+        .landing-feature-card:active { transform: scale(0.98); }
+        .landing-feature-icon {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--yellow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255,209,102,0.4);
+        }
+        .landing-feature-icon svg { width: 24px; height: 24px; }
+        .landing-feature-card .landing-feature-img { height: 100px; background: var(--bg) center/cover no-repeat; margin: 0 12px 12px; border-radius: 10px; }
+        .landing-feature-card .landing-feature-body { padding: 0 20px 20px; flex: 1; }
+        .landing-feature-card h4 {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text);
+            margin: 0 0 8px 0;
+        }
+        .landing-feature-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; }
+        .landing-social {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            margin-top: 40px;
+            padding-right: 0;
+        }
+        .landing-social-link {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .landing-social-link:hover, .landing-social-link:focus { opacity: 0.9; transform: scale(1.05); }
+        .landing-social-link:active { transform: scale(0.98); }
+
+        /* Language switcher */
+        .lang-switcher { display: flex; gap: 0; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+        .lang-switcher button {
+            min-height: var(--touch);
+            padding: 10px 18px;
+            background: var(--card);
+            color: var(--muted);
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .lang-switcher button.active { background: var(--primary); color: var(--text-on-primary); font-weight: 700; }
+        .lang-switcher button:active { opacity: 0.9; }
+        .landing-hero .lang-switcher-hero {
+            border-color: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px);
+        }
+        .landing-hero .lang-switcher-hero button {
+            color: rgba(255,255,255,0.9);
+            background: transparent;
+        }
+        .landing-hero .lang-switcher-hero button.active {
+            background: rgba(255,255,255,0.95);
+            color: var(--text);
+        }
+
+        /* User panel – search & favourites */
+        .user-search-input { margin-top: 14px; margin-bottom: 0; min-height: 52px; font-size: 16px; }
+        .user-section-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 500;
+            font-size: 1.2rem;
+            color: var(--text);
+            margin: 0 0 12px 0;
+        }
+        .user-gym-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; cursor: pointer; min-height: 56px; }
+        .user-gym-card .user-gym-name { flex: 1; font-size: 1.05rem; }
+        .user-gym-card .btn-fav { background: none; border: none; color: var(--muted); cursor: pointer; padding: 12px; min-width: 48px; min-height: 48px; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; }
+        .user-gym-card .btn-fav.fav { color: var(--danger); }
+        .user-detail-view { margin-top: 0; }
+        .gym-detail-title {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 500;
+            font-size: 1.6rem;
+            color: var(--text);
+            margin: 14px 0 18px 0;
+        }
+        .gym-detail-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+        .gym-tab {
+            flex: 1;
+            min-height: 48px;
+            padding: 14px 8px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.03em;
+        }
+        .gym-tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); margin-bottom: -1px; }
+        .gym-tab-panel { margin-bottom: 28px; }
+        .user-gym-detail-desc { color: var(--muted); font-size: 1rem; line-height: 1.6; margin: 0 0 24px 0; }
+        .gym-info-block { margin-bottom: 26px; }
+        .gym-info-heading {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: var(--text);
+            margin: 0 0 10px 0;
+        }
+        .gym-about-content { color: var(--text); font-size: 0.95rem; line-height: 1.6; }
+        .gym-about-content .gym-about-line { margin: 8px 0; }
+        .gym-about-content a { color: var(--accent); text-decoration: none; }
+        .gym-climbing-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .gym-climbing-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .gym-climbing-table th, .gym-climbing-table td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--border); }
+        .gym-climbing-table th { color: var(--muted); font-weight: 600; }
+        .user-gym-detail-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; margin-top: 10px; -webkit-overflow-scrolling: touch; }
+        .user-gym-detail-gallery img { width: 200px; min-width: 200px; height: 150px; object-fit: cover; border-radius: var(--radius-sm); display: block; }
+        #user-gym-detail-sectors-list .card { min-height: 56px; }
+        #user-gym-detail-sectors-list { margin-bottom: 20px; }
+
+        /* Social panel – log send */
+        .social-form { margin-top: 22px; border-top: 1px solid var(--border); padding-top: 22px; }
+        .social-field { margin-bottom: 22px; }
+        .social-label { display: block; color: var(--text); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+        .social-input { min-height: 52px; padding: 14px 18px; font-size: 16px; border-radius: var(--radius-sm); }
+        .social-textarea { min-height: 100px; padding: 14px 18px; font-size: 16px; border-radius: var(--radius-sm); }
+        .send-date-quick { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .btn-date-quick {
+            min-height: 44px;
+            padding: 12px 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .btn-date-quick:active { border-color: var(--primary); color: var(--primary); }
+        .tries-stepper { display: flex; align-items: center; gap: 16px; }
+        .tries-btn {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 22px;
+            cursor: pointer;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tries-btn:active { border-color: var(--primary); color: var(--primary); }
+        .tries-num { min-width: 40px; text-align: center; font-weight: 700; font-size: 1.2rem; }
+
+        /* Dash header & viewer close – safe area + touch */
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-top: var(--safe-top);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .dash-header .lang-switcher { flex-shrink: 0; }
+        .viewer-close {
+            position: absolute;
+            top: max(16px, var(--safe-top));
+            left: max(16px, var(--safe-left));
+            z-index: 1100;
+            min-height: 48px;
+            min-width: 48px;
+            padding: 12px 18px;
+            background: rgba(0,0,0,0.7);
+            color: #F7F3E6;
+            border-radius: var(--radius-sm);
+        }
+        .auth-toggle { cursor: pointer; color: var(--muted); margin-top: 22px; font-size: 1rem; min-height: 44px; display: inline-flex; align-items: center; }
+        .auth-toggle:active { color: var(--primary); }
+
+        /* Brand typography – consistent with wordmark */
+        .climby-wordmark {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-style: italic;
+            font-weight: 300;
+            letter-spacing: 0.02em;
+        }
+        .headline-brand {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 500;
+            font-style: normal;
+            letter-spacing: 0.01em;
+            color: var(--text);
+        }
+        .headline-brand.primary { color: var(--primary); }
+        .subhead {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+            color: var(--text);
+        }
+        .subhead.muted { color: var(--muted); }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay"><div class="spinner"></div><p id="loading-text" style="margin-top:15px">Inizializzazione...</p></div>
+    <div id="loading-overlay" style="display:none"><div class="spinner"></div><p id="loading-text" style="margin-top:15px">Inizializzazione...</p></div>
+
+    <div id="view-landing" class="view active">
+        <section class="landing-hero">
+            <div class="lang-switcher lang-switcher-hero" style="position:absolute; top:max(20px, env(safe-area-inset-top)); right:max(20px, env(safe-area-inset-right));">
+                <button type="button" id="lang-it" onclick="window.setLang('it')">IT</button>
+                <button type="button" id="lang-en" onclick="window.setLang('en')">EN</button>
+            </div>
+            <div class="landing-hero-logo" aria-hidden="true">
+                <span class="landing-hero-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 8v8l8 6 8-6V8L12 2z"/><path d="M12 8v8M8 11l4-3 4 3"/></svg>
+                </span>
+                <span class="climby-wordmark">Climby</span>
+            </div>
+            <div class="landing-hero-content">
+                <h1 class="climby-wordmark landing-hero-title">Climby</h1>
+                <p class="landing-tagline" data-i18n="landing.tagline"></p>
+                <div class="landing-cta">
+                    <button class="btn-main landing-cta-primary" onclick="window.goToAuth()" data-i18n="landing.start"></button>
+                    <button class="btn-sec landing-cta-sec" onclick="window.goToAuth()" data-i18n="landing.login"></button>
+                </div>
+            </div>
+        </section>
+        <section class="landing-gallery">
+            <h3 class="headline-brand" data-i18n="landing.howItWorks"></h3>
+            <div class="headline-underline"></div>
+            <div class="landing-gallery-grid">
+                <div class="landing-feature-card">
+                    <div class="landing-feature-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
+                    </div>
+                    <div class="landing-feature-img" style="background-image: url('https://images.unsplash.com/photo-1522163182402-834f871fd851?w=400')"></div>
+                    <div class="landing-feature-body">
+                        <h4 data-i18n="landing.feature1Title"></h4>
+                        <p data-i18n="landing.feature1Desc"></p>
+                    </div>
+                </div>
+                <div class="landing-feature-card">
+                    <div class="landing-feature-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="10" r="2.5"/><circle cx="12" cy="15" r="2.5"/><path d="M7 8.5l3 2 5-3"/></svg>
+                    </div>
+                    <div class="landing-feature-img" style="background-image: url('https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400')"></div>
+                    <div class="landing-feature-body">
+                        <h4 data-i18n="landing.feature2Title"></h4>
+                        <p data-i18n="landing.feature2Desc"></p>
+                    </div>
+                </div>
+                <div class="landing-feature-card">
+                    <div class="landing-feature-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </div>
+                    <div class="landing-feature-img" style="background-image: url('https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=400')"></div>
+                    <div class="landing-feature-body">
+                        <h4 data-i18n="landing.feature3Title"></h4>
+                        <p data-i18n="landing.feature3Desc"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="landing-social">
+                <a href="https://instagram.com" target="_blank" rel="noopener" class="landing-social-link" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44 1.441-.645 1.441-1.44-.645-1.44-1.441-1.44z"/></svg></a>
+                <a href="https://facebook.com" target="_blank" rel="noopener" class="landing-social-link" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+            </div>
+        </section>
+    </div>
 
     <div id="view-auth" class="view">
         <div class="container">
             <div class="card" style="text-align:center; margin-top:50px; padding: 30px;">
-                <h1 style="color:var(--primary)">CLIMBY</h1>
-                <div id="reg-fields">
-                    <input type="text" id="f-name" placeholder="Il tuo Nome">
-                    <select id="role-select" onchange="document.getElementById('gym-box').style.display = this.value=='admin'?'block':'none'">
-                        <option value="user">Scalatore</option>
-                        <option value="admin">Gestore Palestra (Admin)</option>
-                    </select>
-                    <div id="gym-box" style="display:none"><input type="text" id="gym-input" placeholder="Nome della Palestra"></div>
+                <div class="lang-switcher" style="margin-bottom:15px; justify-content:center;">
+                    <button type="button" id="lang-it-auth" onclick="window.setLang('it')">IT</button>
+                    <button type="button" id="lang-en-auth" onclick="window.setLang('en')">EN</button>
                 </div>
-                <input type="email" id="email" placeholder="Email">
-                <input type="password" id="pass" placeholder="Password">
+                <h1 class="climby-wordmark" style="color:var(--primary)">Climby</h1>
+                <div id="reg-fields">
+                    <input type="text" id="f-name" data-i18n-placeholder="auth.yourName">
+                    <select id="role-select" onchange="document.getElementById('gym-box').style.display = this.value=='admin'?'block':'none'">
+                        <option value="user" id="opt-role-user">Scalatore</option>
+                        <option value="admin" id="opt-role-admin">Gestore Palestra (Admin)</option>
+                    </select>
+                    <div id="gym-box" style="display:none"><input type="text" id="gym-input" data-i18n-placeholder="auth.gymName"></div>
+                </div>
+                <input type="email" id="email" data-i18n-placeholder="auth.email">
+                <input type="password" id="pass" data-i18n-placeholder="auth.password">
                 <button class="btn-main" id="auth-btn">ACCEDI / REGISTRATI</button>
-                <p onclick="window.toggleAuthMode()" id="toggle-txt" style="cursor:pointer; color:#94a3b8; margin-top:20px; font-size: 14px;">Hai già un account? Accedi</p>
+                <p onclick="window.toggleAuthMode()" id="toggle-txt" class="auth-toggle" data-i18n="auth.hasAccount"></p>
             </div>
         </div>
     </div>
 
     <div id="view-dash" class="view">
         <div class="container">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                <h2 style="color:var(--primary); margin:0;">CLIMBY</h2>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-sec" id="btn-mode-toggle" onclick="window.switchMode()">CAMBIA VISTA</button>
-                    <button class="btn-sec" onclick="window.logout()">ESCI</button>
+            <div class="dash-header">
+                <h2 class="climby-wordmark" style="color:var(--primary); margin:0; font-size:1.5rem; font-weight:300;">Climby</h2>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <div class="lang-switcher">
+                        <button type="button" id="lang-it-dash" onclick="window.setLang('it')">IT</button>
+                        <button type="button" id="lang-en-dash" onclick="window.setLang('en')">EN</button>
+                    </div>
+                    <button class="btn-sec" id="btn-mode-toggle" onclick="window.switchMode()" data-i18n="dash.switchView"></button>
+                    <button class="btn-sec" onclick="window.logout()" data-i18n="dash.logout"></button>
                 </div>
             </div>
             
             <div id="admin-panel" style="display:none;">
-                <div class="card" style="border: 2px dashed #334155;">
-                    <h4 style="margin:0 0 10px 0;">Crea Nuovo Settore</h4>
-                    <input type="text" id="new-sector-name" placeholder="Nome (es. Sala Boulder)">
+                <div class="card" style="border: 2px dashed var(--border);">
+                    <h4 style="margin:0 0 10px 0;" data-i18n="admin.createSector"></h4>
+                    <input type="text" id="new-sector-name" data-i18n-placeholder="admin.sectorNamePlaceholder">
                     <input type="file" id="file-mesh-new" accept=".glb">
-                    <button class="btn-main" onclick="window.handleUpload(null)">PUBBLICA</button>
+                    <button class="btn-main" onclick="window.handleUpload(null)" data-i18n="admin.publish"></button>
                 </div>
 
-                <h3>Dati Live Percorsi</h3>
+                <h3 class="headline-brand" data-i18n="admin.liveData"></h3>
                 <div id="admin-stats-container" class="card" style="padding:0; overflow-x: auto;">
                     </div>
 
-                <h3>I Tuoi Settori</h3>
+                <h3 class="headline-brand" data-i18n="admin.yourSectors"></h3>
                 <div id="main-list-admin"></div>
             </div>
 
             <div id="user-panel">
-                <h3 id="list-title">Esplora Palestre</h3>
-                <div id="main-list-user"></div>
+                <div id="user-list-view">
+                    <h3 id="list-title" class="headline-brand" style="font-size:1.25rem; margin:0 0 8px 0;" data-i18n="dash.exploreGyms"></h3>
+                    <input type="text" id="user-search-gyms" class="user-search-input" data-i18n-placeholder="dash.searchGyms" autocomplete="off">
+                    <div id="user-favourites-wrap" style="display:none; margin-top:20px;">
+                        <h4 class="user-section-title" data-i18n="dash.favouriteGyms"></h4>
+                        <div id="user-favourites-list"></div>
+                    </div>
+                    <h4 id="user-discover-title" class="user-section-title" style="margin-top:20px;" data-i18n="dash.discoverGyms"></h4>
+                    <div id="main-list-user"></div>
+                </div>
+                <div id="user-gym-detail" class="user-detail-view" style="display:none;">
+                    <button type="button" class="btn-sec" id="user-gym-detail-back" data-i18n="dash.back"></button>
+                    <h2 id="user-gym-detail-name" class="gym-detail-title"></h2>
+                    <div class="gym-detail-tabs">
+                        <button type="button" class="gym-tab active" data-tab="info" id="gym-tab-info"></button>
+                        <button type="button" class="gym-tab" data-tab="sectors" id="gym-tab-sectors"></button>
+                    </div>
+                    <div id="gym-tab-info-panel" class="gym-tab-panel">
+                        <p id="user-gym-detail-desc" class="user-gym-detail-desc"></p>
+                        <div class="gym-info-block">
+                            <h4 class="gym-info-heading" data-i18n="gym.aboutGym"></h4>
+                            <div id="user-gym-detail-about" class="gym-about-content"></div>
+                        </div>
+                        <div class="gym-info-block">
+                            <h4 class="gym-info-heading" data-i18n="gym.climbingArea"></h4>
+                            <div id="user-gym-detail-climbing" class="gym-climbing-table-wrap"></div>
+                        </div>
+                        <div class="gym-info-block">
+                            <h4 class="gym-info-heading" data-i18n="gym.images"></h4>
+                            <div id="user-gym-detail-images" class="user-gym-detail-gallery"></div>
+                        </div>
+                    </div>
+                    <div id="gym-tab-sectors-panel" class="gym-tab-panel" style="display:none;">
+                        <div id="user-gym-detail-sectors-list"></div>
+                        <button type="button" class="btn-main" id="user-gym-detail-explore" data-i18n="dash.exploreSectors"></button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="viewer-container">
-        <button class="btn-sec" style="position:absolute; top:20px; left:20px; z-index:1100; background:rgba(0,0,0,0.8); color:white;" onclick="window.closeViewer()">CHIUDI</button>
+        <button type="button" class="btn-sec viewer-close" onclick="window.closeViewer()" data-i18n="viewer.close"></button>
         <model-viewer id="main-viewer" camera-controls shadow-intensity="1">
-            <button id="ghost" class="hotspot" slot="hotspot-ghost" style="display:none; border:2px dashed var(--primary); background:rgba(0,255,0,0.2)"></button>
+            <button id="ghost" class="hotspot" slot="hotspot-ghost" style="display:none; border:2px dashed var(--primary); background:var(--primary-dim)"></button>
 
             <div id="admin-editor-panel" class="bottom-sheet">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 id="editor-title" style="margin:0">Configura Via</h3>
-                    <button onclick="window.cancelAdminEdit()" style="background:none; border:none; color:white; font-size:24px;">×</button>
+                    <h3 id="editor-title" style="margin:0" data-i18n="viewer.configureRoute"></h3>
+                    <button type="button" onclick="window.cancelAdminEdit()" style="background:none; border:none; color:var(--text); font-size:24px;">×</button>
                 </div>
                 <select id="route-grade">
                     <option value="5a">5a</option><option value="6a" selected>6a</option><option value="7a">7a</option>
                 </select>
                 <select id="route-color">
-                    <option value="#00e676">Verde</option><option value="#3b82f6">Blu</option><option value="#ef4444">Rosso</option>
+                    <option value="#FF6B35">Arancio</option><option value="#2EC4B6">Turchese</option><option value="#FFD166">Giallo</option><option value="#ef4444">Rosso</option>
                 </select>
-                <button class="btn-main" onclick="window.saveRoute()">SALVA</button>
-                <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()">ELIMINA</button>
+                <button class="btn-main" onclick="window.saveRoute()" data-i18n="viewer.save"></button>
+                <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()" data-i18n="viewer.delete"></button>
             </div>
 
             <div id="social-panel" class="bottom-sheet">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div><h2 id="social-grade" style="color:var(--primary); margin:0"></h2><div id="avg-stars-view" style="color:#fbbf24; margin-top:5px;"></div></div>
-                    <button onclick="document.getElementById('social-panel').style.display='none'" style="background:none; border:none; color:white; font-size:28px;">×</button>
+                    <div><h2 id="social-grade" style="color:var(--primary); margin:0"></h2><div id="avg-stars-view" style="color:var(--yellow); margin-top:5px;"></div></div>
+                    <button type="button" onclick="document.getElementById('social-panel').style.display='none'" style="background:none; border:none; color:var(--text); font-size:28px;">×</button>
                 </div>
-                
-                <div style="margin-top:20px; border-top: 1px solid #334155; padding-top:20px;">
-                    <div class="star-rating" id="star-selector">
-                        <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+                <div class="social-form">
+                    <div class="social-field">
+                        <label class="social-label" data-i18n="viewer.sendDate"></label>
+                        <input type="date" id="send-date-input" class="social-input">
+                        <div class="send-date-quick">
+                            <button type="button" class="btn-date-quick" id="btn-date-today"></button>
+                            <button type="button" class="btn-date-quick" id="btn-date-yesterday"></button>
+                            <button type="button" class="btn-date-quick" id="btn-date-last-sat"></button>
+                            <button type="button" class="btn-date-quick" id="btn-date-last-sun"></button>
+                        </div>
                     </div>
-                    <textarea id="user-comment" placeholder="Commento facoltativo..."></textarea>
-                    <button class="btn-main" onclick="window.submitReview()">INVIA VALUTAZIONE</button>
+                    <div class="social-field">
+                        <label class="social-label" data-i18n="viewer.tries"></label>
+                        <div class="tries-stepper">
+                            <button type="button" class="tries-btn" id="tries-minus">−</button>
+                            <span id="tries-value" class="tries-num">1</span>
+                            <button type="button" class="tries-btn" id="tries-plus">+</button>
+                        </div>
+                    </div>
+                    <div class="social-field">
+                        <label class="social-label" data-i18n="viewer.rating"></label>
+                        <div class="star-rating" id="star-selector">
+                            <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+                        </div>
+                    </div>
+                    <div class="social-field">
+                        <label class="social-label" data-i18n="viewer.proposeGrade"></label>
+                        <select id="propose-grade-select" class="social-input">
+                            <option value="">—</option>
+                            <option value="4a">4a</option><option value="4b">4b</option><option value="4c">4c</option>
+                            <option value="5a">5a</option><option value="5b">5b</option><option value="5c">5c</option>
+                            <option value="6a">6a</option><option value="6b">6b</option><option value="6c">6c</option>
+                            <option value="7a">7a</option><option value="7b">7b</option><option value="7c">7c</option>
+                            <option value="8a">8a</option><option value="8b">8b</option><option value="8c">8c</option>
+                        </select>
+                    </div>
+                    <div class="social-field">
+                        <label class="social-label" data-i18n="viewer.comment"></label>
+                        <textarea id="user-comment" data-i18n-placeholder="viewer.commentPlaceholder" class="social-textarea"></textarea>
+                    </div>
+                    <button class="btn-main" onclick="window.submitReview()" data-i18n="viewer.submitReview"></button>
                 </div>
                 <div id="comments-list" style="margin-top:25px;"></div>
             </div>
@@ -141,7 +760,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -160,16 +779,68 @@
 
         let activeUser, realUserGymId, activeGymId, activeSectorId, activeRouteId;
         let isLogin = false, currentMode = 'admin', tempPos, tempNorm, selectedStars = 0;
+        let userFavouriteGyms = [];
+        let lastUserGymsSnap = null;
 
-        const showLoading = (t) => { document.getElementById('loading-text').innerText = t; document.getElementById('loading-overlay').style.display='flex'; };
+        const LANG_KEY = 'climby_lang';
+        const translations = {
+            it: {
+                landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
+                auth: { yourName: "Il tuo Nome", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
+                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie." },
+                admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", liveData: "Dati Live Percorsi", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media" },
+                viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa" },
+                gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", images: "Immagini", noValue: "-" },
+                loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D..." },
+                errors: { completeData: "Inserisci dati completi", selectFile: "Seleziona file" }
+            },
+            en: {
+                landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
+                auth: { yourName: "Your name", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
+                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes." },
+                admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", liveData: "Live route data", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg" },
+                viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday" },
+                gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", images: "Images", noValue: "-" },
+                loading: { init: "Loading...", verifying: "Verifying...", updatingMesh: "Updating mesh...", loading3d: "Loading 3D..." },
+                errors: { completeData: "Please enter all required fields", selectFile: "Select a file" }
+            }
+        };
+        let currentLang = localStorage.getItem(LANG_KEY) || 'it';
+        const t = (key) => { const parts = key.split('.'); let v = translations[currentLang]; for (const p of parts) v = v?.[p]; return v != null ? v : key; };
+        function applyLang() {
+            document.documentElement.lang = currentLang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                const raw = t(key);
+                if (key === 'landing.tagline' && raw.includes('{{h}}')) {
+                    el.innerHTML = raw.replace(/\{\{h\}\}(.*?)\{\{\/h\}\}/g, '<span class="highlight">$1</span>');
+                } else {
+                    el.textContent = raw;
+                }
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+            ['lang-it', 'lang-en', 'lang-it-auth', 'lang-en-auth', 'lang-it-dash', 'lang-en-dash'].forEach(id => {
+                const el = document.getElementById(id); if (!el) return;
+                el.classList.toggle('active', (id.includes('it') && currentLang === 'it') || (id.includes('en') && currentLang === 'en'));
+            });
+            const optUser = document.getElementById('opt-role-user'); if (optUser) optUser.textContent = t('auth.roleUser');
+            const optAdmin = document.getElementById('opt-role-admin'); if (optAdmin) optAdmin.textContent = t('auth.roleAdmin');
+            const ab = document.getElementById('auth-btn'); if (ab) ab.innerText = isLogin ? t('auth.login').toUpperCase() : t('auth.register').toUpperCase();
+            const lt = document.getElementById('loading-text'); if (lt) lt.innerText = t('loading.init');
+        }
+        window.setLang = (lang) => { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); if (typeof loadAdminStats === 'function') loadAdminStats(); };
+
+        const showLoading = (msg) => { document.getElementById('loading-text').innerText = msg; document.getElementById('loading-overlay').style.display='flex'; };
         const hideLoading = () => document.getElementById('loading-overlay').style.display='none';
 
+        applyLang();
+
         // --- AUTH ---
-        window.toggleAuthMode = () => { isLogin = !isLogin; document.getElementById('auth-btn').innerText = isLogin ? "ACCEDI" : "REGISTRATI"; document.getElementById('reg-fields').style.display = isLogin ? 'none' : 'block'; };
+        window.toggleAuthMode = () => { isLogin = !isLogin; document.getElementById('auth-btn').innerText = isLogin ? t('auth.login').toUpperCase() : t('auth.register').toUpperCase(); document.getElementById('reg-fields').style.display = isLogin ? 'none' : 'block'; };
 
         document.getElementById('auth-btn').onclick = async () => {
             const email = document.getElementById('email').value, pass = document.getElementById('pass').value;
-            showLoading("Verifica...");
+            showLoading(t('loading.verifying'));
             try {
                 if(isLogin) { await signInWithEmailAndPassword(auth, email, pass); }
                 else {
@@ -192,7 +863,7 @@
                 document.getElementById('btn-mode-toggle').style.display = data.role === 'admin' ? 'block' : 'none';
                 initDashboard();
                 hideLoading();
-            } else { showView('view-auth'); hideLoading(); }
+            } else { showView('view-landing'); hideLoading(); }
         });
 
         // --- DASHBOARD ---
@@ -211,11 +882,11 @@
                         card.innerHTML = `
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <b>${d.data().name}</b>
-                                <button class="btn-sec" onclick="open3D('${realUserGymId}', '${d.id}')">GESTISCI VIE</button>
+                                <button class="btn-sec" onclick="open3D('${realUserGymId}', '${d.id}')">${t('dash.manageRoutes')}</button>
                             </div>
-                            <div style="margin-top:10px; border-top: 1px solid #334155; padding-top:10px; display:flex; gap:10px; align-items:center;">
+                            <div style="margin-top:10px; border-top: 1px solid var(--border); padding-top:10px; display:flex; gap:10px; align-items:center;">
                                 <input type="file" id="file-update-${d.id}" accept=".glb" style="font-size:11px; margin:0;">
-                                <button class="btn-update" onclick="window.handleUpload('${d.id}')">SOSTITUISCI 3D</button>
+                                <button class="btn-update" onclick="window.handleUpload('${d.id}')">${t('dash.replace3d')}</button>
                             </div>
                         `;
                         adminList.appendChild(card);
@@ -225,22 +896,158 @@
             } else {
                 document.getElementById('admin-panel').style.display = 'none';
                 document.getElementById('user-panel').style.display = 'block';
+                document.getElementById('user-list-view').style.display = 'block';
+                document.getElementById('user-gym-detail').style.display = 'none';
+                (async () => {
+                    const uSnap = await getDoc(doc(db, "users", activeUser.uid));
+                    userFavouriteGyms = uSnap.data()?.favouriteGyms || [];
+                    renderUserGymList();
+                })();
+                const searchInput = document.getElementById('user-search-gyms');
+                searchInput.oninput = () => renderUserGymList();
+                searchInput.value = "";
                 onSnapshot(collection(db, "gyms"), (snap) => {
-                    userList.innerHTML = "";
-                    snap.forEach(d => {
-                        const card = document.createElement('div'); card.className = 'card';
-                        card.innerHTML = `<b>${d.data().name}</b>`;
-                        card.onclick = () => loadGymSectorsForUser(d.id);
-                        userList.appendChild(card);
-                    });
+                    lastUserGymsSnap = snap;
+                    renderUserGymList();
                 });
             }
         }
 
+        function renderUserGymList() {
+            if (!lastUserGymsSnap) return;
+            const query = (document.getElementById('user-search-gyms').value || "").trim().toLowerCase();
+            const list = document.getElementById('main-list-user');
+            const favWrap = document.getElementById('user-favourites-wrap');
+            const favList = document.getElementById('user-favourites-list');
+            const gyms = [];
+            lastUserGymsSnap.forEach(d => gyms.push({ id: d.id, ...d.data() }));
+            const filtered = query ? gyms.filter(g => (g.name || "").toLowerCase().includes(query)) : gyms;
+            const favGyms = gyms.filter(g => userFavouriteGyms.includes(g.id));
+            if (favGyms.length > 0) {
+                favWrap.style.display = "block";
+                favList.innerHTML = "";
+                favGyms.forEach(g => {
+                    const card = document.createElement('div'); card.className = 'card';
+                    card.innerHTML = `
+                        <div class="user-gym-card">
+                            <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>
+                            <button type="button" class="btn-fav fav" title="${t('dash.removeFromFavourites')}" onclick="event.stopPropagation(); window.toggleFavourite('${g.id}')">♥</button>
+                        </div>`;
+                    card.onclick = () => openGymDetail(g.id);
+                    favList.appendChild(card);
+                });
+            } else favWrap.style.display = "none";
+            list.innerHTML = "";
+            filtered.forEach(g => {
+                const isFav = userFavouriteGyms.includes(g.id);
+                const card = document.createElement('div'); card.className = 'card';
+                card.innerHTML = `
+                    <div class="user-gym-card">
+                        <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>
+                        <button type="button" class="btn-fav ${isFav ? 'fav' : ''}" title="${isFav ? t('dash.removeFromFavourites') : t('dash.addToFavourites')}" onclick="event.stopPropagation(); window.toggleFavourite('${g.id}')">${isFav ? '♥' : '♡'}</button>
+                    </div>`;
+                card.onclick = () => openGymDetail(g.id);
+                list.appendChild(card);
+            });
+        }
+        function escapeHtml(s) { const div = document.createElement('div'); div.textContent = s; return div.innerHTML; }
+
+        window.toggleFavourite = async (gymId) => {
+            if (!activeUser) return;
+            const ref = doc(db, "users", activeUser.uid);
+            const isFav = userFavouriteGyms.includes(gymId);
+            if (isFav) await updateDoc(ref, { favouriteGyms: arrayRemove(gymId) });
+            else await updateDoc(ref, { favouriteGyms: arrayUnion(gymId) });
+            userFavouriteGyms = isFav ? userFavouriteGyms.filter(id => id !== gymId) : [...userFavouriteGyms, gymId];
+            renderUserGymList();
+        };
+
+        async function openGymDetail(gId) {
+            const [gymSnap, sectorsSnap] = await Promise.all([
+                getDoc(doc(db, "gyms", gId)),
+                getDocs(collection(db, "gyms", gId, "Sectors"))
+            ]);
+            const data = gymSnap.data() || {};
+            const name = data.name || gId;
+            const desc = data.description || t('dash.noGymDescription');
+            const images = data.imageUrls && Array.isArray(data.imageUrls) ? data.imageUrls : [
+                'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=600',
+                'https://images.unsplash.com/photo-1576678927484-cc907957088c?w=600'
+            ];
+            const noVal = t('gym.noValue');
+            const withUnit = (val, unit) => (val != null && val !== '') ? val + unit : noVal;
+            const climbingRows = [
+                [t('gym.bouldering'), withUnit(data.boulderingHeight, 'm'), withUnit(data.boulderingArea, 'm²')],
+                [t('gym.lead'), withUnit(data.leadHeight, 'm'), withUnit(data.leadArea, 'm²')],
+                [t('gym.outdoor'), withUnit(data.outdoorHeight, 'm'), withUnit(data.outdoorArea, 'm²')],
+                [t('gym.speed'), withUnit(data.speedHeight, 'm'), withUnit(data.speedArea, 'm²')]
+            ];
+            const climbingTable = `<table class="gym-climbing-table"><thead><tr><th></th><th>${t('gym.height')}</th><th>${t('gym.area')}</th></tr></thead><tbody>${climbingRows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table>`;
+            let aboutHtml = `<div class="gym-about-line"><strong>${escapeHtml(name)}</strong></div>`;
+            if (data.address) aboutHtml += `<div class="gym-about-line">${escapeHtml(data.address)}</div>`;
+            if (data.phone) aboutHtml += `<div class="gym-about-line">${escapeHtml(data.phone)}</div>`;
+            if (data.email) aboutHtml += `<div class="gym-about-line"><a href="mailto:${escapeHtml(data.email)}">${escapeHtml(data.email)}</a></div>`;
+            if (data.website) aboutHtml += `<div class="gym-about-line"><a href="${data.website.startsWith('http') ? data.website : 'https://' + data.website}" target="_blank" rel="noopener">${escapeHtml(data.website)}</a></div>`;
+
+            document.getElementById('user-list-view').style.display = 'none';
+            document.getElementById('user-gym-detail').style.display = 'block';
+            document.getElementById('user-gym-detail-name').textContent = name;
+            document.getElementById('user-gym-detail-desc').textContent = desc;
+            document.getElementById('user-gym-detail-about').innerHTML = aboutHtml;
+            document.getElementById('user-gym-detail-climbing').innerHTML = climbingTable;
+            const gallery = document.getElementById('user-gym-detail-images');
+            gallery.innerHTML = images.slice(0, 6).map(url => `<img src="${url}" alt="">`).join('');
+            const sectorsList = document.getElementById('user-gym-detail-sectors-list');
+            sectorsList.innerHTML = '';
+            sectorsSnap.forEach(d => {
+                const card = document.createElement('div'); card.className = 'card';
+                card.innerHTML = `<b>${escapeHtml(d.data().name)}</b>`;
+                card.onclick = () => open3D(gId, d.id);
+                sectorsList.appendChild(card);
+            });
+            document.getElementById('user-gym-detail-explore').onclick = () => loadGymSectorsForUser(gId);
+            document.getElementById('user-gym-detail-back').onclick = () => {
+                document.getElementById('user-gym-detail').style.display = 'none';
+                document.getElementById('user-list-view').style.display = 'block';
+                renderUserGymList();
+            };
+            document.getElementById('gym-tab-info').textContent = t('gym.tabInfo');
+            document.getElementById('gym-tab-sectors').textContent = t('gym.tabSectors');
+            document.getElementById('gym-tab-info').classList.add('active');
+            document.getElementById('gym-tab-sectors').classList.remove('active');
+            document.getElementById('gym-tab-info-panel').style.display = 'block';
+            document.getElementById('gym-tab-sectors-panel').style.display = 'none';
+            document.getElementById('gym-tab-info').onclick = () => {
+                document.getElementById('gym-tab-info').classList.add('active');
+                document.getElementById('gym-tab-sectors').classList.remove('active');
+                document.getElementById('gym-tab-info-panel').style.display = 'block';
+                document.getElementById('gym-tab-sectors-panel').style.display = 'none';
+            };
+            document.getElementById('gym-tab-sectors').onclick = () => {
+                document.getElementById('gym-tab-sectors').classList.add('active');
+                document.getElementById('gym-tab-info').classList.remove('active');
+                document.getElementById('gym-tab-sectors-panel').style.display = 'block';
+                document.getElementById('gym-tab-info-panel').style.display = 'none';
+            };
+            applyLang();
+        }
+
+        window.showUserGymList = function showUserGymList() {
+            document.getElementById('user-gym-detail').style.display = 'none';
+            document.getElementById('user-list-view').style.display = 'block';
+            document.getElementById('list-title').style.display = 'block';
+            document.getElementById('user-search-gyms').style.display = 'block';
+            const favWrap = document.getElementById('user-favourites-wrap');
+            if (userFavouriteGyms.length > 0) favWrap.style.display = 'block';
+            const discoverTitle = document.getElementById('user-discover-title');
+            if (discoverTitle) discoverTitle.style.display = 'block';
+            renderUserGymList();
+        };
+
         async function loadAdminStats() {
             const container = document.getElementById('admin-stats-container');
             const sSnap = await getDocs(collection(db, "gyms", realUserGymId, "Sectors"));
-            let h = `<table><tr><th>Settore</th><th>Via</th><th>Voti</th><th>Media</th></tr>`;
+            let h = `<table><tr><th>${t('admin.sector')}</th><th>${t('admin.route')}</th><th>${t('admin.votes')}</th><th>${t('admin.average')}</th></tr>`;
             for (const s of sSnap.docs) {
                 const rSnap = await getDocs(collection(db, `gyms/${realUserGymId}/Sectors/${s.id}/routes`));
                 for (const rd of rSnap.docs) {
@@ -255,9 +1062,16 @@
 
         async function loadGymSectorsForUser(gId) {
             activeGymId = gId;
+            document.getElementById('user-gym-detail').style.display = 'none';
+            document.getElementById('user-list-view').style.display = 'block';
+            document.getElementById('list-title').style.display = 'none';
+            document.getElementById('user-search-gyms').style.display = 'none';
+            document.getElementById('user-favourites-wrap').style.display = 'none';
+            const discoverTitle = document.getElementById('user-discover-title');
+            if (discoverTitle) discoverTitle.style.display = 'none';
             const snap = await getDocs(collection(db, "gyms", gId, "Sectors"));
             const list = document.getElementById('main-list-user');
-            list.innerHTML = `<button class="btn-sec" onclick="initDashboard()">← Back</button><h3 style="margin-top:15px">Settori</h3>`;
+            list.innerHTML = `<button type="button" class="btn-sec" onclick="window.showUserGymList()">${t('dash.back')}</button><h3 style="margin-top:15px">${t('dash.sectors')}</h3>`;
             snap.forEach(d => {
                 const div = document.createElement('div'); div.className = 'card';
                 div.innerHTML = `<b>${d.data().name}</b>`;
@@ -276,12 +1090,12 @@
             } else {
                 file = document.getElementById('file-mesh-new').files[0];
                 name = document.getElementById('new-sector-name').value;
-                if(!name || !file) return alert("Inserisci dati completi");
+                if(!name || !file) return alert(t('errors.completeData'));
                 sId = name.trim().replace(/\s+/g, '-');
             }
-            if(!file) return alert("Seleziona file");
+            if(!file) return alert(t('errors.selectFile'));
             
-            showLoading("Aggiornamento Mesh...");
+            showLoading(t('loading.updatingMesh'));
             // Reset vie
             const rSnap = await getDocs(collection(db, `gyms/${realUserGymId}/Sectors/${sId}/routes`));
             await Promise.all(rSnap.docs.map(d => deleteDoc(d.ref)));
@@ -296,7 +1110,7 @@
 
         // --- VIEWER & STARS ---
         window.open3D = async (gId, sId) => {
-            showLoading("Caricamento 3D...");
+            showLoading(t('loading.loading3d'));
             activeGymId = gId; activeSectorId = sId;
             const snap = await getDoc(doc(db, "gyms", gId, "Sectors", sId));
             const viewer = document.getElementById('main-viewer');
@@ -335,31 +1149,63 @@
             };
         });
 
+        function toYYYYMMDD(d) { const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return y + '-' + m + '-' + day; }
+        function lastSaturday() { const d = new Date(); const day = d.getDay(); const diff = day === 6 ? 0 : day === 0 ? -1 : 6 - day; d.setDate(d.getDate() - 7 + diff); return d; }
+        function lastSunday() { const d = new Date(); const day = d.getDay(); const diff = day === 0 ? -7 : -day; d.setDate(d.getDate() + diff); return d; }
+
         async function openSocial(id, data) {
             activeRouteId = id; selectedStars = 0;
             document.querySelectorAll('#star-selector span').forEach(st => st.classList.remove('active'));
-            document.getElementById('social-grade').innerText = "Grado: " + data.grade;
+            document.getElementById('social-grade').innerText = t('viewer.grade') + ": " + data.grade;
+            const today = new Date();
+            document.getElementById('send-date-input').value = toYYYYMMDD(today);
+            document.getElementById('tries-value').textContent = '1';
+            document.getElementById('propose-grade-select').value = '';
+            document.getElementById('user-comment').value = '';
             document.getElementById('social-panel').style.display = 'block';
+            const optPlaceholder = document.querySelector('#propose-grade-select option[value=""]');
+            if (optPlaceholder) optPlaceholder.textContent = t('viewer.proposeGradePlaceholder');
+            document.getElementById('btn-date-today').textContent = t('viewer.today');
+            document.getElementById('btn-date-yesterday').textContent = t('viewer.yesterday');
+            document.getElementById('btn-date-last-sat').textContent = t('viewer.lastSaturday');
+            document.getElementById('btn-date-last-sun').textContent = t('viewer.lastSunday');
+            document.getElementById('btn-date-today').onclick = () => { document.getElementById('send-date-input').value = toYYYYMMDD(new Date()); };
+            document.getElementById('btn-date-yesterday').onclick = () => { const d = new Date(); d.setDate(d.getDate() - 1); document.getElementById('send-date-input').value = toYYYYMMDD(d); };
+            document.getElementById('btn-date-last-sat').onclick = () => { document.getElementById('send-date-input').value = toYYYYMMDD(lastSaturday()); };
+            document.getElementById('btn-date-last-sun').onclick = () => { document.getElementById('send-date-input').value = toYYYYMMDD(lastSunday()); };
+            document.getElementById('tries-minus').onclick = () => { const el = document.getElementById('tries-value'); let n = parseInt(el.textContent, 10) || 1; if (n > 1) { n--; el.textContent = n; } };
+            document.getElementById('tries-plus').onclick = () => { const el = document.getElementById('tries-value'); let n = parseInt(el.textContent, 10) || 1; el.textContent = n + 1; };
             onSnapshot(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes/${id}/reviews`), (sn) => {
                 const list = document.getElementById('comments-list');
                 list.innerHTML = ""; let sum = 0;
                 sn.forEach(d => {
-                    sum += parseInt(d.data().rating);
-                    if(d.data().text) list.innerHTML += `<div class="card" style="font-size:12px"><b>⭐ ${d.data().rating}</b> - ${d.data().text}</div>`;
-                    else list.innerHTML += `<div class="card" style="font-size:12px"><b>⭐ ${d.data().rating}</b> (Senza commento)</div>`;
+                    const r = d.data();
+                    sum += parseInt(r.rating);
+                    let line = `<b>⭐ ${r.rating}</b>`;
+                    if (r.tries != null) line += ` · ${r.tries} ${t('viewer.tries').toLowerCase()}`;
+                    if (r.sendDate) line += ` · ${r.sendDate}`;
+                    if (r.proposedGrade) line += ` · ${t('viewer.proposeGrade')}: ${r.proposedGrade}`;
+                    if (r.text) line += ` — ${r.text}`;
+                    else if (!r.tries && !r.sendDate && !r.proposedGrade) line += ` ${t('viewer.noComment')}`;
+                    list.innerHTML += `<div class="card" style="font-size:12px">${line}</div>`;
                 });
-                document.getElementById('avg-stars-view').innerText = sn.size > 0 ? "Media: " + (sum/sn.size).toFixed(1) + " ⭐" : "Ancora nessun voto";
+                document.getElementById('avg-stars-view').innerText = sn.size > 0 ? t('viewer.avgRating') + ": " + (sum/sn.size).toFixed(1) + " ⭐" : t('viewer.noVotesYet');
             });
         }
 
         window.submitReview = async () => {
-            if(selectedStars === 0) return alert("Per favore, seleziona almeno una stella!");
+            if(selectedStars === 0) return alert(t('viewer.selectStar'));
             const text = document.getElementById('user-comment').value;
+            const sendDate = document.getElementById('send-date-input').value || toYYYYMMDD(new Date());
+            const triesVal = parseInt(document.getElementById('tries-value').textContent, 10) || 1;
+            const proposedGrade = document.getElementById('propose-grade-select').value || null;
             await addDoc(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes/${activeRouteId}/reviews`), { 
-                rating: selectedStars, text: text || "", date: new Date() 
+                rating: selectedStars, text: text || "", date: new Date(), sendDate, tries: triesVal, proposedGrade, userId: activeUser?.uid || null 
             });
             document.getElementById('user-comment').value = "";
-            alert("Feedback inviato con successo!");
+            document.getElementById('tries-value').textContent = "1";
+            document.getElementById('propose-grade-select').value = "";
+            alert(t('viewer.reviewSuccess'));
         };
 
         // --- EDITOR ADMIN ---
@@ -383,8 +1229,9 @@
             window.cancelAdminEdit();
         };
 
-        window.deleteRoute = async () => { if(confirm("Eliminare?")) { await deleteDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId)); window.cancelAdminEdit(); } };
+        window.deleteRoute = async () => { if(confirm(t('viewer.confirmDelete'))) { await deleteDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId)); window.cancelAdminEdit(); } };
 
+        window.goToAuth = () => showView('view-auth');
         window.logout = () => signOut(auth).then(() => location.reload());
         window.switchMode = () => { currentMode = currentMode === 'admin' ? 'user' : 'admin'; initDashboard(); };
         window.closeViewer = () => { document.getElementById('viewer-container').style.display = 'none'; };
