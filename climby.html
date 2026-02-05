@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Climby | Pro Dashboard</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <style>
+        :root { --primary: #00e676; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --danger: #ef4444; --accent: #3b82f6; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; }
+        .view { display: none; min-height: 100vh; width: 100vw; }
+        .view.active { display: flex; flex-direction: column; }
+        .container { padding: 20px; max-width: 800px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        
+        /* UI Components */
+        .card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #334155; }
+        .btn-main { width: 100%; padding: 14px; background: var(--primary); color: #020617; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .btn-sec { background: transparent; border: 1px solid #334155; color: #94a3b8; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .btn-update { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; }
+        .btn-danger { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; }
+        
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; box-sizing: border-box; }
+        
+        /* Dashboard Admin Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #334155; }
+        th { color: var(--primary); }
+
+        /* Overlays */
+        #loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #334155; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Viewer */
+        #viewer-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1000; background: #000; display: none; }
+        model-viewer { width: 100%; height: 100%; }
+        .hotspot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid white; cursor: pointer; }
+        .bottom-sheet { position: absolute; bottom: 0; left: 0; width: 100%; max-height: 75vh; background: var(--card); border-top: 3px solid var(--primary); border-radius: 25px 25px 0 0; padding: 25px; box-sizing: border-box; display: none; z-index: 1002; overflow-y: auto; }
+        
+        /* Star System */
+        .star-rating { display: flex; gap: 10px; font-size: 32px; margin: 10px 0; cursor: pointer; justify-content: center; }
+        .star-rating span { color: #334155; transition: 0.2s; }
+        .star-rating span.active { color: #fbbf24; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay"><div class="spinner"></div><p id="loading-text" style="margin-top:15px">Inizializzazione...</p></div>
+
+    <div id="view-auth" class="view">
+        <div class="container">
+            <div class="card" style="text-align:center; margin-top:50px; padding: 30px;">
+                <h1 style="color:var(--primary)">CLIMBY</h1>
+                <div id="reg-fields">
+                    <input type="text" id="f-name" placeholder="Il tuo Nome">
+                    <select id="role-select" onchange="document.getElementById('gym-box').style.display = this.value=='admin'?'block':'none'">
+                        <option value="user">Scalatore</option>
+                        <option value="admin">Gestore Palestra (Admin)</option>
+                    </select>
+                    <div id="gym-box" style="display:none"><input type="text" id="gym-input" placeholder="Nome della Palestra"></div>
+                </div>
+                <input type="email" id="email" placeholder="Email">
+                <input type="password" id="pass" placeholder="Password">
+                <button class="btn-main" id="auth-btn">ACCEDI / REGISTRATI</button>
+                <p onclick="window.toggleAuthMode()" id="toggle-txt" style="cursor:pointer; color:#94a3b8; margin-top:20px; font-size: 14px;">Hai già un account? Accedi</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-dash" class="view">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h2 style="color:var(--primary); margin:0;">CLIMBY</h2>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-sec" id="btn-mode-toggle" onclick="window.switchMode()">CAMBIA VISTA</button>
+                    <button class="btn-sec" onclick="window.logout()">ESCI</button>
+                </div>
+            </div>
+            
+            <div id="admin-panel" style="display:none;">
+                <div class="card" style="border: 2px dashed #334155;">
+                    <h4 style="margin:0 0 10px 0;">Crea Nuovo Settore</h4>
+                    <input type="text" id="new-sector-name" placeholder="Nome (es. Sala Boulder)">
+                    <input type="file" id="file-mesh-new" accept=".glb">
+                    <button class="btn-main" onclick="window.handleUpload(null)">PUBBLICA</button>
+                </div>
+
+                <h3>Dati Live Percorsi</h3>
+                <div id="admin-stats-container" class="card" style="padding:0; overflow-x: auto;">
+                    </div>
+
+                <h3>I Tuoi Settori</h3>
+                <div id="main-list-admin"></div>
+            </div>
+
+            <div id="user-panel">
+                <h3 id="list-title">Esplora Palestre</h3>
+                <div id="main-list-user"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewer-container">
+        <button class="btn-sec" style="position:absolute; top:20px; left:20px; z-index:1100; background:rgba(0,0,0,0.8); color:white;" onclick="window.closeViewer()">CHIUDI</button>
+        <model-viewer id="main-viewer" camera-controls shadow-intensity="1">
+            <button id="ghost" class="hotspot" slot="hotspot-ghost" style="display:none; border:2px dashed var(--primary); background:rgba(0,255,0,0.2)"></button>
+
+            <div id="admin-editor-panel" class="bottom-sheet">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 id="editor-title" style="margin:0">Configura Via</h3>
+                    <button onclick="window.cancelAdminEdit()" style="background:none; border:none; color:white; font-size:24px;">×</button>
+                </div>
+                <select id="route-grade">
+                    <option value="5a">5a</option><option value="6a" selected>6a</option><option value="7a">7a</option>
+                </select>
+                <select id="route-color">
+                    <option value="#00e676">Verde</option><option value="#3b82f6">Blu</option><option value="#ef4444">Rosso</option>
+                </select>
+                <button class="btn-main" onclick="window.saveRoute()">SALVA</button>
+                <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()">ELIMINA</button>
+            </div>
+
+            <div id="social-panel" class="bottom-sheet">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div><h2 id="social-grade" style="color:var(--primary); margin:0"></h2><div id="avg-stars-view" style="color:#fbbf24; margin-top:5px;"></div></div>
+                    <button onclick="document.getElementById('social-panel').style.display='none'" style="background:none; border:none; color:white; font-size:28px;">×</button>
+                </div>
+                
+                <div style="margin-top:20px; border-top: 1px solid #334155; padding-top:20px;">
+                    <div class="star-rating" id="star-selector">
+                        <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+                    </div>
+                    <textarea id="user-comment" placeholder="Commento facoltativo..."></textarea>
+                    <button class="btn-main" onclick="window.submitReview()">INVIA VALUTAZIONE</button>
+                </div>
+                <div id="comments-list" style="margin-top:25px;"></div>
+            </div>
+        </model-viewer>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBIXviIPnpaoso-_K-v3uR0m2kUJ9uFZjM",
+            authDomain: "climby-mvp-c61d7.firebaseapp.com",
+            projectId: "climby-mvp-c61d7",
+            storageBucket: "climby-mvp-c61d7.firebasestorage.app",
+            messagingSenderId: "938841039375",
+            appId: "1:938841039375:web:068851aac08cc131bc797a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let activeUser, realUserGymId, activeGymId, activeSectorId, activeRouteId;
+        let isLogin = false, currentMode = 'admin', tempPos, tempNorm, selectedStars = 0;
+
+        const showLoading = (t) => { document.getElementById('loading-text').innerText = t; document.getElementById('loading-overlay').style.display='flex'; };
+        const hideLoading = () => document.getElementById('loading-overlay').style.display='none';
+
+        // --- AUTH ---
+        window.toggleAuthMode = () => { isLogin = !isLogin; document.getElementById('auth-btn').innerText = isLogin ? "ACCEDI" : "REGISTRATI"; document.getElementById('reg-fields').style.display = isLogin ? 'none' : 'block'; };
+
+        document.getElementById('auth-btn').onclick = async () => {
+            const email = document.getElementById('email').value, pass = document.getElementById('pass').value;
+            showLoading("Verifica...");
+            try {
+                if(isLogin) { await signInWithEmailAndPassword(auth, email, pass); }
+                else {
+                    const role = document.getElementById('role-select').value, gymName = document.getElementById('gym-input').value;
+                    let cleanGymId = role === 'admin' ? gymName.trim().replace(/\s+/g, '-') : null;
+                    const res = await createUserWithEmailAndPassword(auth, email, pass);
+                    await setDoc(doc(db, "users", res.user.uid), { role, gymManaged: cleanGymId });
+                    if(role === 'admin') await setDoc(doc(db, "gyms", cleanGymId), { name: gymName, owner: res.user.uid });
+                }
+            } catch(e) { alert(e.message); hideLoading(); }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if(user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                const data = snap.data();
+                activeUser = user;
+                realUserGymId = data.gymManaged;
+                currentMode = data.role === 'admin' ? 'admin' : 'user';
+                document.getElementById('btn-mode-toggle').style.display = data.role === 'admin' ? 'block' : 'none';
+                initDashboard();
+                hideLoading();
+            } else { showView('view-auth'); hideLoading(); }
+        });
+
+        // --- DASHBOARD ---
+        function initDashboard() {
+            showView('view-dash');
+            const userList = document.getElementById('main-list-user');
+            const adminList = document.getElementById('main-list-admin');
+            
+            if(currentMode === 'admin') {
+                document.getElementById('admin-panel').style.display = 'block';
+                document.getElementById('user-panel').style.display = 'none';
+                onSnapshot(collection(db, "gyms", realUserGymId, "Sectors"), (snap) => {
+                    adminList.innerHTML = "";
+                    snap.forEach(d => {
+                        const card = document.createElement('div'); card.className = 'card';
+                        card.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <b>${d.data().name}</b>
+                                <button class="btn-sec" onclick="open3D('${realUserGymId}', '${d.id}')">GESTISCI VIE</button>
+                            </div>
+                            <div style="margin-top:10px; border-top: 1px solid #334155; padding-top:10px; display:flex; gap:10px; align-items:center;">
+                                <input type="file" id="file-update-${d.id}" accept=".glb" style="font-size:11px; margin:0;">
+                                <button class="btn-update" onclick="window.handleUpload('${d.id}')">SOSTITUISCI 3D</button>
+                            </div>
+                        `;
+                        adminList.appendChild(card);
+                    });
+                    loadAdminStats();
+                });
+            } else {
+                document.getElementById('admin-panel').style.display = 'none';
+                document.getElementById('user-panel').style.display = 'block';
+                onSnapshot(collection(db, "gyms"), (snap) => {
+                    userList.innerHTML = "";
+                    snap.forEach(d => {
+                        const card = document.createElement('div'); card.className = 'card';
+                        card.innerHTML = `<b>${d.data().name}</b>`;
+                        card.onclick = () => loadGymSectorsForUser(d.id);
+                        userList.appendChild(card);
+                    });
+                });
+            }
+        }
+
+        async function loadAdminStats() {
+            const container = document.getElementById('admin-stats-container');
+            const sSnap = await getDocs(collection(db, "gyms", realUserGymId, "Sectors"));
+            let h = `<table><tr><th>Settore</th><th>Via</th><th>Voti</th><th>Media</th></tr>`;
+            for (const s of sSnap.docs) {
+                const rSnap = await getDocs(collection(db, `gyms/${realUserGymId}/Sectors/${s.id}/routes`));
+                for (const rd of rSnap.docs) {
+                    const revs = await getDocs(collection(db, `gyms/${realUserGymId}/Sectors/${s.id}/routes/${rd.id}/reviews`));
+                    let sum = 0; revs.forEach(rv => sum += parseInt(rv.data().rating));
+                    const avg = revs.size > 0 ? (sum / revs.size).toFixed(1) : "-";
+                    h += `<tr><td>${s.data().name}</td><td>${rd.data().grade}</td><td>${revs.size}</td><td>⭐ ${avg}</td></tr>`;
+                }
+            }
+            container.innerHTML = h + `</table>`;
+        }
+
+        async function loadGymSectorsForUser(gId) {
+            activeGymId = gId;
+            const snap = await getDocs(collection(db, "gyms", gId, "Sectors"));
+            const list = document.getElementById('main-list-user');
+            list.innerHTML = `<button class="btn-sec" onclick="initDashboard()">← Back</button><h3 style="margin-top:15px">Settori</h3>`;
+            snap.forEach(d => {
+                const div = document.createElement('div'); div.className = 'card';
+                div.innerHTML = `<b>${d.data().name}</b>`;
+                div.onclick = () => open3D(gId, d.id);
+                list.appendChild(div);
+            });
+        }
+
+        // --- LOGICA UPLOAD ---
+        window.handleUpload = async (existingSId) => {
+            let file, name, sId;
+            if(existingSId) {
+                file = document.getElementById(`file-update-${existingSId}`).files[0];
+                sId = existingSId;
+                name = existingSId.replace(/-/g, ' ');
+            } else {
+                file = document.getElementById('file-mesh-new').files[0];
+                name = document.getElementById('new-sector-name').value;
+                if(!name || !file) return alert("Inserisci dati completi");
+                sId = name.trim().replace(/\s+/g, '-');
+            }
+            if(!file) return alert("Seleziona file");
+            
+            showLoading("Aggiornamento Mesh...");
+            // Reset vie
+            const rSnap = await getDocs(collection(db, `gyms/${realUserGymId}/Sectors/${sId}/routes`));
+            await Promise.all(rSnap.docs.map(d => deleteDoc(d.ref)));
+            // Upload
+            const sRef = ref(storage, `meshes/${realUserGymId}/${sId}.glb`);
+            await uploadBytes(sRef, file);
+            const url = await getDownloadURL(sRef);
+            await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sId), { name, meshUrl: url }, { merge: true });
+            hideLoading();
+            open3D(realUserGymId, sId);
+        };
+
+        // --- VIEWER & STARS ---
+        window.open3D = async (gId, sId) => {
+            showLoading("Caricamento 3D...");
+            activeGymId = gId; activeSectorId = sId;
+            const snap = await getDoc(doc(db, "gyms", gId, "Sectors", sId));
+            const viewer = document.getElementById('main-viewer');
+            viewer.src = snap.data().meshUrl;
+            viewer.addEventListener('load', hideLoading, {once: true});
+            document.getElementById('viewer-container').style.display = 'block';
+
+            onSnapshot(collection(db, `gyms/${gId}/Sectors/${sId}/routes`), (s) => {
+                document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
+                s.forEach(rd => {
+                    const r = rd.data(), btn = document.createElement('button');
+                    btn.className = 'hotspot'; btn.slot = `hotspot-${rd.id}`;
+                    btn.dataset.position = r.position; btn.dataset.normal = r.normal;
+                    btn.style.backgroundColor = r.color;
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        if(currentMode === 'admin' && activeGymId === realUserGymId) {
+                            activeRouteId = rd.id;
+                            document.getElementById('route-grade').value = r.grade;
+                            document.getElementById('route-color').value = r.color;
+                            document.getElementById('btn-delete-route').style.display = 'block';
+                            document.getElementById('admin-editor-panel').style.display = 'block';
+                        } else openSocial(rd.id, r);
+                    };
+                    viewer.appendChild(btn);
+                });
+            });
+        };
+
+        document.querySelectorAll('#star-selector span').forEach(s => {
+            s.onclick = () => {
+                selectedStars = s.dataset.v;
+                document.querySelectorAll('#star-selector span').forEach(st => {
+                    st.classList.toggle('active', st.dataset.v <= selectedStars);
+                });
+            };
+        });
+
+        async function openSocial(id, data) {
+            activeRouteId = id; selectedStars = 0;
+            document.querySelectorAll('#star-selector span').forEach(st => st.classList.remove('active'));
+            document.getElementById('social-grade').innerText = "Grado: " + data.grade;
+            document.getElementById('social-panel').style.display = 'block';
+            onSnapshot(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes/${id}/reviews`), (sn) => {
+                const list = document.getElementById('comments-list');
+                list.innerHTML = ""; let sum = 0;
+                sn.forEach(d => {
+                    sum += parseInt(d.data().rating);
+                    if(d.data().text) list.innerHTML += `<div class="card" style="font-size:12px"><b>⭐ ${d.data().rating}</b> - ${d.data().text}</div>`;
+                    else list.innerHTML += `<div class="card" style="font-size:12px"><b>⭐ ${d.data().rating}</b> (Senza commento)</div>`;
+                });
+                document.getElementById('avg-stars-view').innerText = sn.size > 0 ? "Media: " + (sum/sn.size).toFixed(1) + " ⭐" : "Ancora nessun voto";
+            });
+        }
+
+        window.submitReview = async () => {
+            if(selectedStars === 0) return alert("Per favore, seleziona almeno una stella!");
+            const text = document.getElementById('user-comment').value;
+            await addDoc(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes/${activeRouteId}/reviews`), { 
+                rating: selectedStars, text: text || "", date: new Date() 
+            });
+            document.getElementById('user-comment').value = "";
+            alert("Feedback inviato con successo!");
+        };
+
+        // --- EDITOR ADMIN ---
+        document.getElementById('main-viewer').onclick = (e) => {
+            if(currentMode !== 'admin' || activeGymId !== realUserGymId) return;
+            const hit = document.getElementById('main-viewer').positionAndNormalFromPoint(e.clientX, e.clientY);
+            if(hit) {
+                activeRouteId = null; tempPos = hit.position.toString(); tempNorm = hit.normal.toString();
+                const ghost = document.getElementById('ghost');
+                ghost.dataset.position = tempPos; ghost.dataset.normal = tempNorm;
+                ghost.style.display = 'block';
+                document.getElementById('btn-delete-route').style.display = 'none';
+                document.getElementById('admin-editor-panel').style.display = 'block';
+            }
+        };
+
+        window.saveRoute = async () => {
+            const data = { grade: document.getElementById('route-grade').value, color: document.getElementById('route-color').value };
+            if(activeRouteId) await updateDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId), data);
+            else await addDoc(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`), { ...data, position: tempPos, normal: tempNorm });
+            window.cancelAdminEdit();
+        };
+
+        window.deleteRoute = async () => { if(confirm("Eliminare?")) { await deleteDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId)); window.cancelAdminEdit(); } };
+
+        window.logout = () => signOut(auth).then(() => location.reload());
+        window.switchMode = () => { currentMode = currentMode === 'admin' ? 'user' : 'admin'; initDashboard(); };
+        window.closeViewer = () => { document.getElementById('viewer-container').style.display = 'none'; };
+        window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; };
+        function showView(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    </script>
+</body>
+</html>
