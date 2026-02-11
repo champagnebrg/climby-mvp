@@ -712,6 +712,7 @@
                     </div>
                     <div id="gym-tab-info-panel" class="gym-tab-panel">
                         <p id="user-gym-detail-desc" class="user-gym-detail-desc"></p>
+                        <div id="user-gym-detail-progress" class="gym-progress-wrap"></div>
                         <div class="gym-info-block">
                             <h4 class="gym-info-heading" data-i18n="gym.aboutGym"></h4>
                             <div id="user-gym-detail-about" class="gym-about-content"></div>
@@ -1007,19 +1008,6 @@
             lastUserGymsSnap.forEach(d => gyms.push({ id: d.id, ...d.data() }));
             const filtered = query ? gyms.filter(g => (g.name || "").toLowerCase().includes(query)) : gyms;
             const favGyms = gyms.filter(g => userFavouriteGyms.includes(g.id));
-            const gymProgress = Array.from(profileEntriesMap.values()).reduce((acc, e) => {
-                if (!acc[e.gymName]) acc[e.gymName] = [];
-                acc[e.gymName].push(e);
-                return acc;
-            }, {});
-            const buildProgressHtml = (gymName) => {
-                const entries = (gymProgress[gymName] || []).sort((a,b)=>new Date(b.sendDate||b.date||0)-new Date(a.sendDate||a.date||0));
-                const isOpen = openGymProgress.has(gymName);
-                const btn = `<button type="button" class="btn-sec" data-action="toggle-explore-progress" data-gym="${encodeURIComponent(gymName)}">${isOpen ? t('dash.hideGymProgress') : t('dash.openGymProgress')}</button>`;
-                if (!isOpen) return `<div class="gym-progress-wrap">${btn}</div>`;
-                const logs = entries.slice(0,6).map(e => `<div class="profile-log"><div><b>${escapeHtml(e.userName || 'Climber')}</b> · ${escapeHtml(e.grade || '-')} · ${e.outcome === 'project' ? t('viewer.project') : t('viewer.climbed')}</div><small>${escapeHtml(e.sectorName || '-')} · ${escapeHtml(formatProfileDate(e.sendDate))}</small></div>`).join('') || `<p class="profile-empty">${t('dash.communityEmpty')}</p>`;
-                return `<div class="gym-progress-wrap">${btn}<div class="profile-list" style="margin-top:10px;">${logs}</div></div>`;
-            };
             if (favGyms.length > 0) {
                 favWrap.style.display = "block";
                 favList.innerHTML = "";
@@ -1029,8 +1017,7 @@
                         <div class="user-gym-card">
                             <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>
                             <button type="button" class="btn-fav fav" title="${t('dash.removeFromFavourites')}" onclick="event.stopPropagation(); window.toggleFavourite('${g.id}')">♥</button>
-                        </div>
-                        ${buildProgressHtml(g.name || g.id)}`;
+                        </div>`;
                     card.querySelector('.user-gym-card').onclick = () => openGymDetail(g.id);
                     favList.appendChild(card);
                 });
@@ -1043,21 +1030,33 @@
                     <div class="user-gym-card">
                         <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>
                         <button type="button" class="btn-fav ${isFav ? 'fav' : ''}" title="${isFav ? t('dash.removeFromFavourites') : t('dash.addToFavourites')}" onclick="event.stopPropagation(); window.toggleFavourite('${g.id}')">${isFav ? '♥' : '♡'}</button>
-                    </div>
-                    ${buildProgressHtml(g.name || g.id)}`;
+                    </div>`;
                 card.querySelector('.user-gym-card').onclick = () => openGymDetail(g.id);
                 list.appendChild(card);
             });
-            document.querySelectorAll('[data-action="toggle-explore-progress"]').forEach(btn => {
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    const gym = decodeURIComponent(btn.dataset.gym || '');
-                    if (!gym) return;
-                    if (openGymProgress.has(gym)) openGymProgress.delete(gym);
-                    else openGymProgress.add(gym);
-                    renderUserGymList();
+        }
+        function renderGymProgressForDetail(gymId, gymName) {
+            const progressWrap = document.getElementById('user-gym-detail-progress');
+            if (!progressWrap) return;
+            const entries = Array.from(profileEntriesMap.values())
+                .filter(e => (e.gymId && e.gymId === gymId) || (!e.gymId && e.gymName === gymName))
+                .sort((a,b)=>new Date(b.sendDate||b.date||0)-new Date(a.sendDate||a.date||0));
+            const isOpen = openGymProgress.has(gymId);
+            const btn = `<button type="button" class="btn-sec" data-action="toggle-detail-progress" data-gym-id="${gymId}">${isOpen ? t('dash.hideGymProgress') : t('dash.openGymProgress')}</button>`;
+            if (!isOpen) {
+                progressWrap.innerHTML = btn;
+                progressWrap.querySelector('[data-action="toggle-detail-progress"]').onclick = () => {
+                    openGymProgress.add(gymId);
+                    renderGymProgressForDetail(gymId, gymName);
                 };
-            });
+                return;
+            }
+            const logs = entries.slice(0,6).map(e => `<div class="profile-log"><div><b>${escapeHtml(e.userName || 'Climber')}</b> · ${escapeHtml(e.grade || '-')} · ${e.outcome === 'project' ? t('viewer.project') : t('viewer.climbed')}</div><small>${escapeHtml(e.sectorName || '-')} · ${escapeHtml(formatProfileDate(e.sendDate))}</small></div>`).join('') || `<p class="profile-empty">${t('dash.communityEmpty')}</p>`;
+            progressWrap.innerHTML = `${btn}<div class="profile-list" style="margin-top:10px;"><b>${t('dash.recentCommunity')}</b>${logs}</div>`;
+            progressWrap.querySelector('[data-action="toggle-detail-progress"]').onclick = () => {
+                openGymProgress.delete(gymId);
+                renderGymProgressForDetail(gymId, gymName);
+            };
         }
         function escapeHtml(s) { const div = document.createElement('div'); div.textContent = s; return div.innerHTML; }
         function gradeIndex(grade) { return GRADE_SCALE.indexOf((grade || '').toLowerCase()); }
@@ -1229,6 +1228,7 @@
             document.getElementById('user-gym-detail').style.display = 'block';
             document.getElementById('user-gym-detail-name').textContent = name;
             document.getElementById('user-gym-detail-desc').textContent = desc;
+            renderGymProgressForDetail(gId, name);
             document.getElementById('user-gym-detail-about').innerHTML = aboutHtml;
             document.getElementById('user-gym-detail-climbing').innerHTML = climbingTable;
             const gallery = document.getElementById('user-gym-detail-images');
