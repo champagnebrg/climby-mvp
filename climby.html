@@ -614,7 +614,7 @@
 </head>
 <body>
 
-    <div id="loading-overlay" style="display:none"><div class="spinner"></div><p id="loading-text" style="margin-top:15px">Inizializzazione...</p></div>
+    <div id="loading-overlay" style="display:none"><div class="spinner"></div><p id="loading-text" data-i18n="loading.init" style="margin-top:15px">Inizializzazione...</p><button id="loading-retry-btn" type="button" class="btn-sec" style="display:none; margin-top:10px;" data-i18n="loading.retry" onclick="window.retryOpen3D()"></button></div>
 
     <div id="view-landing" class="view active">
         <section class="landing-hero">
@@ -717,7 +717,7 @@
                     <button class="btn-sec" onclick="window.logout()" data-i18n="dash.logout"></button>
                 </div>
             </div>
-            
+
             <div id="admin-panel" style="display:none;">
                 <div class="card" style="border: 2px dashed var(--border);">
                     <h4 style="margin:0 0 10px 0;" data-i18n="admin.createSector"></h4>
@@ -847,12 +847,8 @@
                     <h3 id="editor-title" style="margin:0" data-i18n="viewer.configureRoute"></h3>
                     <button type="button" onclick="window.cancelAdminEdit()" style="background:none; border:none; color:var(--text); font-size:24px;">×</button>
                 </div>
-                <select id="route-grade">
-                    <option value="5a">5a</option><option value="6a" selected>6a</option><option value="7a">7a</option>
-                </select>
-                <select id="route-color">
-                    <option value="#FF6B35">Arancio</option><option value="#2EC4B6">Turchese</option><option value="#FFD166">Giallo</option><option value="#ef4444">Rosso</option>
-                </select>
+                <input id="route-grade" type="text" required autocomplete="off" spellcheck="false" data-i18n-placeholder="viewer.routeGradePlaceholder">
+                <select id="route-color" required></select>
                 <button class="btn-main" onclick="window.saveRoute()" data-i18n="viewer.save"></button>
                 <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()" data-i18n="viewer.delete"></button>
             </div>
@@ -879,6 +875,10 @@
                             <label class="social-label" data-i18n="viewer.comment"></label>
                             <textarea id="user-comment" data-i18n-placeholder="viewer.commentPlaceholder" class="social-textarea"></textarea>
                         </div>
+                        <div class="social-field">
+                            <label class="social-label" data-i18n="viewer.proposedGrade"></label>
+                            <input id="public-proposed-grade" type="text" class="social-input" maxlength="12" data-i18n-placeholder="viewer.proposedGradePlaceholder">
+                        </div>
                         <button class="btn-main" onclick="window.submitReview()" data-i18n="viewer.submitReview"></button>
                     </div>
                     <div id="comments-list" style="margin-top:20px;"></div>
@@ -894,17 +894,6 @@
                             <div>
                                 <label class="social-label" data-i18n="viewer.tries"></label>
                                 <input type="number" min="1" step="1" id="tracker-attempt-count" class="social-input">
-                            </div>
-                            <div>
-                                <label class="social-label" data-i18n="viewer.proposeGrade"></label>
-                                <select id="tracker-suggested-grade" class="social-input">
-                                    <option value="" data-i18n="viewer.proposeGradePlaceholder"></option>
-                                    <option value="4a">4a</option><option value="4b">4b</option><option value="4c">4c</option>
-                                    <option value="5a">5a</option><option value="5b">5b</option><option value="5c">5c</option>
-                                    <option value="6a">6a</option><option value="6b">6b</option><option value="6c">6c</option>
-                                    <option value="7a">7a</option><option value="7b">7b</option><option value="7c">7c</option>
-                                    <option value="8a">8a</option><option value="8b">8b</option><option value="8c">8c</option>
-                                </select>
                             </div>
                             <div>
                                 <label class="social-label" data-i18n="viewer.firstAttemptDate"></label>
@@ -985,8 +974,29 @@
         let adminCoverageUnsubscribers = [];
         let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), reviewsByRoute: new Map() };
         let gymDetailUnsubscriber = null;
+        let currentModelLoadToken = 0;
+        let currentModelLoadCleanup = null;
+        let currentModelLoadTimeout = null;
+        let lastOpen3DRequest = null;
 
         const GRADE_SCALE = ["4a","4b","4c","5a","5b","5c","6a","6b","6c","7a","7b","7c","8a","8b","8c","9a","9b","9c"];
+        const AVAILABLE_COLORS = [
+            { value: '#FF6B35', labels: { it: 'Arancio', en: 'Orange' } },
+            { value: '#2EC4B6', labels: { it: 'Turchese', en: 'Turquoise' } },
+            { value: '#FFD166', labels: { it: 'Giallo', en: 'Yellow' } },
+            { value: '#ef4444', labels: { it: 'Rosso', en: 'Red' } },
+            { value: '#3B82F6', labels: { it: 'Blu', en: 'Blue' } },
+            { value: '#22C55E', labels: { it: 'Verde', en: 'Green' } },
+            { value: '#8B5CF6', labels: { it: 'Viola', en: 'Purple' } },
+            { value: '#EC4899', labels: { it: 'Rosa', en: 'Pink' } },
+            { value: '#D946EF', labels: { it: 'Fucsia', en: 'Fuchsia' } },
+            { value: '#84CC16', labels: { it: 'Lime', en: 'Lime' } },
+            { value: '#111827', labels: { it: 'Nero', en: 'Black' } },
+            { value: '#FFFFFF', labels: { it: 'Bianco', en: 'White' } },
+            { value: '#6B7280', labels: { it: 'Grigio', en: 'Gray' } },
+            { value: '#92400E', labels: { it: 'Marrone', en: 'Brown' } },
+            { value: '#C026D3', labels: { it: 'Magenta', en: 'Magenta' } }
+        ];
 
         const LANG_KEY = 'climby_lang';
         const translations = {
@@ -995,20 +1005,20 @@
                 auth: { yourName: "Il tuo Nome", username: "Username pubblico", usernameHint: "3-20 caratteri: lettere, numeri, _, -, .", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
                 dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabFollowing: "Segui", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Segui", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra." },
                 admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media" },
-                viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate" },
+                viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
-                loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D..." },
-                errors: { completeData: "Inserisci dati completi", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso" }
+                loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D...", retry: "Riprova" },
+                errors: { completeData: "Inserisci dati completi", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore" }
             },
             en: {
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
                 auth: { yourName: "Your name", username: "Public username", usernameHint: "3-20 chars: letters, numbers, _, -, .", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
                 dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabFollowing: "Following", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Following feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet." },
                 admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg" },
-                viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed" },
+                viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
-                loading: { init: "Loading...", verifying: "Verifying...", updatingMesh: "Updating mesh...", loading3d: "Loading 3D..." },
-                errors: { completeData: "Please enter all required fields", selectFile: "Select a file", usernameRequired: "Please enter a username", usernameInvalid: "Invalid username: use 3-20 chars (letters, numbers, _, -, .)", usernameTaken: "Username already in use" }
+                loading: { init: "Loading...", verifying: "Verifying...", updatingMesh: "Updating mesh...", loading3d: "Loading 3D...", retry: "Retry" },
+                errors: { completeData: "Please enter all required fields", selectFile: "Select a file", usernameRequired: "Please enter a username", usernameInvalid: "Invalid username: use 3-20 chars (letters, numbers, _, -, .)", usernameTaken: "Username already in use", modelLoadFailed: "Error loading 3D model", modelLoadTimeout: "Loading took too long. Please retry.", modelMeshMissing: "3D model not available for this sector" }
             }
         };
         let currentLang = localStorage.getItem(LANG_KEY) || 'it';
@@ -1040,12 +1050,22 @@
             }
             const lt = document.getElementById('loading-text'); if (lt) lt.innerText = t('loading.init');
         }
-        window.setLang = (lang) => { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); if (typeof loadAdminStats === 'function') loadAdminStats(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) renderAdminCoverage(); };
+        window.setLang = (lang) => { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); populateAdminColorOptions(); if (typeof loadAdminStats === 'function') loadAdminStats(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) renderAdminCoverage(); };
 
-        const showLoading = (msg) => { document.getElementById('loading-text').innerText = msg; document.getElementById('loading-overlay').style.display='flex'; };
-        const hideLoading = () => document.getElementById('loading-overlay').style.display='none';
+        const showLoading = (msg, showRetry = false) => {
+            document.getElementById('loading-text').innerText = msg;
+            const retryBtn = document.getElementById('loading-retry-btn');
+            if (retryBtn) retryBtn.style.display = showRetry ? 'inline-flex' : 'none';
+            document.getElementById('loading-overlay').style.display='flex';
+        };
+        const hideLoading = () => {
+            const retryBtn = document.getElementById('loading-retry-btn');
+            if (retryBtn) retryBtn.style.display = 'none';
+            document.getElementById('loading-overlay').style.display='none';
+        };
 
         applyLang();
+        populateAdminColorOptions();
 
         // --- AUTH ---
         const USERNAME_PATTERN = /^[a-zA-Z0-9_.-]{3,20}$/;
@@ -1061,6 +1081,31 @@
             if (!status) return;
             status.textContent = message || '';
             status.className = `username-hint${kind ? ` ${kind}` : ''}`;
+        }
+
+        function populateAdminColorOptions() {
+            const colorSelect = document.getElementById('route-color');
+            if (!colorSelect) return;
+            const prevValue = colorSelect.value;
+            colorSelect.innerHTML = AVAILABLE_COLORS.map(c => {
+                const label = c.labels?.[currentLang] || c.labels?.it || c.value;
+                return `<option value="${c.value}">● ${label}</option>`;
+            }).join('');
+            if (prevValue) {
+                ensureRouteColorOption(prevValue);
+                colorSelect.value = prevValue;
+            }
+        }
+
+        function ensureRouteColorOption(colorValue) {
+            const colorSelect = document.getElementById('route-color');
+            if (!colorSelect || !colorValue) return;
+            const exists = Array.from(colorSelect.options).some(opt => opt.value.toLowerCase() === colorValue.toLowerCase());
+            if (exists) return;
+            const legacy = document.createElement('option');
+            legacy.value = colorValue;
+            legacy.textContent = `● ${colorValue.toUpperCase()}`;
+            colorSelect.appendChild(legacy);
         }
         async function checkUsernameAvailability(rawUsername) {
             const normalized = normalizeUsername(rawUsername);
@@ -1176,7 +1221,7 @@
             showView('view-dash');
             const userList = document.getElementById('main-list-user');
             const adminList = document.getElementById('main-list-admin');
-            
+
             if(currentMode === 'admin') {
                 document.getElementById('admin-panel').style.display = 'block';
                 document.getElementById('user-panel').style.display = 'none';
@@ -2157,7 +2202,7 @@
                 sId = name.trim().replace(/\s+/g, '-');
             }
             if(!file) return alert(t('errors.selectFile'));
-            
+
             showLoading(t('loading.updatingMesh'));
             // Reset vie
             const rSnap = await getDocs(collection(db, `gyms/${realUserGymId}/Sectors/${sId}/routes`));
@@ -2172,14 +2217,62 @@
         };
 
         // --- VIEWER & STARS ---
+        function cleanupModelLoadGuards() {
+            if (typeof currentModelLoadCleanup === 'function') currentModelLoadCleanup();
+            currentModelLoadCleanup = null;
+            if (currentModelLoadTimeout) {
+                clearTimeout(currentModelLoadTimeout);
+                currentModelLoadTimeout = null;
+            }
+        }
+
+        function failModelLoad(message, token) {
+            if (token !== currentModelLoadToken) return;
+            cleanupModelLoadGuards();
+            showLoading(message || t('errors.modelLoadFailed'), true);
+        }
+
+        window.retryOpen3D = () => {
+            if (!lastOpen3DRequest) return;
+            open3D(lastOpen3DRequest.gId, lastOpen3DRequest.sId);
+        };
+
         window.open3D = async (gId, sId) => {
+            const viewer = document.getElementById('main-viewer');
+            const token = ++currentModelLoadToken;
+            lastOpen3DRequest = { gId, sId };
+            cleanupModelLoadGuards();
             showLoading(t('loading.loading3d'));
             activeGymId = gId; activeSectorId = sId;
-            const snap = await getDoc(doc(db, "gyms", gId, "Sectors", sId));
-            const viewer = document.getElementById('main-viewer');
-            viewer.src = snap.data().meshUrl;
-            viewer.addEventListener('load', hideLoading, {once: true});
-            document.getElementById('viewer-container').style.display = 'block';
+
+            const onLoad = () => {
+                if (token !== currentModelLoadToken) return;
+                cleanupModelLoadGuards();
+                hideLoading();
+            };
+            const onError = () => failModelLoad(t('errors.modelLoadFailed'), token);
+
+            viewer.addEventListener('load', onLoad);
+            viewer.addEventListener('error', onError);
+            currentModelLoadCleanup = () => {
+                viewer.removeEventListener('load', onLoad);
+                viewer.removeEventListener('error', onError);
+            };
+            currentModelLoadTimeout = setTimeout(() => failModelLoad(t('errors.modelLoadTimeout'), token), 15000);
+
+            try {
+                const snap = await getDoc(doc(db, "gyms", gId, "Sectors", sId));
+                const meshUrl = snap.exists() ? snap.data()?.meshUrl : null;
+                if (!meshUrl) {
+                    failModelLoad(t('errors.modelMeshMissing'), token);
+                    return;
+                }
+                document.getElementById('viewer-container').style.display = 'block';
+                viewer.src = '';
+                viewer.src = meshUrl;
+            } catch (e) {
+                failModelLoad(t('errors.modelLoadFailed'), token);
+            }
 
             onSnapshot(collection(db, `gyms/${gId}/Sectors/${sId}/routes`), (s) => {
                 document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
@@ -2193,6 +2286,7 @@
                         if(currentMode === 'admin' && activeGymId === realUserGymId) {
                             activeRouteId = rd.id;
                             document.getElementById('route-grade').value = r.grade;
+                            ensureRouteColorOption(r.color);
                             document.getElementById('route-color').value = r.color;
                             document.getElementById('btn-delete-route').style.display = 'block';
                             document.getElementById('admin-editor-panel').style.display = 'block';
@@ -2227,6 +2321,7 @@
             document.querySelectorAll('#star-selector span').forEach(st => st.classList.remove('active'));
             document.getElementById('social-grade').innerText = t('viewer.grade') + ": " + (data?.grade || '-');
             document.getElementById('user-comment').value = '';
+            document.getElementById('public-proposed-grade').value = '';
             document.getElementById('social-panel').style.display = 'block';
 
             document.getElementById('social-tab-public').onclick = () => {
@@ -2257,6 +2352,7 @@
                     sum += parseInt(r.rating);
                     let line = `<b>⭐ ${r.rating}</b>`;
                     line += ` · <b>${escapeHtml(resolveUsername(r.userId, r.userName || 'Climber'))}</b>`;
+                    if (r.proposedGrade) line += ` · ${t('viewer.proposedGrade')}: <b>${escapeHtml(r.proposedGrade)}</b>`;
                     if (r.text) line += ` — ${r.text}`;
                     else line += ` ${t('viewer.noComment')}`;
                     list.innerHTML += `<div class="card" style="font-size:12px">${line}</div>`;
@@ -2297,7 +2393,6 @@
             }
 
             document.getElementById('tracker-attempt-count').value = socialTrackerState?.attemptCount || 1;
-            document.getElementById('tracker-suggested-grade').value = socialTrackerState?.suggestedGrade || '';
             document.getElementById('tracker-final-grade').value = socialTrackerState?.finalGrade || '';
             document.getElementById('tracker-first-attempt').value = socialTrackerState?.firstAttemptDate || toYYYYMMDD(new Date());
             document.getElementById('tracker-completion-date').value = socialTrackerState?.completionDate || toYYYYMMDD(new Date());
@@ -2314,7 +2409,6 @@
             const prev = socialTrackerState || {};
             const nextState = targetState;
             const attempt = parseInt(document.getElementById('tracker-attempt-count')?.value || (prev.attemptCount || 1), 10) || 1;
-            const suggestedGrade = document.getElementById('tracker-suggested-grade')?.value || prev.suggestedGrade || null;
             const finalGrade = nextState === 'climbed' ? (document.getElementById('tracker-final-grade')?.value || prev.finalGrade || null) : null;
             const firstAttemptDate = document.getElementById('tracker-first-attempt')?.value || prev.firstAttemptDate || nowDate;
             const completionDate = nextState === 'climbed' ? (document.getElementById('tracker-completion-date')?.value || prev.completionDate || nowDate) : null;
@@ -2327,7 +2421,6 @@
                 routeId: socialRouteContext.routeId,
                 state: nextState,
                 attemptCount: attempt,
-                suggestedGrade,
                 finalGrade,
                 firstAttemptDate,
                 completionDate,
@@ -2370,6 +2463,7 @@
         window.submitReview = async () => {
             if(selectedStars === 0) return alert(t('viewer.selectStar'));
             const text = document.getElementById('user-comment').value;
+            const proposedGrade = (document.getElementById('public-proposed-grade')?.value || '').trim();
             const reviewsRef = collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes/${activeRouteId}/reviews`);
             const alreadyReviewed = await getDocs(query(reviewsRef, where('userId', '==', activeUser?.uid || null), limit(1)));
             if (!alreadyReviewed.empty) {
@@ -2377,28 +2471,126 @@
                 return;
             }
             await addDoc(reviewsRef, {
-                rating: selectedStars, text: text || "", date: new Date(), userId: activeUser?.uid || null, userName: currentUserName || 'Climber'
+                rating: selectedStars,
+                text: text || "",
+                proposedGrade: proposedGrade || null,
+                date: new Date(),
+                userId: activeUser?.uid || null,
+                userName: currentUserName || 'Climber'
             });
             document.getElementById('user-comment').value = "";
+            document.getElementById('public-proposed-grade').value = "";
             alert(t('viewer.reviewSuccess'));
         };
 
         // --- EDITOR ADMIN ---
-        document.getElementById('main-viewer').onclick = (e) => {
-            if(currentMode !== 'admin' || activeGymId !== realUserGymId) return;
-            const hit = document.getElementById('main-viewer').positionAndNormalFromPoint(e.clientX, e.clientY);
-            if(hit) {
-                activeRouteId = null; tempPos = hit.position.toString(); tempNorm = hit.normal.toString();
-                const ghost = document.getElementById('ghost');
-                ghost.dataset.position = tempPos; ghost.dataset.normal = tempNorm;
-                ghost.style.display = 'block';
-                document.getElementById('btn-delete-route').style.display = 'none';
-                document.getElementById('admin-editor-panel').style.display = 'block';
-            }
+        const tapGestureState = {
+            isPointerDown: false,
+            isDragging: false,
+            isMultiTouch: false,
+            startX: 0,
+            startY: 0,
+            startTime: 0,
+            pointerId: null,
+            pointerType: null
         };
+        const activeTouchPointers = new Set();
+
+        const TAP_MAX_DISTANCE_PX = 10;
+        const TAP_MAX_DURATION_MS = 300;
+
+        function resetTapGestureState() {
+            tapGestureState.isPointerDown = false;
+            tapGestureState.isDragging = false;
+            tapGestureState.isMultiTouch = false;
+            tapGestureState.startX = 0;
+            tapGestureState.startY = 0;
+            tapGestureState.startTime = 0;
+            tapGestureState.pointerId = null;
+            tapGestureState.pointerType = null;
+        }
+
+        function isTapGesture(endX, endY, endTime) {
+            if (tapGestureState.isDragging || tapGestureState.isMultiTouch) return false;
+            const distance = Math.hypot(endX - tapGestureState.startX, endY - tapGestureState.startY);
+            const duration = endTime - tapGestureState.startTime;
+            return distance < TAP_MAX_DISTANCE_PX && duration <= TAP_MAX_DURATION_MS;
+        }
+
+        function handleAdminTap(clientX, clientY) {
+            if(currentMode !== 'admin' || activeGymId !== realUserGymId) return;
+            const hit = mainViewer.positionAndNormalFromPoint(clientX, clientY);
+            if(!hit) return;
+            activeRouteId = null;
+            tempPos = hit.position.toString();
+            tempNorm = hit.normal.toString();
+            const ghost = document.getElementById('ghost');
+            ghost.dataset.position = tempPos;
+            ghost.dataset.normal = tempNorm;
+            ghost.style.display = 'block';
+            document.getElementById('btn-delete-route').style.display = 'none';
+            document.getElementById('admin-editor-panel').style.display = 'block';
+        }
+
+        const mainViewer = document.getElementById('main-viewer');
+
+        mainViewer.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'touch') {
+                activeTouchPointers.add(e.pointerId);
+                if (activeTouchPointers.size > 1) {
+                    tapGestureState.isMultiTouch = true;
+                    tapGestureState.isDragging = true;
+                    return;
+                }
+            }
+            tapGestureState.isPointerDown = true;
+            tapGestureState.isDragging = false;
+            tapGestureState.isMultiTouch = false;
+            tapGestureState.startX = e.clientX;
+            tapGestureState.startY = e.clientY;
+            tapGestureState.startTime = performance.now();
+            tapGestureState.pointerId = e.pointerId;
+            tapGestureState.pointerType = e.pointerType;
+        }, { passive: true });
+
+        mainViewer.addEventListener('pointermove', (e) => {
+            if (!tapGestureState.isPointerDown || tapGestureState.pointerId !== e.pointerId) return;
+            if (tapGestureState.pointerType === 'touch' && activeTouchPointers.size > 1) {
+                tapGestureState.isMultiTouch = true;
+                tapGestureState.isDragging = true;
+                return;
+            }
+            const distance = Math.hypot(e.clientX - tapGestureState.startX, e.clientY - tapGestureState.startY);
+            if (distance >= TAP_MAX_DISTANCE_PX) tapGestureState.isDragging = true;
+        }, { passive: true });
+
+        mainViewer.addEventListener('pointerup', (e) => {
+            if (e.pointerType === 'touch') activeTouchPointers.delete(e.pointerId);
+            if (!tapGestureState.isPointerDown || tapGestureState.pointerId !== e.pointerId) {
+                resetTapGestureState();
+                return;
+            }
+            const isValidTap = isTapGesture(e.clientX, e.clientY, performance.now());
+            if (isValidTap) handleAdminTap(e.clientX, e.clientY);
+            resetTapGestureState();
+        }, { passive: true });
+
+        mainViewer.addEventListener('pointercancel', (e) => {
+            if (e.pointerType === 'touch') activeTouchPointers.delete(e.pointerId);
+            resetTapGestureState();
+        }, { passive: true });
+
+        mainViewer.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                tapGestureState.isMultiTouch = true;
+                tapGestureState.isDragging = true;
+            }
+        }, { passive: true });
 
         window.saveRoute = async () => {
-            const data = { grade: document.getElementById('route-grade').value, color: document.getElementById('route-color').value };
+            const gradeValue = document.getElementById('route-grade').value.trim();
+            if (!gradeValue) return alert(t('errors.completeData'));
+            const data = { grade: gradeValue, color: document.getElementById('route-color').value };
             if(activeRouteId) await updateDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId), data);
             else await addDoc(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`), { ...data, position: tempPos, normal: tempNorm });
             window.cancelAdminEdit();
@@ -2413,7 +2605,7 @@
             currentMode = currentMode === 'admin' ? 'user' : 'admin';
             initDashboard();
         };
-        window.closeViewer = () => { document.getElementById('viewer-container').style.display = 'none'; };
+        window.closeViewer = () => { cleanupModelLoadGuards(); document.getElementById('viewer-container').style.display = 'none'; hideLoading(); };
         window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; };
         function showView(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
     </script>
