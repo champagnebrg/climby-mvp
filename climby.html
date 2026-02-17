@@ -488,10 +488,27 @@
             color: var(--text);
             margin: 0 0 12px 0;
         }
-        .user-gym-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; cursor: pointer; min-height: 56px; }
-        .user-gym-card .user-gym-name { flex: 1; font-size: 1.05rem; }
-        .user-gym-card .btn-fav { background: none; border: none; color: var(--muted); cursor: pointer; padding: 12px; min-width: 48px; min-height: 48px; font-size: 1.4rem; display: flex; align-items: center; justify-content: center; }
-        .user-gym-card .btn-fav.fav { color: var(--danger); }
+        .user-gym-card { display:block; width:100%; }
+        .gym-3d-card {
+            position: relative;
+            border: 1px solid rgba(34,211,238,0.38);
+            background: linear-gradient(140deg, rgba(18,26,43,0.95) 0%, rgba(20,32,56,0.96) 55%, rgba(14,22,42,0.98) 100%);
+            overflow: hidden;
+            box-shadow: 0 10px 24px rgba(7, 14, 30, 0.36), inset 0 0 0 1px rgba(91,140,255,0.18);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        .gym-3d-card:active { transform: translateY(1px) scale(0.995); box-shadow: 0 6px 14px rgba(7,14,30,0.3), inset 0 0 0 1px rgba(91,140,255,0.24); }
+        .gym-3d-overlay { position:absolute; inset:0; pointer-events:none; background: radial-gradient(circle at 88% 18%, rgba(34,211,238,0.18), transparent 44%), radial-gradient(circle at 14% 82%, rgba(91,140,255,0.14), transparent 46%); }
+        .gym-3d-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; position:relative; z-index:1; }
+        .user-gym-card .user-gym-name { flex:1; font-size:1.08rem; line-height:1.3; }
+        .gym-3d-badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; border:1px solid rgba(34,211,238,0.45); padding:6px 10px; font-size:0.78rem; color:#d6f8ff; background:rgba(10,24,45,0.6); font-weight:600; }
+        .gym-3d-badge.off { border-color: rgba(154,168,199,0.38); color: #b8c3db; background: rgba(16,27,45,0.45); }
+        .gym-3d-surface { margin:10px 0 12px; height:8px; border-radius:999px; background: linear-gradient(90deg, rgba(34,211,238,0.28) 0%, rgba(91,140,255,0.42) 50%, rgba(132,204,22,0.3) 100%); border:1px solid rgba(91,140,255,0.26); }
+        .gym-3d-actions { display:flex; align-items:center; justify-content:space-between; gap:10px; position:relative; z-index:1; }
+        .gym-3d-cta { flex:1; min-height:48px; border:none; border-radius:12px; background: linear-gradient(180deg, #22D3EE 0%, #3B82F6 100%); color:#081225; font-weight:700; letter-spacing:0.01em; box-shadow:0 6px 18px rgba(34,211,238,0.28); }
+        .gym-3d-cta:active { transform: scale(0.99); }
+        .user-gym-card .btn-fav { background: rgba(9,16,31,0.5); border:1px solid var(--border); color: var(--muted); cursor: pointer; padding: 10px; min-width: 44px; min-height: 44px; font-size: 1.25rem; display:flex; align-items:center; justify-content:center; border-radius:12px; }
+        .user-gym-card .btn-fav.fav { color: var(--danger); border-color: rgba(239,68,68,0.5); }
         .user-detail-view { margin-top: 0; }
         .gym-detail-overview {
             display: block;
@@ -499,6 +516,12 @@
             background: linear-gradient(180deg, #121A2B 0%, #0F1628 100%);
             border: 1px solid rgba(91,140,255,0.3);
         }
+        .gym-detail-overview { box-shadow: 0 12px 24px rgba(7,14,30,0.3); }
+        .gym-detail-hero-cta { margin-top: 12px; padding: 12px; border-radius: 14px; border: 1px solid rgba(34,211,238,0.38); background: linear-gradient(140deg, rgba(16,29,52,0.92) 0%, rgba(18,39,70,0.9) 55%, rgba(12,26,49,0.95) 100%); }
+        .gym-detail-hero-cta b { display:block; font-size: 1rem; margin-bottom: 4px; }
+        .gym-detail-hero-cta p { margin: 0 0 10px; color: var(--muted); font-size: 0.88rem; }
+        .gym-detail-hero-cta .btn-main { min-height: 50px; }
+        #user-gym-detail-sectors-list .card { border:1px solid rgba(91,140,255,0.26); background: linear-gradient(140deg, rgba(18,26,43,0.95) 0%, rgba(20,32,56,0.96) 100%); box-shadow: 0 8px 16px rgba(7,14,30,0.24); }
         .gym-detail-title {
             font-family: 'Cormorant Garamond', Georgia, serif;
             font-weight: 500;
@@ -862,6 +885,11 @@
                         <h2 id="user-gym-detail-name" class="gym-detail-title"></h2>
                         <p id="user-gym-detail-desc" class="user-gym-detail-desc"></p>
                         <div id="user-gym-detail-highlights" class="gym-detail-meta"></div>
+                        <div class="gym-detail-hero-cta">
+                            <b data-i18n="dash.gym3dTitle"></b>
+                            <p data-i18n="dash.gym3dDesc"></p>
+                            <button type="button" class="btn-main" id="user-gym-detail-explore-top" data-i18n="dash.explore3dCta"></button>
+                        </div>
                         <div id="user-gym-detail-progress" class="gym-progress-wrap"></div>
                     </div>
                     <div class="gym-detail-tabs">
@@ -1019,6 +1047,8 @@
         let userFollowingIds = [];
         let followsUnsubscriber = null;
         let activePublicProfileUid = null;
+        let gym3DStatusMap = new Map();
+        let gym3DUnsubscribers = [];
         let lastUsersSnap = null;
         let followingFeedMap = new Map();
         let followingProgressUnsubscribers = [];
@@ -1063,7 +1093,7 @@
             it: {
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
                 auth: { yourName: "Il tuo Nome", username: "Username pubblico", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
-                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra." },
+                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
                 admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media" },
                 viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
@@ -1073,7 +1103,7 @@
             en: {
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
                 auth: { yourName: "Your name", username: "Public username", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
-                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet." },
+                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
                 admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg" },
                 viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
@@ -1330,6 +1360,7 @@
             } else {
                 document.getElementById('admin-panel').style.display = 'none';
                 stopAdminCoverageListeners();
+                stopGym3DSubscriptions();
                 document.getElementById('user-panel').style.display = 'block';
                 profileEntriesMap = new Map();
                 destroyProfileListeners();
@@ -1350,6 +1381,7 @@
                 searchInput.value = "";
                 onSnapshot(collection(db, "gyms"), (snap) => {
                     lastUserGymsSnap = snap;
+                    startGym3DSubscriptions(snap);
                     renderUserGymList();
                     refreshProfileWatchers();
                 });
@@ -1366,6 +1398,48 @@
             }
         }
 
+        function stopGym3DSubscriptions() {
+            while (gym3DUnsubscribers.length) {
+                const u = gym3DUnsubscribers.pop();
+                if (typeof u === 'function') u();
+            }
+            gym3DStatusMap = new Map();
+        }
+
+        function startGym3DSubscriptions(gymsSnapshot) {
+            stopGym3DSubscriptions();
+            gymsSnapshot.forEach(g => {
+                const unsub = onSnapshot(collection(db, 'gyms', g.id, 'Sectors'), (snap) => {
+                    let has3D = false;
+                    snap.forEach(sec => { if (sec.data()?.meshUrl) has3D = true; });
+                    gym3DStatusMap.set(g.id, { has3D, sectors: snap.size });
+                    renderUserGymList();
+                });
+                gym3DUnsubscribers.push(unsub);
+            });
+        }
+
+        function buildGym3DCard(g, isFav) {
+            const status = gym3DStatusMap.get(g.id) || { has3D: false };
+            const badgeClass = status.has3D ? 'gym-3d-badge' : 'gym-3d-badge off';
+            const badgeLabel = status.has3D ? t('dash.available3d') : t('dash.preparing3d');
+            const favTitle = isFav ? t('dash.removeFromFavourites') : t('dash.addToFavourites');
+            const favSymbol = isFav ? '♥' : '♡';
+            return `
+                <div class="user-gym-card">
+                    <div class="gym-3d-overlay"></div>
+                    <div class="gym-3d-head">
+                        <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>
+                        <span class="${badgeClass}">◈ ${badgeLabel}</span>
+                    </div>
+                    <div class="gym-3d-surface" aria-hidden="true"></div>
+                    <div class="gym-3d-actions">
+                        <button type="button" class="gym-3d-cta" data-action="open-3d">${t('dash.explore3dCta')}</button>
+                        <button type="button" class="btn-fav ${isFav ? 'fav' : ''}" title="${favTitle}" onclick="event.stopPropagation(); window.toggleFavourite('${g.id}')">${favSymbol}</button>
+                    </div>
+                </div>`;
+        }
+
         function renderUserGymList() {
             if (!lastUserGymsSnap) return;
             const query = (document.getElementById('user-search-gyms').value || "").trim().toLowerCase();
@@ -1380,26 +1454,20 @@
                 favWrap.style.display = "block";
                 favList.innerHTML = "";
                 favGyms.forEach(g => {
-                    const card = document.createElement('div'); card.className = 'card';
-                    card.innerHTML = `
-                        <div class="user-gym-card">
-                            <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>
-                            <button type="button" class="btn-fav fav" title="${t('dash.removeFromFavourites')}" onclick="event.stopPropagation(); window.toggleFavourite('${g.id}')">♥</button>
-                        </div>`;
-                    card.querySelector('.user-gym-card').onclick = () => openGymDetail(g.id);
+                    const card = document.createElement('div');
+                    card.className = 'card gym-3d-card';
+                    card.innerHTML = buildGym3DCard(g, true);
+                    card.querySelector('[data-action="open-3d"]').onclick = () => openGymDetail(g.id);
                     favList.appendChild(card);
                 });
             } else favWrap.style.display = "none";
             list.innerHTML = "";
             filtered.forEach(g => {
                 const isFav = userFavouriteGyms.includes(g.id);
-                const card = document.createElement('div'); card.className = 'card';
-                card.innerHTML = `
-                    <div class="user-gym-card">
-                        <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>
-                        <button type="button" class="btn-fav ${isFav ? 'fav' : ''}" title="${isFav ? t('dash.removeFromFavourites') : t('dash.addToFavourites')}" onclick="event.stopPropagation(); window.toggleFavourite('${g.id}')">${isFav ? '♥' : '♡'}</button>
-                    </div>`;
-                card.querySelector('.user-gym-card').onclick = () => openGymDetail(g.id);
+                const card = document.createElement('div');
+                card.className = 'card gym-3d-card';
+                card.innerHTML = buildGym3DCard(g, isFav);
+                card.querySelector('[data-action="open-3d"]').onclick = () => openGymDetail(g.id);
                 list.appendChild(card);
             });
         }
@@ -1992,6 +2060,8 @@
                 sectorsList.innerHTML = `<p class="profile-empty">${t('gym.noValue')}</p>`;
             }
             document.getElementById('user-gym-detail-explore').onclick = () => loadGymSectorsForUser(gId);
+            const top3dBtn = document.getElementById('user-gym-detail-explore-top');
+            if (top3dBtn) top3dBtn.onclick = () => loadGymSectorsForUser(gId);
             document.getElementById('user-gym-detail-back').onclick = () => {
                 stopGymCoverageListeners();
                 stopGymDetailListener();
