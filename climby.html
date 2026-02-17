@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-    <meta name="theme-color" content="#F7F3E6">
+    <meta name="theme-color" content="#090D1A">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Climby | Pro Dashboard</title>
@@ -13,18 +13,18 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
         :root {
-            /* Light theme: warm cream background + palette */
-            --bg: #F7F3E6;
-            --card: #FFFEF9;
-            --text: #2D3142;
-            --muted: #5c6378;
-            --border: #d4cfc4;
-            --primary: #FF6B35;
-            --primary-dim: rgba(255, 107, 53, 0.18);
-            --accent: #2EC4B6;
+            /* Dark tech theme: electric blue + cyan accents */
+            --bg: #090D1A;
+            --card: #121A2B;
+            --text: #F2F6FF;
+            --muted: #9AA8C7;
+            --border: #263552;
+            --primary: #5B8CFF;
+            --primary-dim: rgba(91, 140, 255, 0.22);
+            --accent: #22D3EE;
             --danger: #ef4444;
-            --yellow: #FFD166;
-            --text-on-primary: #1a1a1a;
+            --yellow: #84CC16;
+            --text-on-primary: #F7FAFF;
             --touch: 44px;
             --radius: 16px;
             --radius-sm: 12px;
@@ -77,7 +77,7 @@
             width: 100%;
             min-height: 52px;
             padding: 16px 24px;
-            background: linear-gradient(180deg, #FF6B35 0%, #e85a28 100%);
+            background: linear-gradient(180deg, #5B8CFF 0%, #466BFF 100%);
             color: var(--text-on-primary);
             border: none;
             border-radius: var(--radius);
@@ -86,7 +86,7 @@
             letter-spacing: 0.02em;
             cursor: pointer;
             transition: transform 0.1s, box-shadow 0.2s;
-            box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+            box-shadow: 0 6px 18px rgba(70, 107, 255, 0.4);
         }
         .btn-main:active { transform: scale(0.98); }
         .btn-sec {
@@ -100,7 +100,7 @@
             font-size: 0.95rem;
             transition: border-color 0.2s, color 0.2s;
         }
-        .btn-sec:active { background: #e8e4dc; }
+        .btn-sec:active { background: #1B2842; }
         .btn-update { min-height: 40px; padding: 10px 16px; background: var(--accent); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-size: 0.9rem; }
         .btn-danger { min-height: 52px; background: var(--danger); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; width: 100%; margin-top: 12px; font-weight: 600; font-size: 1rem; }
         input, select, textarea {
@@ -124,17 +124,17 @@
         .admin-coverage-toolbar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
         .admin-coverage-toolbar select { min-height:44px; max-width:220px; margin:0; }
         .admin-coverage-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
-        .admin-coverage-kpi { border:1px solid var(--border); border-radius:12px; padding:12px; background:#fff; }
+        .admin-coverage-kpi { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); }
         .admin-coverage-kpi b { display:block; font-size:1.2rem; color:var(--text); }
         .admin-coverage-kpi span { display:block; margin-top:2px; font-size:0.8rem; color:var(--muted); }
-        .admin-donut { width:86px; height:86px; border-radius:50%; display:grid; place-items:center; margin-left:auto; background:conic-gradient(var(--accent) 0 0%, #ece7db 0 100%); }
-        .admin-donut-inner { width:62px; height:62px; border-radius:50%; background:#fff; display:grid; place-items:center; font-size:0.8rem; color:var(--text); border:1px solid var(--border); }
+        .admin-donut { width:86px; height:86px; border-radius:50%; display:grid; place-items:center; margin-left:auto; background:conic-gradient(var(--accent) 0 0%, #1B2842 0 100%); }
+        .admin-donut-inner { width:62px; height:62px; border-radius:50%; background:var(--card); display:grid; place-items:center; font-size:0.8rem; color:var(--text); border:1px solid var(--border); }
         .admin-trend { margin-top:12px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
-        .admin-trend-item { border:1px solid var(--border); border-radius:10px; background:#fff; padding:8px; }
-        .admin-trend-bar { height:8px; border-radius:999px; background:#ece7db; overflow:hidden; margin-top:6px; }
+        .admin-trend-item { border:1px solid var(--border); border-radius:10px; background:var(--card); padding:8px; }
+        .admin-trend-bar { height:8px; border-radius:999px; background:#1B2842; overflow:hidden; margin-top:6px; }
         .admin-trend-bar > i { display:block; height:100%; background:linear-gradient(90deg, #2EC4B6 0%, #38bdf8 100%); }
         .admin-sector-coverage-list { margin-top:14px; display:grid; gap:10px; }
-        .admin-sector-coverage-card { border:1px solid var(--border); border-radius:12px; background:#fff; padding:12px; }
+        .admin-sector-coverage-card { border:1px solid var(--border); border-radius:12px; background:var(--card); padding:12px; }
         .admin-sector-coverage-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
         .admin-sector-top-list { margin:8px 0 0 0; padding-left:18px; color:var(--text); font-size:0.9rem; }
         .admin-sector-top-list li { margin:3px 0; }
@@ -219,7 +219,7 @@
             min-height: 70vh;
             min-height: 70dvh;
             position: relative;
-            background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.15) 30%, rgba(247,243,230,0.6) 60%, var(--bg) 100%), url('https://images.unsplash.com/photo-1522163182402-834f871fd851?w=1200') center/cover no-repeat;
+            background: linear-gradient(180deg, rgba(4,8,18,0.4) 0%, rgba(4,8,18,0.35) 30%, rgba(9,13,26,0.75) 65%, var(--bg) 100%), url('https://images.unsplash.com/photo-1610380184543-2f9912ed6f52?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -267,25 +267,29 @@
             margin: 0 auto 28px;
             line-height: 1.6;
         }
-        .landing-hero .landing-tagline .highlight { color: var(--primary); font-weight: 600; text-shadow: 0 0 20px rgba(255,107,53,0.4); }
+        .landing-hero .landing-tagline .highlight { color: var(--accent); font-weight: 600; text-shadow: 0 0 20px rgba(34,211,238,0.35); }
         .landing-cta { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; max-width: 320px; }
         .landing-cta .btn-main.landing-cta-primary {
-            background: linear-gradient(180deg, #FF6B35 0%, #e85a28 100%);
+            background: linear-gradient(180deg, #5B8CFF 0%, #466BFF 100%);
             color: #fff;
             font-size: 1.1rem;
             font-weight: 600;
             min-height: 56px;
             letter-spacing: 0.03em;
-            box-shadow: 0 4px 20px rgba(255,107,53,0.5);
+            box-shadow: 0 8px 22px rgba(70,107,255,0.5);
         }
         .landing-cta .btn-sec.landing-cta-sec {
             background: rgba(255,254,249,0.95);
             border: 1px solid rgba(255,255,255,0.8);
-            color: var(--text);
+            color: #0F172A;
             font-size: 1rem;
             font-weight: 600;
             min-height: 52px;
             backdrop-filter: blur(8px);
+        }
+        .landing-cta .btn-sec.landing-cta-sec:active {
+            background: rgba(226, 232, 240, 0.98);
+            color: #0B1220;
         }
         .landing-gallery {
             padding: 48px 20px 56px;
@@ -313,7 +317,7 @@
             position: relative;
             border-radius: var(--radius);
             overflow: visible;
-            background: #fff;
+            background: var(--card);
             border: 2px solid var(--accent);
             display: flex;
             flex-direction: column;
@@ -333,10 +337,40 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(255,209,102,0.4);
+            box-shadow: 0 4px 14px rgba(132,204,22,0.35);
         }
         .landing-feature-icon svg { width: 24px; height: 24px; }
-        .landing-feature-card .landing-feature-img { height: 100px; background: var(--bg) center/cover no-repeat; margin: 0 12px 12px; border-radius: 10px; }
+        .landing-feature-card .landing-feature-img {
+            height: 100px;
+            background: var(--bg) center/cover no-repeat;
+            margin: 0 12px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(91,140,255,0.28);
+            position: relative;
+            overflow: hidden;
+        }
+        .landing-feature-card .landing-feature-img::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(9,13,26,0.12) 0%, rgba(9,13,26,0.6) 100%);
+        }
+        .landing-feature-img.feature-3d {
+            background-image: radial-gradient(circle at 22% 28%, rgba(34,211,238,0.95) 0 6px, transparent 7px),
+                              radial-gradient(circle at 52% 52%, rgba(91,140,255,0.85) 0 7px, transparent 8px),
+                              radial-gradient(circle at 78% 34%, rgba(132,204,22,0.9) 0 6px, transparent 7px),
+                              linear-gradient(135deg, #132544 0%, #1a2f54 55%, #0f213f 100%);
+        }
+        .landing-feature-img.feature-route {
+            background-image: linear-gradient(115deg, rgba(9,13,26,0.05) 0 36%, rgba(9,13,26,0.42) 37% 100%),
+                              url('https://images.unsplash.com/photo-1522163182402-834f871fd851?auto=format&fit=crop&w=900&q=80');
+        }
+        .landing-feature-img.feature-training {
+            background-image: radial-gradient(circle at 18% 70%, rgba(132,204,22,0.85) 0 7px, transparent 8px),
+                              radial-gradient(circle at 46% 34%, rgba(34,211,238,0.85) 0 7px, transparent 8px),
+                              radial-gradient(circle at 78% 64%, rgba(91,140,255,0.9) 0 7px, transparent 8px),
+                              linear-gradient(120deg, #10203d 0%, #182f58 58%, #112647 100%);
+        }
         .landing-feature-card .landing-feature-body { padding: 0 20px 20px; flex: 1; }
         .landing-feature-card h4 {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -393,7 +427,7 @@
         }
         .landing-hero .lang-switcher-hero button.active {
             background: rgba(255,255,255,0.95);
-            color: var(--text);
+            color: #0F172A;
         }
 
         /* User panel – search & favourites */
@@ -430,7 +464,20 @@
         .following-section-title { margin: 4px 0 10px; font-size: 1rem; color: var(--text); }
         .following-user-row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
         .following-user-meta { display:flex; align-items:center; gap:10px; min-width:0; }
-        .following-avatar { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:#f1ede3; display:grid; place-items:center; color:var(--muted); font-size:0.75rem; font-weight:700; }
+        .following-avatar { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:#1B2842; display:grid; place-items:center; color:var(--muted); font-size:0.75rem; font-weight:700; }
+        .social-public-card { display:block; }
+        .social-user-item { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .social-user-meta { display:flex; align-items:center; gap:10px; min-width:0; flex:1; cursor:pointer; }
+        .social-user-meta b { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .social-public-header { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+        .social-public-avatar { width:56px; height:56px; border-radius:999px; border:1px solid var(--border); background:#1B2842; object-fit:cover; display:grid; place-items:center; font-weight:700; }
+        .social-public-stats { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin:10px 0; }
+        .social-stat-btn { border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--text); min-height:52px; font-weight:600; }
+        .social-stat-btn span { display:block; color:var(--muted); font-size:0.75rem; font-weight:500; }
+        .social-public-list { margin-top:10px; }
+        .social-modal { position:fixed; inset:0; z-index:1500; background:rgba(4,8,18,0.72); display:none; align-items:flex-end; }
+        .social-modal.active { display:flex; }
+        .social-modal-sheet { width:100%; max-height:74dvh; overflow:auto; background:var(--card); border-top:1px solid var(--border); border-radius:18px 18px 0 0; padding:16px; }
         .username-hint { margin: -2px 0 8px; min-height: 20px; font-size: 0.86rem; color: var(--muted); text-align: left; }
         .username-hint.ok { color: #15803d; }
         .username-hint.error { color: var(--danger); }
@@ -449,8 +496,8 @@
         .gym-detail-overview {
             display: block;
             margin: 12px 0 16px;
-            background: linear-gradient(180deg, #fffefb 0%, #fff9f2 100%);
-            border: 1px solid rgba(255,107,53,0.24);
+            background: linear-gradient(180deg, #121A2B 0%, #0F1628 100%);
+            border: 1px solid rgba(91,140,255,0.3);
         }
         .gym-detail-title {
             font-family: 'Cormorant Garamond', Georgia, serif;
@@ -460,7 +507,7 @@
             margin: 0 0 10px 0;
         }
         .gym-detail-meta { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 0; }
-        .gym-meta-chip { border: 1px solid var(--border); background: #fff; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+        .gym-meta-chip { border: 1px solid var(--border); background: #141F33; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
         .gym-meta-chip b { font-size: 1rem; color: var(--text); }
         .gym-meta-chip span { font-size: 0.78rem; color: var(--muted); }
         .gym-detail-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
@@ -477,10 +524,10 @@
             cursor: pointer;
             letter-spacing: 0.03em;
         }
-        .gym-tab.active { color: var(--primary); border-color: var(--primary); background: #fff; }
+        .gym-tab.active { color: var(--primary); border-color: var(--primary); background: #141F33; }
         .gym-tab-panel { margin-bottom: 28px; }
         .user-gym-detail-desc { color: var(--muted); font-size: 1rem; line-height: 1.6; margin: 0 0 14px 0; }
-        .gym-info-block { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 14px; background: #fff; padding: 14px; }
+        .gym-info-block { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 14px; background: #141F33; padding: 14px; }
         .gym-info-heading {
             font-family: 'Cormorant Garamond', Georgia, serif;
             font-weight: 500;
@@ -491,7 +538,7 @@
         .gym-sectors-header { margin-bottom: 14px; }
         .gym-sectors-header p { margin: 6px 0 0; color: var(--muted); font-size: 0.9rem; }
         .gym-about-content { color: var(--text); font-size: 0.95rem; line-height: 1.6; display: flex; flex-direction: column; gap: 8px; }
-        .gym-about-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+        .gym-about-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: #18253D; }
         .gym-about-label { color: var(--muted); min-width: 92px; }
         .gym-about-value { color: var(--text); text-align: right; word-break: break-word; }
         .gym-about-content a { color: var(--accent); text-decoration: none; }
@@ -503,10 +550,10 @@
         .user-gym-detail-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; margin-top: 10px; -webkit-overflow-scrolling: touch; }
         .user-gym-detail-gallery img { width: 200px; min-width: 200px; height: 150px; object-fit: cover; border-radius: var(--radius-sm); display: block; }
         .gym-coverage-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
-        .gym-coverage-kpi { border: 1px solid var(--border); border-radius: 10px; background: #fff; padding: 10px; text-align: center; }
+        .gym-coverage-kpi { border: 1px solid var(--border); border-radius: 10px; background: #141F33; padding: 10px; text-align: center; }
         .gym-coverage-kpi b { display:block; font-size: 1.1rem; color: var(--text); }
         .gym-coverage-kpi span { display:block; font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-        .gym-coverage-bar { width: 100%; height: 12px; border-radius: 999px; background: #ece7db; overflow: hidden; border: 1px solid var(--border); }
+        .gym-coverage-bar { width: 100%; height: 12px; border-radius: 999px; background: #1B2842; overflow: hidden; border: 1px solid var(--border); }
         .gym-coverage-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #2EC4B6 0%, #38bdf8 100%); transition: width 0.25s ease; }
         .gym-coverage-meta { margin-top: 8px; font-size: 0.86rem; color: var(--muted); }
         #user-gym-detail-sectors-list .card { min-height: 56px; }
@@ -519,7 +566,7 @@
         .social-input { min-height: 52px; padding: 14px 18px; font-size: 16px; border-radius: var(--radius-sm); }
         .social-textarea { min-height: 100px; padding: 14px 18px; font-size: 16px; border-radius: var(--radius-sm); }
         .social-tabs { display:flex; gap:8px; margin:14px 0 10px; }
-        .social-tab { flex:1; min-height:44px; border:1px solid var(--border); border-radius:10px; background:#fff; color:var(--muted); font-weight:600; }
+        .social-tab { flex:1; min-height:44px; border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--muted); font-weight:600; }
         .social-tab.active { border-color: var(--primary); color: var(--primary); }
         .social-panel-section { display:none; }
         .social-panel-section.active { display:block; }
@@ -581,7 +628,7 @@
             min-width: 48px;
             padding: 12px 18px;
             background: rgba(0,0,0,0.7);
-            color: #F7F3E6;
+            color: #E6EEFF;
             border-radius: var(--radius-sm);
         }
         .auth-toggle { cursor: pointer; color: var(--muted); margin-top: 22px; font-size: 1rem; min-height: 44px; display: inline-flex; align-items: center; }
@@ -645,7 +692,7 @@
                     <div class="landing-feature-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>
                     </div>
-                    <div class="landing-feature-img" style="background-image: url('https://images.unsplash.com/photo-1522163182402-834f871fd851?w=400')"></div>
+                    <div class="landing-feature-img feature-3d"></div>
                     <div class="landing-feature-body">
                         <h4 data-i18n="landing.feature1Title"></h4>
                         <p data-i18n="landing.feature1Desc"></p>
@@ -655,7 +702,7 @@
                     <div class="landing-feature-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="10" r="2.5"/><circle cx="12" cy="15" r="2.5"/><path d="M7 8.5l3 2 5-3"/></svg>
                     </div>
-                    <div class="landing-feature-img" style="background-image: url('https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400')"></div>
+                    <div class="landing-feature-img feature-route"></div>
                     <div class="landing-feature-body">
                         <h4 data-i18n="landing.feature2Title"></h4>
                         <p data-i18n="landing.feature2Desc"></p>
@@ -665,7 +712,7 @@
                     <div class="landing-feature-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     </div>
-                    <div class="landing-feature-img" style="background-image: url('https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=400')"></div>
+                    <div class="landing-feature-img feature-training"></div>
                     <div class="landing-feature-body">
                         <h4 data-i18n="landing.feature3Title"></h4>
                         <p data-i18n="landing.feature3Desc"></p>
@@ -677,6 +724,16 @@
                 <a href="https://facebook.com" target="_blank" rel="noopener" class="landing-social-link" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
             </div>
         </section>
+    </div>
+
+    <div id="social-list-modal" class="social-modal">
+        <div class="social-modal-sheet">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <h4 id="social-list-modal-title" class="following-section-title" style="margin:0;">-</h4>
+                <button type="button" class="btn-sec" onclick="window.closeSocialListModal()" data-i18n="viewer.close"></button>
+            </div>
+            <div id="social-list-modal-body" class="social-public-list"></div>
+        </div>
     </div>
 
     <div id="view-auth" class="view">
@@ -772,7 +829,7 @@
                 <div class="user-main-tabs" id="user-main-tabs">
                     <button type="button" id="tab-btn-explore" class="user-main-tab active" data-i18n="dash.tabExplore"></button>
                     <button type="button" id="tab-btn-profile" class="user-main-tab" data-i18n="dash.tabProfile"></button>
-                    <button type="button" id="tab-btn-following" class="user-main-tab" data-i18n="dash.tabFollowing"></button>
+                    <button type="button" id="tab-btn-following" class="user-main-tab" data-i18n="dash.tabSocial"></button>
                 </div>
                 <div id="user-list-view" class="user-main-section active">
                     <h3 id="list-title" class="headline-brand" style="font-size:1.25rem; margin:0 0 8px 0;" data-i18n="dash.exploreGyms"></h3>
@@ -793,6 +850,7 @@
                         <input type="text" id="following-search" class="following-search" data-i18n-placeholder="dash.searchUsers">
                         <div id="following-users-list"></div>
                     </div>
+                    <div class="card social-public-card" id="social-public-profile" style="display:none;"></div>
                     <div class="card" style="display:block;">
                         <h4 class="following-section-title" data-i18n="dash.followingProgress"></h4>
                         <div id="following-progress-list"></div>
@@ -934,7 +992,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, limit, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, limit, serverTimestamp, collectionGroup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -959,6 +1017,8 @@
         let profileEntriesMap = new Map();
         let openGymProgress = new Set();
         let userFollowingIds = [];
+        let followsUnsubscriber = null;
+        let activePublicProfileUid = null;
         let lastUsersSnap = null;
         let followingFeedMap = new Map();
         let followingProgressUnsubscribers = [];
@@ -981,7 +1041,7 @@
 
         const GRADE_SCALE = ["4a","4b","4c","5a","5b","5c","6a","6b","6c","7a","7b","7c","8a","8b","8c","9a","9b","9c"];
         const AVAILABLE_COLORS = [
-            { value: '#FF6B35', labels: { it: 'Arancio', en: 'Orange' } },
+            { value: '#5B8CFF', labels: { it: 'Blu elettrico', en: 'Electric blue' } },
             { value: '#2EC4B6', labels: { it: 'Turchese', en: 'Turquoise' } },
             { value: '#FFD166', labels: { it: 'Giallo', en: 'Yellow' } },
             { value: '#ef4444', labels: { it: 'Rosso', en: 'Red' } },
@@ -1002,8 +1062,8 @@
         const translations = {
             it: {
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
-                auth: { yourName: "Il tuo Nome", username: "Username pubblico", usernameHint: "3-20 caratteri: lettere, numeri, _, -, .", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
-                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabFollowing: "Segui", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Segui", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra." },
+                auth: { yourName: "Il tuo Nome", username: "Username pubblico", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
+                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra." },
                 admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media" },
                 viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
@@ -1012,8 +1072,8 @@
             },
             en: {
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
-                auth: { yourName: "Your name", username: "Public username", usernameHint: "3-20 chars: letters, numbers, _, -, .", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
-                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabFollowing: "Following", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Following feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet." },
+                auth: { yourName: "Your name", username: "Public username", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
+                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet." },
                 admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg" },
                 viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
@@ -1050,7 +1110,7 @@
             }
             const lt = document.getElementById('loading-text'); if (lt) lt.innerText = t('loading.init');
         }
-        window.setLang = (lang) => { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); populateAdminColorOptions(); if (typeof loadAdminStats === 'function') loadAdminStats(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) renderAdminCoverage(); };
+        window.setLang = (lang) => { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); populateAdminColorOptions(); if (typeof loadAdminStats === 'function') loadAdminStats(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (typeof renderActivePublicProfile === 'function') renderActivePublicProfile(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) renderAdminCoverage(); };
 
         const showLoading = (msg, showRetry = false) => {
             document.getElementById('loading-text').innerText = msg;
@@ -1073,7 +1133,13 @@
         let lastCheckedUsername = '';
         let lastUsernameAvailable = false;
 
-        function normalizeUsername(v) { return (v || '').trim(); }
+        function normalizeUsername(v) {
+            const raw = (v || '').trim();
+            if (!raw) return '';
+            const ascii = raw.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+            const compact = ascii.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_.-]/g, '');
+            return compact;
+        }
         function usernameLower(v) { return normalizeUsername(v).toLowerCase(); }
         function isValidUsername(v) { return USERNAME_PATTERN.test(normalizeUsername(v)); }
         function setUsernameStatus(message, kind = '') {
@@ -1123,12 +1189,18 @@
                 return { available: false, reason: 'invalid' };
             }
             setUsernameStatus(t('auth.usernameChecking'));
-            const snap = await getDoc(doc(db, 'usernames', lower));
-            const taken = snap.exists();
-            lastCheckedUsername = lower;
-            lastUsernameAvailable = !taken;
-            setUsernameStatus(taken ? t('auth.usernameTaken') : t('auth.usernameAvailable'), taken ? 'error' : 'ok');
-            return { available: !taken, reason: taken ? 'taken' : 'ok' };
+            try {
+                const qRef = query(collection(db, 'users'), where('usernameLower', '==', lower), limit(1));
+                const snap = await getDocs(qRef);
+                const taken = !snap.empty;
+                lastCheckedUsername = lower;
+                lastUsernameAvailable = !taken;
+                setUsernameStatus(taken ? t('auth.usernameTaken') : t('auth.usernameAvailable'), taken ? 'error' : 'ok');
+                return { available: !taken, reason: taken ? 'taken' : 'ok' };
+            } catch (_) {
+                setUsernameStatus(t('auth.usernameHint'));
+                return { available: true, reason: 'skip' };
+            }
         }
         function resolveUsername(userId, fallbackName = 'Climber') {
             if (userId && lastUsersSnap) {
@@ -1148,12 +1220,16 @@
                 if (!isReg) return;
                 if (usernameCheckTimer) clearTimeout(usernameCheckTimer);
                 usernameCheckTimer = setTimeout(() => {
+                    const normalized = normalizeUsername(usernameInput.value);
+                    if (normalized !== usernameInput.value) usernameInput.value = normalized;
                     checkUsernameAvailability(usernameInput.value).catch(() => setUsernameStatus(t('auth.usernameInvalid'), 'error'));
                 }, 320);
             });
             usernameInput.addEventListener('blur', () => {
                 const isReg = document.getElementById('reg-fields')?.style.display !== 'none';
                 if (!isReg) return;
+                const normalized = normalizeUsername(usernameInput.value);
+                if (normalized !== usernameInput.value) usernameInput.value = normalized;
                 checkUsernameAvailability(usernameInput.value).catch(() => setUsernameStatus(t('auth.usernameInvalid'), 'error'));
             });
         }
@@ -1172,26 +1248,26 @@
                 if(isLogin) { await signInWithEmailAndPassword(auth, email, pass); }
                 else {
                     const role = document.getElementById('role-select').value, gymName = document.getElementById('gym-input').value;
-                    const username = normalizeUsername(document.getElementById('f-name').value || '');
+                    const usernameField = document.getElementById('f-name');
+                    const username = normalizeUsername(usernameField?.value || '');
+                    if (usernameField && usernameField.value !== username) usernameField.value = username;
                     if (!username) throw new Error(t('errors.usernameRequired'));
                     if (!isValidUsername(username)) throw new Error(t('errors.usernameInvalid'));
                     const lower = usernameLower(username);
-                    let availability = (lastCheckedUsername === lower) ? { available: lastUsernameAvailable, reason: lastUsernameAvailable ? 'ok' : 'taken' } : null;
-                    if (!availability) availability = await checkUsernameAvailability(username);
-                    if (!availability.available) throw new Error(availability.reason === 'taken' ? t('errors.usernameTaken') : t('errors.usernameInvalid'));
                     let cleanGymId = role === 'admin' ? gymName.trim().replace(/\s+/g, '-') : null;
                     const res = await createUserWithEmailAndPassword(auth, email, pass);
                     try {
-                        await runTransaction(db, async (tx) => {
-                            const usernameRef = doc(db, 'usernames', lower);
-                            const usernameSnap = await tx.get(usernameRef);
-                            if (usernameSnap.exists()) throw new Error('USERNAME_TAKEN');
-                            tx.set(usernameRef, { uid: res.user.uid, username, usernameLower: lower, createdAt: serverTimestamp() });
-                            tx.set(doc(db, "users", res.user.uid), { role, gymManaged: cleanGymId, username, usernameLower: lower, following: [], favouriteGyms: [] });
-                        });
+                        const qRef = query(collection(db, 'users'), where('usernameLower', '==', lower), limit(1));
+                        const existsSnap = await getDocs(qRef);
+                        const taken = existsSnap.docs.some(d => d.id !== res.user.uid);
+                        if (taken) throw new Error('USERNAME_TAKEN');
+                        await setDoc(doc(db, "users", res.user.uid), { role, gymManaged: cleanGymId, username, usernameLower: lower, following: [], favouriteGyms: [] });
                     } catch (e) {
                         try { await deleteUser(res.user); } catch (_) {}
                         if (e?.message === 'USERNAME_TAKEN') throw new Error(t('errors.usernameTaken'));
+                        if (e?.code === 'permission-denied' || /insufficient permissions/i.test(String(e?.message || ''))) {
+                            throw new Error('Permessi Firestore insufficienti: abilita lettura/scrittura su users per utenti autenticati.');
+                        }
                         throw e;
                     }
                     if(role === 'admin') await setDoc(doc(db, "gyms", cleanGymId), { name: gymName, owner: res.user.uid });
@@ -1206,6 +1282,7 @@
                 activeUser = user;
                 currentUserName = data.username || 'Climber';
                 userFollowingIds = data.following || [];
+                activePublicProfileUid = null;
                 realUserGymId = data.gymManaged;
                 userRole = data.role === 'admin' ? 'admin' : 'user';
                 currentMode = userRole;
@@ -1226,6 +1303,7 @@
                 document.getElementById('admin-panel').style.display = 'block';
                 document.getElementById('user-panel').style.display = 'none';
                 stopFollowingProgressSubscriptions();
+                stopFollowsSubscription();
                 if (typeof stopRouteProgressSubscription === 'function') stopRouteProgressSubscription();
                 destroyProfileListeners();
                 profileEntriesMap = new Map();
@@ -1266,7 +1344,7 @@
                 })();
                 document.getElementById('tab-btn-explore').onclick = () => setUserMainTab('explore');
                 document.getElementById('tab-btn-profile').onclick = () => { setUserMainTab('profile'); renderProfileDashboard(); };
-                document.getElementById('tab-btn-following').onclick = () => { setUserMainTab('following'); renderFollowingSection(); };
+                document.getElementById('tab-btn-following').onclick = () => { setUserMainTab('social'); renderFollowingSection(); renderActivePublicProfile(); };
                 const searchInput = document.getElementById('user-search-gyms');
                 searchInput.oninput = () => renderUserGymList();
                 searchInput.value = "";
@@ -1278,10 +1356,11 @@
                 onSnapshot(collection(db, "users"), (snap) => {
                     lastUsersSnap = snap;
                     renderFollowingSection();
-                    syncFollowingProgressSubscriptions();
+                    renderActivePublicProfile();
                 });
                 const followingSearch = document.getElementById('following-search');
                 if (followingSearch) followingSearch.oninput = () => renderFollowingSection();
+                startFollowsSubscription();
                 renderProfileDashboard();
                 renderFollowingSection();
             }
@@ -1366,10 +1445,10 @@
             if (!explore || !profile || !following || !btnExplore || !btnProfile || !btnFollowing) return;
             explore.classList.toggle('active', tab === 'explore');
             profile.classList.toggle('active', tab === 'profile');
-            following.classList.toggle('active', tab === 'following');
+            following.classList.toggle('active', tab === 'social');
             btnExplore.classList.toggle('active', tab === 'explore');
             btnProfile.classList.toggle('active', tab === 'profile');
-            btnFollowing.classList.toggle('active', tab === 'following');
+            btnFollowing.classList.toggle('active', tab === 'social');
         }
         function stopRouteProgressSubscription() {
             if (typeof routeProgressUnsubscriber === 'function') routeProgressUnsubscriber();
@@ -1433,19 +1512,39 @@
             const filt = document.getElementById('profile-progress-filter');
             if (filt) { filt.value = profileProgressFilter; filt.onchange = () => { profileProgressFilter = filt.value; renderProfileDashboard(); }; }
         }
+        function followDocId(followerId, followingId) { return `${followerId}__${followingId}`; }
+
+        function stopFollowsSubscription() {
+            if (typeof followsUnsubscriber === 'function') followsUnsubscriber();
+            followsUnsubscriber = null;
+        }
+
+        function startFollowsSubscription() {
+            if (!activeUser) return;
+            stopFollowsSubscription();
+            const qRef = query(collection(db, 'follows'), where('followerId', '==', activeUser.uid));
+            followsUnsubscriber = onSnapshot(qRef, (snap) => {
+                userFollowingIds = snap.docs.map(d => d.data()?.followingId).filter(Boolean);
+                syncFollowingProgressSubscriptions();
+                renderFollowingSection();
+                renderActivePublicProfile();
+            });
+        }
+
         async function toggleFollowUser(targetUid) {
             if (!activeUser || !targetUid || targetUid === activeUser.uid) return;
-            const ref = doc(db, "users", activeUser.uid);
             const isFollowing = userFollowingIds.includes(targetUid);
+            const followRef = doc(db, 'follows', followDocId(activeUser.uid, targetUid));
             if (isFollowing) {
-                await updateDoc(ref, { following: arrayRemove(targetUid) });
+                await deleteDoc(followRef);
                 userFollowingIds = userFollowingIds.filter(id => id !== targetUid);
             } else {
-                await updateDoc(ref, { following: arrayUnion(targetUid) });
+                await setDoc(followRef, { followerId: activeUser.uid, followingId: targetUid, createdAt: serverTimestamp() }, { merge: true });
                 userFollowingIds = [...new Set([...userFollowingIds, targetUid])];
             }
             syncFollowingProgressSubscriptions();
             renderFollowingSection();
+            renderActivePublicProfile();
         }
 
         function stopFollowingProgressSubscriptions() {
@@ -1516,6 +1615,103 @@
             return buildFollowingFeedItems();
         }
 
+        async function getFollowCounts(uid) {
+            const [followersSnap, followingSnap] = await Promise.all([
+                getDocs(query(collection(db, 'follows'), where('followingId', '==', uid))),
+                getDocs(query(collection(db, 'follows'), where('followerId', '==', uid)))
+            ]);
+            return { followers: followersSnap.size, following: followingSnap.size };
+        }
+
+        async function getPublicFeedbackCount(uid) {
+            const fb = await getDocs(query(collectionGroup(db, 'reviews'), where('userId', '==', uid), limit(50)));
+            return fb.size;
+        }
+
+        async function openPublicProfile(uid, opts = {}) {
+            await renderPublicProfile(uid);
+            const wrap = document.getElementById('social-public-profile');
+            if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (opts.closeModal) window.closeSocialListModal();
+        }
+
+        async function renderPublicProfile(uid) {
+            const wrap = document.getElementById('social-public-profile');
+            if (!wrap || !uid || !lastUsersSnap) return;
+            const snap = lastUsersSnap.docs.find(d => d.id === uid);
+            if (!snap) return;
+            const data = snap.data() || {};
+            const username = data.username || 'Climber';
+            const avatar = data.avatarUrl ? `<img class="social-public-avatar" src="${escapeHtml(data.avatarUrl)}" alt="">` : `<div class="social-public-avatar">${escapeHtml((username || 'U').slice(0,2).toUpperCase())}</div>`;
+            const pubSnap = await getDocs(query(collection(db, 'users', uid, 'routeProgress'), where('shareOnFeed', '==', true), limit(20)));
+            const publicEntries = pubSnap.docs.map(d => d.data() || {});
+            const routesPublic = publicEntries.length;
+            const feedbackCount = await getPublicFeedbackCount(uid);
+            const counts = await getFollowCounts(uid);
+            const isFollowing = userFollowingIds.includes(uid);
+            const rows = publicEntries.slice(0, 8).map(v => `<div class="profile-log"><div><b>${escapeHtml(v.routeLabel || v.routeGrade || '-')}</b> · ${escapeHtml(v.gymName || '-')}</div><small>${v.state === 'project' ? t('viewer.project') : t('viewer.climbed')} · ${escapeHtml(formatProfileDate(v.updatedAt || v.completionDate || v.firstAttemptDate || v.sendDate || ''))}</small></div>`).join('');
+            wrap.style.display = 'block';
+            wrap.innerHTML = `
+                <div class="social-public-header">
+                    ${avatar}
+                    <div style="min-width:0; flex:1;">
+                        <b>${escapeHtml(username)}</b>
+                        <div style="color:var(--muted); font-size:0.86rem;">${t('dash.socialPublicProfile')}</div>
+                    </div>
+                    <button type="button" class="btn-sec" data-action="public-follow-toggle" data-uid="${uid}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button>
+                </div>
+                <div class="social-public-stats">
+                    <button type="button" class="social-stat-btn" data-action="open-follow-list" data-kind="followers" data-uid="${uid}"><b>${counts.followers}</b><span>${t('dash.followers')}</span></button>
+                    <button type="button" class="social-stat-btn" data-action="open-follow-list" data-kind="following" data-uid="${uid}"><b>${counts.following}</b><span>${t('dash.followingCount')}</span></button>
+                    <div class="social-stat-btn" style="display:grid; place-items:center;"><b>${routesPublic}</b><span>${t('dash.publicRoutes')}</span></div>
+                </div>
+                <div class="profile-log" style="margin-bottom:10px;"><b>${feedbackCount}</b> <span style="color:var(--muted);">${t('dash.publicFeedbacks')}</span></div>
+                <div class="profile-list social-public-list">
+                    <b>${t('dash.publicContent')}</b>
+                    ${rows || `<p class="profile-empty">${t('dash.noPublicContent')}</p>`}
+                </div>
+            `;
+            activePublicProfileUid = uid;
+            wrap.querySelector('[data-action="public-follow-toggle"]')?.addEventListener('click', () => toggleFollowUser(uid));
+            wrap.querySelectorAll('[data-action="open-follow-list"]').forEach(btn => btn.addEventListener('click', () => openSocialListModal(uid, btn.dataset.kind)));
+        }
+
+        function renderActivePublicProfile() {
+            if (!activePublicProfileUid) return;
+            renderPublicProfile(activePublicProfileUid).catch(() => {});
+        }
+
+        async function openSocialListModal(uid, kind) {
+            const modal = document.getElementById('social-list-modal');
+            const title = document.getElementById('social-list-modal-title');
+            const body = document.getElementById('social-list-modal-body');
+            if (!modal || !title || !body) return;
+            const qRef = query(collection(db, 'follows'), where(kind === 'followers' ? 'followingId' : 'followerId', '==', uid));
+            const snap = await getDocs(qRef);
+            const ids = snap.docs.map(d => d.data()?.[kind === 'followers' ? 'followerId' : 'followingId']).filter(Boolean);
+            title.textContent = kind === 'followers' ? t('dash.followers') : t('dash.followingCount');
+            if (!ids.length) {
+                body.innerHTML = `<p class="profile-empty">${t('dash.noUserResults')}</p>`;
+            } else {
+                const users = ids.map(id => {
+                    const d = lastUsersSnap?.docs.find(x => x.id === id);
+                    return d ? { id, ...(d.data() || {}) } : { id, username: 'Climber' };
+                });
+                body.innerHTML = users.map(u => {
+                    const avatar = u.avatarUrl ? `<img class="following-avatar" src="${escapeHtml(u.avatarUrl)}" alt="">` : `<div class="following-avatar">${escapeHtml((u.username || 'U').slice(0,2).toUpperCase())}</div>`;
+                    const isFollowing = userFollowingIds.includes(u.id);
+                    return `<div class="profile-log"><div class="social-user-item"><div class="social-user-meta" data-action="open-profile" data-uid="${u.id}">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></div>${u.id === activeUser?.uid ? '' : `<button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button>`}</div></div>`;
+                }).join('');
+                body.querySelectorAll('[data-action="toggle-follow"]').forEach(btn => btn.addEventListener('click', () => toggleFollowUser(btn.dataset.uid)));
+                body.querySelectorAll('[data-action="open-profile"]').forEach(el => el.addEventListener('click', () => openPublicProfile(el.dataset.uid, { closeModal: true })));
+            }
+            modal.classList.add('active');
+        }
+
+        window.closeSocialListModal = function closeSocialListModal() {
+            document.getElementById('social-list-modal')?.classList.remove('active');
+        };
+
         window.searchUsersByUsernameEndpoint = searchUsersByUsername;
         window.followUserEndpoint = (uid) => toggleFollowUser(uid);
         window.unfollowUserEndpoint = (uid) => toggleFollowUser(uid);
@@ -1538,14 +1734,15 @@
                 usersList.innerHTML = discover.map(u => {
                     const isFollowing = userFollowingIds.includes(u.id);
                     const avatar = u.avatarUrl ? `<img class="following-avatar" src="${escapeHtml(u.avatarUrl)}" alt="">` : `<div class="following-avatar">${escapeHtml((u.username || 'U').slice(0,2).toUpperCase())}</div>`;
-                    return `<div class="profile-log"><div class="following-user-row"><div class="following-user-meta">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></div><button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button></div></div>`;
+                    return `<div class="profile-log"><div class="social-user-item"><div class="social-user-meta" data-action="open-profile" data-uid="${u.id}">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></div><button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button></div></div>`;
                 }).join('') || `<p class="profile-empty">${t('dash.noUserResults')}</p>`;
                 usersList.querySelectorAll('[data-action="toggle-follow"]').forEach(btn => btn.onclick = () => toggleFollowUser(btn.dataset.uid));
+                usersList.querySelectorAll('[data-action="open-profile"]').forEach(el => el.onclick = () => openPublicProfile(el.dataset.uid));
             }
             renderFollowingFeed();
         }
 
-                async function refreshProfileWatchers() {
+        async function refreshProfileWatchers() {
             if (!lastUserGymsSnap) return;
             destroyProfileListeners();
             profileEntriesMap = new Map();
@@ -2065,7 +2262,7 @@
                         <div>
                             <b>${stats.selectedCoverage}%</b><span>${t('admin.selectedCoverage')}</span>
                         </div>
-                        <div class="admin-donut" style="background:conic-gradient(var(--accent) 0 ${donutPct}%, #ece7db ${donutPct}% 100%);">
+                        <div class="admin-donut" style="background:conic-gradient(var(--accent) 0 ${donutPct}%, #1B2842 ${donutPct}% 100%);">
                             <div class="admin-donut-inner">${donutPct}%</div>
                         </div>
                     </div>
@@ -2599,7 +2796,7 @@
         window.deleteRoute = async () => { if(confirm(t('viewer.confirmDelete'))) { await deleteDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId)); window.cancelAdminEdit(); } };
 
         window.goToAuth = () => showView('view-auth');
-        window.logout = () => signOut(auth).then(() => location.reload());
+        window.logout = () => { stopFollowingProgressSubscriptions(); stopFollowsSubscription(); signOut(auth).then(() => location.reload()); };
         window.switchMode = () => {
             if (userRole !== 'admin') return;
             currentMode = currentMode === 'admin' ? 'user' : 'admin';
