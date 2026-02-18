@@ -450,7 +450,7 @@
         .profile-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
         .profile-header h4 { margin: 0; font-size: 1.1rem; }
         .profile-max-grade { color: var(--primary); font-weight: 700; }
-        .profile-kpis { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
+        .profile-kpis { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
         .profile-kpi { border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
         .profile-kpi b { display: block; font-size: 1.1rem; color: var(--text); }
         .profile-kpi span { font-size: 0.78rem; color: var(--muted); }
@@ -469,6 +469,9 @@
         .social-user-item { display:flex; align-items:center; justify-content:space-between; gap:10px; }
         .social-user-meta { display:flex; align-items:center; gap:10px; min-width:0; flex:1; cursor:pointer; }
         .social-user-meta b { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .social-user-link { width:100%; border:0; background:transparent; padding:0; text-align:left; color:inherit; }
+        .social-user-link b { text-decoration: underline; text-underline-offset: 2px; }
+        .social-user-link:active { opacity:0.75; }
         .social-public-header { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
         .social-public-avatar { width:56px; height:56px; border-radius:999px; border:1px solid var(--border); background:#1B2842; object-fit:cover; display:grid; place-items:center; font-weight:700; }
         .social-public-stats { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin:10px 0; }
@@ -599,6 +602,18 @@
         .tracker-grid .full { grid-column: 1 / -1; }
         .profile-filter-row { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:8px 0; }
         .profile-filter-row select { margin:0; min-height:40px; max-width:200px; }
+        .profile-subtitle { color: var(--muted); font-size: 0.9rem; margin: 2px 0 12px; }
+        .profile-milestone-card { border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px; background:linear-gradient(135deg, rgba(91,140,255,0.12), rgba(46,196,182,0.08)); }
+        .profile-milestone-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+        .profile-milestone-level { font-size:1.5rem; font-weight:800; color:var(--primary); line-height:1.1; }
+        .profile-chip { border:1px solid var(--border); border-radius:999px; padding:4px 10px; color:var(--muted); font-size:0.75rem; }
+        .profile-progress-bar { height:10px; border-radius:999px; background:#1B2842; overflow:hidden; margin-top:10px; border:1px solid var(--border); }
+        .profile-progress-fill { height:100%; background:linear-gradient(90deg, var(--primary), #2EC4B6); }
+        .profile-progress-meta { display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:0.8rem; color:var(--muted); }
+        .profile-section-card { border:1px solid var(--border); border-radius:12px; padding:10px; margin-top:10px; }
+        .profile-timeline { display:flex; flex-direction:column; gap:8px; }
+        .profile-timeline-row { display:flex; justify-content:space-between; gap:10px; border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
+        .profile-timeline-row b { color:var(--text); }
         .send-date-quick { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
         .btn-date-quick {
             min-height: 44px;
@@ -868,15 +883,20 @@
                     <div id="profile-dashboard" class="card profile-dashboard"></div>
                 </div>
                 <div id="user-following-view" class="user-main-section">
-                    <div class="card" style="display:block;">
-                        <h4 class="following-section-title" data-i18n="dash.findUsers"></h4>
-                        <input type="text" id="following-search" class="following-search" data-i18n-placeholder="dash.searchUsers">
-                        <div id="following-users-list"></div>
+                    <div id="social-main-view">
+                        <div class="card" style="display:block;">
+                            <h4 class="following-section-title" data-i18n="dash.findUsers"></h4>
+                            <input type="text" id="following-search" class="following-search" data-i18n-placeholder="dash.searchUsers">
+                            <div id="following-users-list"></div>
+                        </div>
+                        <div class="card" style="display:block;">
+                            <h4 class="following-section-title" data-i18n="dash.followingProgress"></h4>
+                            <div id="following-progress-list"></div>
+                        </div>
                     </div>
-                    <div class="card social-public-card" id="social-public-profile" style="display:none;"></div>
-                    <div class="card" style="display:block;">
-                        <h4 class="following-section-title" data-i18n="dash.followingProgress"></h4>
-                        <div id="following-progress-list"></div>
+                    <div id="social-profile-view" style="display:none;">
+                        <button type="button" class="btn-sec" id="social-profile-back" data-i18n="dash.back"></button>
+                        <div class="card social-public-card" id="social-public-profile" style="display:none;"></div>
                     </div>
                 </div>
                 <div id="user-gym-detail" class="user-detail-view" style="display:none;">
@@ -1068,6 +1088,8 @@
         let currentModelLoadCleanup = null;
         let currentModelLoadTimeout = null;
         let lastOpen3DRequest = null;
+        let gymLevelOrderMap = new Map();
+        const SOCIAL_PROFILE_ROUTE_PREFIX = '#/social/user/';
 
         const GRADE_SCALE = ["4a","4b","4c","5a","5b","5c","6a","6b","6c","7a","7b","7c","8a","8b","8c","9a","9b","9c"];
         const AVAILABLE_COLORS = [
@@ -1093,22 +1115,22 @@
             it: {
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
                 auth: { yourName: "Il tuo Nome", username: "Username pubblico", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
-                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
+                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
                 admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media" },
                 viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
                 loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D...", retry: "Riprova" },
-                errors: { completeData: "Inserisci dati completi", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore" }
+                errors: { completeData: "Inserisci dati completi", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore", authRequired: "Devi accedere per completare questa azione.", permissionDenied: "Permessi insufficienti su Firestore: controlla le regole di sicurezza.", saveFailed: "Salvataggio non riuscito. Riprova." }
             },
             en: {
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
                 auth: { yourName: "Your name", username: "Public username", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
-                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
+                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
                 admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg" },
                 viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
                 loading: { init: "Loading...", verifying: "Verifying...", updatingMesh: "Updating mesh...", loading3d: "Loading 3D...", retry: "Retry" },
-                errors: { completeData: "Please enter all required fields", selectFile: "Select a file", usernameRequired: "Please enter a username", usernameInvalid: "Invalid username: use 3-20 chars (letters, numbers, _, -, .)", usernameTaken: "Username already in use", modelLoadFailed: "Error loading 3D model", modelLoadTimeout: "Loading took too long. Please retry.", modelMeshMissing: "3D model not available for this sector" }
+                errors: { completeData: "Please enter all required fields", selectFile: "Select a file", usernameRequired: "Please enter a username", usernameInvalid: "Invalid username: use 3-20 chars (letters, numbers, _, -, .)", usernameTaken: "Username already in use", modelLoadFailed: "Error loading 3D model", modelLoadTimeout: "Loading took too long. Please retry.", modelMeshMissing: "3D model not available for this sector", authRequired: "You must be signed in to complete this action.", permissionDenied: "Insufficient Firestore permissions: check your security rules.", saveFailed: "Save failed. Please retry." }
             }
         };
         let currentLang = localStorage.getItem(LANG_KEY) || 'it';
@@ -1318,6 +1340,7 @@
                 currentMode = userRole;
                 document.getElementById('btn-mode-toggle').style.display = userRole === 'admin' ? 'block' : 'none';
                 initDashboard();
+                await handlePublicProfileRoute();
                 hideLoading();
             } else { showView('view-landing'); hideLoading(); }
         });
@@ -1375,9 +1398,14 @@
                 })();
                 document.getElementById('tab-btn-explore').onclick = () => setUserMainTab('explore');
                 document.getElementById('tab-btn-profile').onclick = () => { setUserMainTab('profile'); renderProfileDashboard(); };
-                document.getElementById('tab-btn-following').onclick = () => { setUserMainTab('social'); renderFollowingSection(); renderActivePublicProfile(); };
+                document.getElementById('tab-btn-following').onclick = () => { setUserMainTab('social'); setSocialSubView('main'); renderFollowingSection(); };
                 const searchInput = document.getElementById('user-search-gyms');
                 searchInput.oninput = () => renderUserGymList();
+                document.getElementById('social-profile-back').onclick = () => {
+                    setSocialSubView('main');
+                    activePublicProfileUid = null;
+                    if (window.location.hash.startsWith(SOCIAL_PROFILE_ROUTE_PREFIX)) history.replaceState(null, '', `${window.location.pathname}${window.location.search}#/social`);
+                };
                 searchInput.value = "";
                 onSnapshot(collection(db, "gyms"), (snap) => {
                     lastUserGymsSnap = snap;
@@ -1496,11 +1524,49 @@
         }
         function escapeHtml(s) { const div = document.createElement('div'); div.textContent = s; return div.innerHTML; }
         function gradeIndex(grade) { return GRADE_SCALE.indexOf((grade || '').toLowerCase()); }
+        function isPermissionDeniedError(err) {
+            const msg = String(err?.message || '').toLowerCase();
+            return err?.code === 'permission-denied' || msg.includes('insufficient permissions') || msg.includes('permission-denied');
+        }
+
+        function alertWriteError(err) {
+            if (isPermissionDeniedError(err)) alert(t('errors.permissionDenied'));
+            else if (err?.message) alert(err.message);
+            else alert(t('errors.saveFailed'));
+        }
+
         function formatProfileDate(v) {
             if (!v) return '';
             const d = new Date(v);
             if (Number.isNaN(d.getTime())) return v;
             return d.toLocaleDateString(currentLang === 'it' ? 'it-IT' : 'en-US');
+        }
+        function getPublicProfileUidFromRoute() {
+            const hash = window.location.hash || '';
+            if (!hash.startsWith(SOCIAL_PROFILE_ROUTE_PREFIX)) return null;
+            const raw = hash.slice(SOCIAL_PROFILE_ROUTE_PREFIX.length).split('/')[0].trim();
+            if (!raw) return null;
+            try { return decodeURIComponent(raw); } catch (_) { return raw; }
+        }
+        function setPublicProfileRoute(uid, opts = {}) {
+            if (!uid) return;
+            const nextHash = `${SOCIAL_PROFILE_ROUTE_PREFIX}${encodeURIComponent(uid)}`;
+            if (window.location.hash === nextHash) return;
+            if (opts.replace) history.replaceState(null, '', `${window.location.pathname}${window.location.search}${nextHash}`);
+            else window.location.hash = nextHash;
+        }
+        async function handlePublicProfileRoute() {
+            const uid = getPublicProfileUidFromRoute();
+            if (!activeUser) return;
+            if (!uid) {
+                if ((window.location.hash || '').startsWith('#/social')) {
+                    setUserMainTab('social');
+                    setSocialSubView('main');
+                }
+                return;
+            }
+            setUserMainTab('social');
+            await openPublicProfile(uid, { updateRoute: false, smooth: false });
         }
         function destroyProfileListeners() { while (profileUnsubscribers.length) { const u = profileUnsubscribers.pop(); if (typeof u === 'function') u(); } }
         function setUserMainTab(tab) {
@@ -1517,6 +1583,14 @@
             btnExplore.classList.toggle('active', tab === 'explore');
             btnProfile.classList.toggle('active', tab === 'profile');
             btnFollowing.classList.toggle('active', tab === 'social');
+        }
+        function setSocialSubView(mode) {
+            const main = document.getElementById('social-main-view');
+            const profile = document.getElementById('social-profile-view');
+            if (!main || !profile) return;
+            const isProfile = mode === 'profile';
+            main.style.display = isProfile ? 'none' : 'block';
+            profile.style.display = isProfile ? 'block' : 'none';
         }
         function stopRouteProgressSubscription() {
             if (typeof routeProgressUnsubscriber === 'function') routeProgressUnsubscriber();
@@ -1535,40 +1609,161 @@
         }
 
 
+        function normalizeLevelValue(v) {
+            return String(v || '').trim();
+        }
+
+        function buildLevelOrder(entries) {
+            const levels = Array.from(new Set(entries.map(e => normalizeLevelValue(e.grade)).filter(Boolean)));
+            if (!levels.length) return [];
+            const allInScale = levels.every(g => gradeIndex(g) >= 0);
+            if (allInScale) return levels.sort((a, b) => gradeIndex(a) - gradeIndex(b));
+            return levels.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+        }
+
+        function levelRank(level, order) {
+            return order.indexOf(normalizeLevelValue(level));
+        }
+
+        function resolveLocalOrder(gymId, gymEntries) {
+            const fromGymMap = gymId ? gymLevelOrderMap.get(gymId) : null;
+            if (fromGymMap && fromGymMap.length) return fromGymMap;
+            return buildLevelOrder(gymEntries);
+        }
+
+        function normalizeProgressValue(localRank, scaleSize) {
+            if (localRank < 0 || !scaleSize || scaleSize <= 1) return 0;
+            return localRank / (scaleSize - 1);
+        }
+
         function computeProfileData(entries) {
             const sorted = entries.slice().sort((a, b) => new Date(b.sendDate || b.date || 0) - new Date(a.sendDate || a.date || 0));
-            let maxGrade = null;
-            for (const e of sorted) {
-                if (!maxGrade || gradeIndex(e.grade) > gradeIndex(maxGrade)) maxGrade = e.grade;
-            }
             const daySet = new Set(sorted.map(e => e.sendDate || '').filter(Boolean));
             const gymSet = new Set(sorted.map(e => e.gymName || '').filter(Boolean));
-            return { sorted, maxGrade: maxGrade || '-', totalSends: sorted.length, activeDays: daySet.size, reviewedGyms: gymSet.size };
+
+            const groups = new Map();
+            for (const e of sorted) {
+                const gk = e.gymId || e.gymName || 'unknown';
+                if (!groups.has(gk)) groups.set(gk, []);
+                groups.get(gk).push(e);
+            }
+
+            let globalMaxNorm = -1;
+            let globalMaxLabel = '-';
+            const byGym = [];
+            const enriched = [];
+
+            for (const [gymKey, gymEntries] of groups.entries()) {
+                const order = resolveLocalOrder(gymEntries[0]?.gymId, gymEntries);
+                let localMaxRank = -1;
+                let localMaxLabel = '-';
+                for (const e of gymEntries) {
+                    const rank = levelRank(e.grade, order);
+                    const norm = normalizeProgressValue(rank, order.length);
+                    enriched.push({ ...e, _rank: rank, _norm: norm, _gymKey: gymKey });
+                    if (rank > localMaxRank) {
+                        localMaxRank = rank;
+                        localMaxLabel = normalizeLevelValue(e.grade) || '-';
+                    }
+                    if (norm > globalMaxNorm) {
+                        globalMaxNorm = norm;
+                        globalMaxLabel = normalizeLevelValue(e.grade) || '-';
+                    }
+                }
+                byGym.push({ gymName: gymEntries[0]?.gymName || gymKey, localMax: localMaxLabel });
+            }
+
+            const normPct = Math.max(0, Math.round((globalMaxNorm < 0 ? 0 : globalMaxNorm) * 100));
+            const atMaxCount = enriched.filter(e => Math.abs(e._norm - globalMaxNorm) < 1e-6).length;
+            const targetAtMax = 5;
+            const progressPct = Math.max(0, Math.min(100, Math.round((atMaxCount / targetAtMax) * 100)));
+
+            const ascByDate = enriched.slice().sort((a, b) => new Date(a.sendDate || a.date || 0) - new Date(b.sendDate || b.date || 0));
+            let bestNorm = -1;
+            const milestones = [];
+            for (const e of ascByDate) {
+                if (e._norm > bestNorm) {
+                    bestNorm = e._norm;
+                    milestones.push({ label: normalizeLevelValue(e.grade) || '-', normPct: Math.round(e._norm * 100), date: e.sendDate || e.date || '' });
+                }
+            }
+
+            return {
+                sorted,
+                totalSends: sorted.length,
+                activeDays: daySet.size,
+                reviewedGyms: gymSet.size,
+                globalMaxLabel,
+                globalMaxNormPct: normPct,
+                atMaxCount,
+                targetAtMax,
+                progressPct,
+                milestones,
+                byGym
+            };
         }
+
         function renderProfileDashboard() {
             const box = document.getElementById('profile-dashboard');
             if (!box || !activeUser) return;
             const mine = Array.from(profileEntriesMap.values()).filter(e => e.userId === activeUser.uid);
             const mineData = computeProfileData(mine);
-            const latest = mineData.sorted.slice(0, 5).map(e => `<div class="profile-log"><div><b>${escapeHtml(e.grade || '-')}</b> · ${escapeHtml(e.gymName || '-')} / ${escapeHtml(e.sectorName || '-')}</div><small>${escapeHtml(formatProfileDate(e.sendDate))}${e.tries ? ` · ${e.tries} ${t('viewer.tries').toLowerCase()}` : ''}</small></div>`).join('');
-            const trackerEntries = Array.from(routeProgressMap.values())
-                .filter(v => profileProgressFilter === 'all' || v.state === profileProgressFilter)
-                .sort((a,b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+            const latest = mineData.sorted.slice(0, 6).map(e => {
+                const state = e.outcome === 'project' ? t('viewer.project') : t('viewer.climbed');
+                return `<div class="profile-log"><div><b>${escapeHtml(e.grade || '-')}</b> · ${escapeHtml(e.gymName || '-')} / ${escapeHtml(e.sectorName || '-')}</div><small>${state} · ${escapeHtml(formatProfileDate(e.sendDate))}${e.tries ? ` · ${e.tries} ${t('viewer.tries').toLowerCase()}` : ''}</small></div>`;
+            }).join('');
+            const trackerAll = Array.from(routeProgressMap.values()).sort((a,b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+            const activeProjects = trackerAll.filter(v => v.state === 'project').length;
+            const trackerEntries = trackerAll.filter(v => profileProgressFilter === 'all' || v.state === profileProgressFilter);
             const trackerRows = trackerEntries.slice(0, 12).map(v => `<div class="profile-log"><div><b>${escapeHtml(v.routeLabel || v.routeGrade || '-')}</b> · ${v.state === 'climbed' ? t('viewer.climbed') : t('viewer.project')}</div><small>${escapeHtml(v.gymName || '-')} / ${escapeHtml(v.sectorName || '-')} · ${t('viewer.tries')}: ${v.attemptCount || 1}</small></div>`).join('');
+            const milestonesRows = mineData.milestones.slice(-5).reverse().map(m => `<div class="profile-timeline-row"><b>${escapeHtml(m.label)}</b><small>${m.normPct}% · ${escapeHtml(formatProfileDate(m.date || ''))}</small></div>`).join('');
+            const perGymRows = mineData.byGym.map(g => `<div class="profile-timeline-row"><b>${escapeHtml(g.gymName)}</b><small>${escapeHtml(g.localMax)}</small></div>`).join('');
             box.innerHTML = `
                 <div class="profile-header">
                     <h4>${t('dash.profileTitle')}</h4>
-                    <div class="profile-max-grade">${t('dash.maxGrade')}: ${escapeHtml(mineData.maxGrade)}</div>
+                    <div class="profile-chip">@${escapeHtml(currentUserName || 'climber')}</div>
                 </div>
+                <div class="profile-subtitle">${t('dash.profileSubtitle')}</div>
+
+                <div class="profile-milestone-card">
+                    <div class="profile-milestone-top">
+                        <div>
+                            <div style="color:var(--muted); font-size:0.82rem;">${t('dash.globalMaxLevel')}</div>
+                            <div class="profile-milestone-level">${escapeHtml(mineData.globalMaxLabel)}</div>
+                        </div>
+                        <div class="profile-chip">${t('dash.normalizedLevel')}: ${mineData.globalMaxNormPct}%</div>
+                    </div>
+                    <div class="profile-progress-bar"><div class="profile-progress-fill" style="width:${mineData.progressPct}%"></div></div>
+                    <div class="profile-progress-meta">
+                        <span>${t('dash.progressionToNext')}</span>
+                        <span>${mineData.atMaxCount}/${mineData.targetAtMax}</span>
+                    </div>
+                    <div class="profile-subtitle" style="margin-top:8px; margin-bottom:0;">${t('dash.globalProgressHint')}</div>
+                </div>
+
                 <div class="profile-kpis">
                     <div class="profile-kpi"><b>${mineData.totalSends}</b><span>${t('dash.totalSends')}</span></div>
                     <div class="profile-kpi"><b>${mineData.activeDays}</b><span>${t('dash.activeDays')}</span></div>
                     <div class="profile-kpi"><b>${mineData.reviewedGyms}</b><span>${t('dash.reviewedGyms')}</span></div>
+                    <div class="profile-kpi"><b>${activeProjects}</b><span>${t('dash.projectsActive')}</span></div>
                 </div>
-                <div class="profile-list">
-                    <b>${t('dash.latestProgress')}</b>
+
+                <div class="profile-section-card">
+                    <b>${t('dash.progressionTitle')}</b>
+                    <div class="profile-subtitle" style="margin-top:6px; margin-bottom:8px;">${t('dash.progressionHint')}</div>
+                    <div class="profile-timeline">${milestonesRows || `<p class="profile-empty">${t('dash.noMilestones')}</p>`}</div>
+                </div>
+
+                <div class="profile-section-card">
+                    <b>${t('dash.localMaxByGym')}</b>
+                    <div class="profile-timeline">${perGymRows || `<p class="profile-empty">${t('dash.noMilestones')}</p>`}</div>
+                </div>
+
+                <div class="profile-list" style="margin-top:10px;">
+                    <b>${t('dash.latestActivities')}</b>
                     ${latest || `<p class="profile-empty">${t('dash.noProgress')}</p>`}
                 </div>
+
                 <div class="profile-list" style="margin-top:10px;">
                     <div class="profile-filter-row">
                         <b>${t('viewer.progressTracker')}</b>
@@ -1600,19 +1795,22 @@
         }
 
         async function toggleFollowUser(targetUid) {
-            if (!activeUser || !targetUid || targetUid === activeUser.uid) return;
+            if (!activeUser) { alert(t('errors.authRequired')); return; }
+            if (!targetUid || targetUid === activeUser.uid) return;
             const isFollowing = userFollowingIds.includes(targetUid);
             const followRef = doc(db, 'follows', followDocId(activeUser.uid, targetUid));
-            if (isFollowing) {
-                await deleteDoc(followRef);
-                userFollowingIds = userFollowingIds.filter(id => id !== targetUid);
-            } else {
-                await setDoc(followRef, { followerId: activeUser.uid, followingId: targetUid, createdAt: serverTimestamp() }, { merge: true });
-                userFollowingIds = [...new Set([...userFollowingIds, targetUid])];
-            }
-            syncFollowingProgressSubscriptions();
-            renderFollowingSection();
-            renderActivePublicProfile();
+            try {
+                if (isFollowing) {
+                    await deleteDoc(followRef);
+                    userFollowingIds = userFollowingIds.filter(id => id !== targetUid);
+                } else {
+                    await setDoc(followRef, { followerId: activeUser.uid, followingId: targetUid, createdAt: serverTimestamp() }, { merge: true });
+                    userFollowingIds = [...new Set([...userFollowingIds, targetUid])];
+                }
+                syncFollowingProgressSubscriptions();
+                renderFollowingSection();
+                renderActivePublicProfile();
+            } catch (e) { alertWriteError(e); }
         }
 
         function stopFollowingProgressSubscriptions() {
@@ -1683,36 +1881,70 @@
             return buildFollowingFeedItems();
         }
 
+        async function safeGetDocs(qRef, fallback = null) {
+            try {
+                return await getDocs(qRef);
+            } catch (e) {
+                if (isPermissionDeniedError(e)) return fallback;
+                throw e;
+            }
+        }
+
         async function getFollowCounts(uid) {
             const [followersSnap, followingSnap] = await Promise.all([
-                getDocs(query(collection(db, 'follows'), where('followingId', '==', uid))),
-                getDocs(query(collection(db, 'follows'), where('followerId', '==', uid)))
+                safeGetDocs(query(collection(db, 'follows'), where('followingId', '==', uid))),
+                safeGetDocs(query(collection(db, 'follows'), where('followerId', '==', uid)))
             ]);
-            return { followers: followersSnap.size, following: followingSnap.size };
+            return { followers: followersSnap?.size || 0, following: followingSnap?.size || 0 };
         }
 
         async function getPublicFeedbackCount(uid) {
-            const fb = await getDocs(query(collectionGroup(db, 'reviews'), where('userId', '==', uid), limit(50)));
-            return fb.size;
+            const fb = await safeGetDocs(query(collectionGroup(db, 'reviews'), where('userId', '==', uid), limit(50)));
+            return fb?.size || 0;
         }
 
         async function openPublicProfile(uid, opts = {}) {
-            await renderPublicProfile(uid);
+            if (!uid) return;
+            setUserMainTab('social');
+            setSocialSubView('profile');
+            if (opts.updateRoute !== false) setPublicProfileRoute(uid);
+            try {
+                await renderPublicProfile(uid);
+            } catch (e) {
+                alertWriteError(e);
+                return;
+            }
             const wrap = document.getElementById('social-public-profile');
-            if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (wrap) wrap.scrollIntoView({ behavior: opts.smooth === false ? 'auto' : 'smooth', block: 'start' });
             if (opts.closeModal) window.closeSocialListModal();
         }
 
         async function renderPublicProfile(uid) {
             const wrap = document.getElementById('social-public-profile');
-            if (!wrap || !uid || !lastUsersSnap) return;
-            const snap = lastUsersSnap.docs.find(d => d.id === uid);
-            if (!snap) return;
-            const data = snap.data() || {};
+            if (!wrap || !uid) return;
+            let data = null;
+            if (lastUsersSnap) {
+                const snap = lastUsersSnap.docs.find(d => d.id === uid);
+                if (snap) data = snap.data() || {};
+            }
+            if (!data) {
+                try {
+                    const direct = await getDoc(doc(db, 'users', uid));
+                    if (!direct.exists()) return;
+                    data = direct.data() || {};
+                } catch (e) {
+                    if (isPermissionDeniedError(e)) {
+                        alert(t('errors.permissionDenied'));
+                        return;
+                    }
+                    throw e;
+                }
+            }
             const username = data.username || 'Climber';
+            const publicBio = (data.bio || '').trim();
             const avatar = data.avatarUrl ? `<img class="social-public-avatar" src="${escapeHtml(data.avatarUrl)}" alt="">` : `<div class="social-public-avatar">${escapeHtml((username || 'U').slice(0,2).toUpperCase())}</div>`;
-            const pubSnap = await getDocs(query(collection(db, 'users', uid, 'routeProgress'), where('shareOnFeed', '==', true), limit(20)));
-            const publicEntries = pubSnap.docs.map(d => d.data() || {});
+            const pubSnap = await safeGetDocs(query(collection(db, 'users', uid, 'routeProgress'), where('shareOnFeed', '==', true), limit(20)));
+            const publicEntries = pubSnap ? pubSnap.docs.map(d => d.data() || {}) : [];
             const routesPublic = publicEntries.length;
             const feedbackCount = await getPublicFeedbackCount(uid);
             const counts = await getFollowCounts(uid);
@@ -1725,6 +1957,7 @@
                     <div style="min-width:0; flex:1;">
                         <b>${escapeHtml(username)}</b>
                         <div style="color:var(--muted); font-size:0.86rem;">${t('dash.socialPublicProfile')}</div>
+                        ${publicBio ? `<p style="margin:6px 0 0; color:var(--muted); font-size:0.85rem;">${escapeHtml(publicBio)}</p>` : ''}
                     </div>
                     <button type="button" class="btn-sec" data-action="public-follow-toggle" data-uid="${uid}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button>
                 </div>
@@ -1746,6 +1979,8 @@
 
         function renderActivePublicProfile() {
             if (!activePublicProfileUid) return;
+            const profileWrap = document.getElementById('social-profile-view');
+            if (!profileWrap || profileWrap.style.display === 'none') return;
             renderPublicProfile(activePublicProfileUid).catch(() => {});
         }
 
@@ -1768,7 +2003,7 @@
                 body.innerHTML = users.map(u => {
                     const avatar = u.avatarUrl ? `<img class="following-avatar" src="${escapeHtml(u.avatarUrl)}" alt="">` : `<div class="following-avatar">${escapeHtml((u.username || 'U').slice(0,2).toUpperCase())}</div>`;
                     const isFollowing = userFollowingIds.includes(u.id);
-                    return `<div class="profile-log"><div class="social-user-item"><div class="social-user-meta" data-action="open-profile" data-uid="${u.id}">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></div>${u.id === activeUser?.uid ? '' : `<button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button>`}</div></div>`;
+                    return `<div class="profile-log"><div class="social-user-item"><button type="button" class="social-user-meta social-user-link" data-action="open-profile" data-uid="${u.id}">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></button>${u.id === activeUser?.uid ? '' : `<button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button>`}</div></div>`;
                 }).join('');
                 body.querySelectorAll('[data-action="toggle-follow"]').forEach(btn => btn.addEventListener('click', () => toggleFollowUser(btn.dataset.uid)));
                 body.querySelectorAll('[data-action="open-profile"]').forEach(el => el.addEventListener('click', () => openPublicProfile(el.dataset.uid, { closeModal: true })));
@@ -1779,6 +2014,10 @@
         window.closeSocialListModal = function closeSocialListModal() {
             document.getElementById('social-list-modal')?.classList.remove('active');
         };
+
+        window.addEventListener('hashchange', () => {
+            handlePublicProfileRoute().catch(() => {});
+        });
 
         window.searchUsersByUsernameEndpoint = searchUsersByUsername;
         window.followUserEndpoint = (uid) => toggleFollowUser(uid);
@@ -1802,7 +2041,7 @@
                 usersList.innerHTML = discover.map(u => {
                     const isFollowing = userFollowingIds.includes(u.id);
                     const avatar = u.avatarUrl ? `<img class="following-avatar" src="${escapeHtml(u.avatarUrl)}" alt="">` : `<div class="following-avatar">${escapeHtml((u.username || 'U').slice(0,2).toUpperCase())}</div>`;
-                    return `<div class="profile-log"><div class="social-user-item"><div class="social-user-meta" data-action="open-profile" data-uid="${u.id}">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></div><button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button></div></div>`;
+                    return `<div class="profile-log"><div class="social-user-item"><button type="button" class="social-user-meta social-user-link" data-action="open-profile" data-uid="${u.id}">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></button><button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button></div></div>`;
                 }).join('') || `<p class="profile-empty">${t('dash.noUserResults')}</p>`;
                 usersList.querySelectorAll('[data-action="toggle-follow"]').forEach(btn => btn.onclick = () => toggleFollowUser(btn.dataset.uid));
                 usersList.querySelectorAll('[data-action="open-profile"]').forEach(el => el.onclick = () => openPublicProfile(el.dataset.uid));
@@ -1814,14 +2053,17 @@
             if (!lastUserGymsSnap) return;
             destroyProfileListeners();
             profileEntriesMap = new Map();
+            gymLevelOrderMap = new Map();
             const gyms = [];
             lastUserGymsSnap.forEach(g => gyms.push({ id: g.id, name: g.data()?.name || g.id }));
             for (const gym of gyms) {
                 const sectorsSnap = await getDocs(collection(db, 'gyms', gym.id, 'Sectors'));
                 sectorsSnap.forEach(sec => {
                     const unsub = onSnapshot(collection(db, `gyms/${gym.id}/Sectors/${sec.id}/routes`), (routesSnap) => {
+                        const gymGrades = new Set();
                         routesSnap.forEach(routeDoc => {
                             const routeData = routeDoc.data();
+                            if (routeData?.grade) gymGrades.add(String(routeData.grade).trim());
                             const reviewsPath = `gyms/${gym.id}/Sectors/${sec.id}/routes/${routeDoc.id}/reviews`;
                             const keyPrefix = `${gym.id}__${sec.id}__${routeDoc.id}__`;
                             const reviewsUnsub = onSnapshot(collection(db, reviewsPath), (revSnap) => {
@@ -1829,13 +2071,14 @@
                                 revSnap.forEach(rev => {
                                     const r = rev.data();
                                     const dt = r.sendDate || (r.date?.toDate ? toYYYYMMDD(r.date.toDate()) : toYYYYMMDD(new Date()));
-                                    profileEntriesMap.set(`${keyPrefix}${rev.id}`, { userId: r.userId || null, userName: resolveUsername(r.userId, r.userName || 'Climber'), gymName: gym.name, sectorName: sec.data().name || sec.id, grade: routeData.grade || '-', outcome: r.outcome || 'climbed', sendDate: dt, tries: r.tries || null, date: r.date || null });
+                                    profileEntriesMap.set(`${keyPrefix}${rev.id}`, { userId: r.userId || null, userName: resolveUsername(r.userId, r.userName || 'Climber'), gymId: gym.id, gymName: gym.name, sectorName: sec.data().name || sec.id, grade: routeData.grade || '-', outcome: r.outcome || 'climbed', sendDate: dt, tries: r.tries || null, date: r.date || null });
                                 });
                                 renderProfileDashboard();
                                 renderFollowingSection();
                             });
                             profileUnsubscribers.push(reviewsUnsub);
                         });
+                        gymLevelOrderMap.set(gym.id, buildLevelOrder(Array.from(gymGrades).map(g => ({ grade: g }))));
                     });
                     profileUnsubscribers.push(unsub);
                 });
@@ -1993,13 +2236,15 @@
 
 
         window.toggleFavourite = async (gymId) => {
-            if (!activeUser) return;
+            if (!activeUser) { alert(t('errors.authRequired')); return; }
             const ref = doc(db, "users", activeUser.uid);
             const isFav = userFavouriteGyms.includes(gymId);
-            if (isFav) await updateDoc(ref, { favouriteGyms: arrayRemove(gymId) });
-            else await updateDoc(ref, { favouriteGyms: arrayUnion(gymId) });
-            userFavouriteGyms = isFav ? userFavouriteGyms.filter(id => id !== gymId) : [...userFavouriteGyms, gymId];
-            renderUserGymList();
+            try {
+                if (isFav) await updateDoc(ref, { favouriteGyms: arrayRemove(gymId) });
+                else await updateDoc(ref, { favouriteGyms: arrayUnion(gymId) });
+                userFavouriteGyms = isFav ? userFavouriteGyms.filter(id => id !== gymId) : [...userFavouriteGyms, gymId];
+                renderUserGymList();
+            } catch (e) { alertWriteError(e); }
         };
 
         async function openGymDetail(gId) {
@@ -2457,29 +2702,36 @@
 
         // --- LOGICA UPLOAD ---
         window.handleUpload = async (existingSId) => {
+            if (!activeUser || !realUserGymId) { alert(t('errors.authRequired')); return; }
             let file, name, sId;
             if(existingSId) {
-                file = document.getElementById(`file-update-${existingSId}`).files[0];
+                file = document.getElementById(`file-update-${existingSId}`)?.files?.[0];
                 sId = existingSId;
                 name = existingSId.replace(/-/g, ' ');
             } else {
-                file = document.getElementById('file-mesh-new').files[0];
-                name = document.getElementById('new-sector-name').value;
+                file = document.getElementById('file-mesh-new')?.files?.[0];
+                name = (document.getElementById('new-sector-name')?.value || '').trim();
                 if(!name || !file) return alert(t('errors.completeData'));
-                sId = name.trim().replace(/\s+/g, '-');
+                sId = name.replace(/\s+/g, '-');
             }
             if(!file) return alert(t('errors.selectFile'));
 
             showLoading(t('loading.updatingMesh'));
-            // Reset vie
-            const rSnap = await getDocs(collection(db, `gyms/${realUserGymId}/Sectors/${sId}/routes`));
-            await Promise.all(rSnap.docs.map(d => deleteDoc(d.ref)));
-            // Upload
-            const sRef = ref(storage, `meshes/${realUserGymId}/${sId}.glb`);
-            await uploadBytes(sRef, file);
-            const url = await getDownloadURL(sRef);
-            await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sId), { name, meshUrl: url }, { merge: true });
-            hideLoading();
+            try {
+                // Reset vie
+                const rSnap = await getDocs(collection(db, `gyms/${realUserGymId}/Sectors/${sId}/routes`));
+                await Promise.all(rSnap.docs.map(d => deleteDoc(d.ref)));
+                // Upload
+                const sRef = ref(storage, `meshes/${realUserGymId}/${sId}.glb`);
+                await uploadBytes(sRef, file);
+                const url = await getDownloadURL(sRef);
+                await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sId), { name, meshUrl: url }, { merge: true });
+            } catch (e) {
+                alertWriteError(e);
+                return;
+            } finally {
+                hideLoading();
+            }
             open3D(realUserGymId, sId);
         };
 
@@ -2670,7 +2922,7 @@
         }
 
         async function upsertRouteProgress(targetState, isInitial) {
-            if (!activeUser || !socialRouteContext) return;
+            if (!activeUser || !socialRouteContext) { alert(t('errors.authRequired')); return; }
             const key = `${socialRouteContext.gymId}__${socialRouteContext.sectorId}__${socialRouteContext.routeId}`;
             const nowDate = toYYYYMMDD(new Date());
             const prev = socialTrackerState || {};
@@ -2699,18 +2951,20 @@
                 sectorName: document.querySelector('#main-list-user .card b')?.textContent || socialRouteContext.sectorId,
                 updatedAt: new Date().toISOString()
             };
-            await setDoc(doc(db, 'users', activeUser.uid, 'routeProgress', key), payload, { merge: true });
-            if (shareOnFeed) {
-                await setDoc(doc(db, `gyms/${socialRouteContext.gymId}/Sectors/${socialRouteContext.sectorId}/routes/${socialRouteContext.routeId}/progressFeed`, activeUser.uid), {
-                    userId: activeUser.uid,
-                    userName: currentUserName || 'Climber',
-                    state: nextState,
-                    date: new Date(),
-                    notes: notes || ''
-                }, { merge: true });
-            }
-            alert(t('viewer.trackerSaved'));
-            renderProfileDashboard();
+            try {
+                await setDoc(doc(db, 'users', activeUser.uid, 'routeProgress', key), payload, { merge: true });
+                if (shareOnFeed) {
+                    await setDoc(doc(db, `gyms/${socialRouteContext.gymId}/Sectors/${socialRouteContext.sectorId}/routes/${socialRouteContext.routeId}/progressFeed`, activeUser.uid), {
+                        userId: activeUser.uid,
+                        userName: currentUserName || 'Climber',
+                        state: nextState,
+                        date: new Date(),
+                        notes: notes || ''
+                    }, { merge: true });
+                }
+                alert(t('viewer.trackerSaved'));
+                renderProfileDashboard();
+            } catch (e) { alertWriteError(e); }
         }
 
         async function getRouteProgress(routeId) {
@@ -2728,26 +2982,37 @@
         window.updateRouteProgressEndpoint = createOrUpdateRouteProgress;
 
         window.submitReview = async () => {
+            const signedUser = activeUser || auth.currentUser;
+            if (!signedUser) return alert(t('errors.authRequired'));
             if(selectedStars === 0) return alert(t('viewer.selectStar'));
-            const text = document.getElementById('user-comment').value;
-            const proposedGrade = (document.getElementById('public-proposed-grade')?.value || '').trim();
-            const reviewsRef = collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes/${activeRouteId}/reviews`);
-            const alreadyReviewed = await getDocs(query(reviewsRef, where('userId', '==', activeUser?.uid || null), limit(1)));
-            if (!alreadyReviewed.empty) {
-                alert(t('viewer.reviewAlreadySent'));
-                return;
-            }
-            await addDoc(reviewsRef, {
-                rating: selectedStars,
-                text: text || "",
-                proposedGrade: proposedGrade || null,
-                date: new Date(),
-                userId: activeUser?.uid || null,
-                userName: currentUserName || 'Climber'
-            });
-            document.getElementById('user-comment').value = "";
-            document.getElementById('public-proposed-grade').value = "";
-            alert(t('viewer.reviewSuccess'));
+            const commentInput = document.getElementById('user-comment');
+            const gradeInput = document.getElementById('public-proposed-grade');
+            const text = commentInput?.value || '';
+            const proposedGrade = (gradeInput?.value || '').trim();
+            const reviewRef = doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes/${activeRouteId}/reviews`, signedUser.uid);
+            try {
+                let existingReview = null;
+                try {
+                    existingReview = await getDoc(reviewRef);
+                } catch (_) {
+                    existingReview = null;
+                }
+                if (existingReview?.exists()) {
+                    alert(t('viewer.reviewAlreadySent'));
+                    return;
+                }
+                await setDoc(reviewRef, {
+                    rating: selectedStars,
+                    text: text || "",
+                    proposedGrade: proposedGrade || null,
+                    date: new Date(),
+                    userId: signedUser.uid,
+                    userName: currentUserName || 'Climber'
+                }, { merge: false });
+                if (commentInput) commentInput.value = "";
+                if (gradeInput) gradeInput.value = "";
+                alert(t('viewer.reviewSuccess'));
+            } catch (e) { alertWriteError(e); }
         };
 
         // --- EDITOR ADMIN ---
