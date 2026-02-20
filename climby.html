@@ -3,28 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-    <meta name="theme-color" content="#090D1A">
+    <meta name="theme-color" content="#0F1720">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Climby | Pro Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
         :root {
-            /* Dark tech theme: electric blue + cyan accents */
-            --bg: #090D1A;
-            --card: #121A2B;
-            --text: #F2F6FF;
-            --muted: #9AA8C7;
-            --border: #263552;
-            --primary: #5B8CFF;
-            --primary-dim: rgba(91, 140, 255, 0.22);
-            --accent: #22D3EE;
-            --danger: #ef4444;
-            --yellow: #84CC16;
-            --text-on-primary: #F7FAFF;
+            --bg: #0F1720;
+            --card: #16202A;
+            --surface-elevated: #1B2632;
+            --text: #F5F7FA;
+            --muted: #A8B3C2;
+            --text-disabled: #6B7785;
+            --border: rgba(255,255,255,0.08);
+            --primary: #2BE07D;
+            --primary-hover: #20C96B;
+            --primary-dim: rgba(43, 224, 125, 0.12);
+            --accent: #2BE07D;
+            --danger: #FF5C5C;
+            --yellow: #2BE07D;
+            --text-on-primary: #0F1720;
             --touch: 44px;
             --radius: 16px;
             --radius-sm: 12px;
@@ -39,8 +41,8 @@
             margin: 0;
             background: var(--bg);
             color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            font-size: 1rem;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 15px;
             line-height: 1.5;
             min-height: 100dvh;
             min-height: 100vh;
@@ -49,6 +51,9 @@
             padding-right: var(--safe-right);
             padding-bottom: var(--safe-bottom);
         }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; }
+        h2 { font-size: 22px; font-weight: 600; line-height: 1.25; }
+        h3, h4 { font-weight: 600; }
         .view { display: none; min-height: 100dvh; min-height: 100vh; width: 100%; }
         .view.active { display: flex; flex-direction: column; }
         .container {
@@ -77,17 +82,18 @@
             width: 100%;
             min-height: 52px;
             padding: 16px 24px;
-            background: linear-gradient(180deg, #5B8CFF 0%, #466BFF 100%);
+            background: var(--primary);
             color: var(--text-on-primary);
             border: none;
             border-radius: var(--radius);
             font-weight: 600;
             font-size: 1.05rem;
-            letter-spacing: 0.02em;
+            letter-spacing: normal;
             cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s;
-            box-shadow: 0 6px 18px rgba(70, 107, 255, 0.4);
+            transition: transform 0.1s, background 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.18);
         }
+        .btn-main:hover { background: var(--primary-hover); }
         .btn-main:active { transform: scale(0.98); }
         .btn-sec {
             min-height: var(--touch);
@@ -100,7 +106,7 @@
             font-size: 0.95rem;
             transition: border-color 0.2s, color 0.2s;
         }
-        .btn-sec:active { background: #1B2842; }
+        .btn-sec:active { background: var(--surface-elevated); }
         .btn-update { min-height: 40px; padding: 10px 16px; background: var(--accent); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-size: 0.9rem; }
         .btn-danger { min-height: 52px; background: var(--danger); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; width: 100%; margin-top: 12px; font-weight: 600; font-size: 1rem; }
         input, select, textarea {
@@ -127,12 +133,12 @@
         .admin-coverage-kpi { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); }
         .admin-coverage-kpi b { display:block; font-size:1.2rem; color:var(--text); }
         .admin-coverage-kpi span { display:block; margin-top:2px; font-size:0.8rem; color:var(--muted); }
-        .admin-donut { width:86px; height:86px; border-radius:50%; display:grid; place-items:center; margin-left:auto; background:conic-gradient(var(--accent) 0 0%, #1B2842 0 100%); }
+        .admin-donut { width:86px; height:86px; border-radius:50%; display:grid; place-items:center; margin-left:auto; background:conic-gradient(var(--accent) 0 0%, rgba(255,255,255,0.06) 0 100%); }
         .admin-donut-inner { width:62px; height:62px; border-radius:50%; background:var(--card); display:grid; place-items:center; font-size:0.8rem; color:var(--text); border:1px solid var(--border); }
         .admin-trend { margin-top:12px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
         .admin-trend-item { border:1px solid var(--border); border-radius:10px; background:var(--card); padding:8px; }
-        .admin-trend-bar { height:8px; border-radius:999px; background:#1B2842; overflow:hidden; margin-top:6px; }
-        .admin-trend-bar > i { display:block; height:100%; background:linear-gradient(90deg, #2EC4B6 0%, #38bdf8 100%); }
+        .admin-trend-bar { height:8px; border-radius:999px; background:rgba(255,255,255,0.06); overflow:hidden; margin-top:6px; }
+        .admin-trend-bar > i { display:block; height:100%; background: var(--primary); }
         .admin-sector-coverage-list { margin-top:14px; display:grid; gap:10px; }
         .admin-sector-coverage-card { border:1px solid var(--border); border-radius:12px; background:var(--card); padding:12px; }
         .admin-sector-coverage-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
@@ -141,6 +147,7 @@
         .admin-gym-form { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
         .admin-gym-form .full { grid-column: 1 / -1; }
         .admin-gym-form h5 { margin:8px 0 2px; color: var(--text); font-size:0.95rem; }
+        .admin-grade-setup-card textarea { min-height: 140px; }
 
         /* Overlays */
         #loading-overlay {
@@ -209,7 +216,7 @@
         }
         /* Star System */
         .star-rating { display: flex; gap: 12px; font-size: 36px; margin: 12px 0; cursor: pointer; justify-content: center; }
-        .star-rating span { color: #c9c4b8; transition: transform 0.15s, color 0.15s; }
+        .star-rating span { color: var(--muted); transition: transform 0.15s, color 0.15s; }
         .star-rating span:active { transform: scale(1.15); }
         .star-rating span.active { color: var(--yellow); }
 
@@ -247,41 +254,41 @@
         .landing-hero-logo .climby-wordmark {
             color: #fff;
             font-size: 1.4rem;
-            font-weight: 300;
+            font-weight: 600;
             text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .landing-hero .landing-hero-content { position: relative; z-index: 1; }
         .landing-hero h1.climby-wordmark.landing-hero-title {
             color: #fff;
             font-size: clamp(3rem, 12vw, 5rem);
-            font-weight: 300;
+            font-weight: 600;
             margin: 0 0 12px 0;
             letter-spacing: 0.06em;
             text-shadow: 0 2px 12px rgba(0,0,0,0.25);
         }
         .landing-hero .landing-tagline {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             color: rgba(255,255,255,0.95);
             font-size: clamp(1rem, 2.5vw, 1.15rem);
             max-width: 360px;
             margin: 0 auto 28px;
             line-height: 1.6;
         }
-        .landing-hero .landing-tagline .highlight { color: var(--accent); font-weight: 600; text-shadow: 0 0 20px rgba(34,211,238,0.35); }
+        .landing-hero .landing-tagline .highlight { color: var(--accent); font-weight: 600; }
         .landing-cta { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; max-width: 320px; }
         .landing-cta .btn-main.landing-cta-primary {
-            background: linear-gradient(180deg, #5B8CFF 0%, #466BFF 100%);
-            color: #fff;
-            font-size: 1.1rem;
+            background: var(--primary);
+            color: var(--text-on-primary);
+            font-size:18px;
             font-weight: 600;
             min-height: 56px;
-            letter-spacing: 0.03em;
-            box-shadow: 0 8px 22px rgba(70,107,255,0.5);
+            letter-spacing: normal;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.2);
         }
         .landing-cta .btn-sec.landing-cta-sec {
             background: rgba(255,254,249,0.95);
             border: 1px solid rgba(255,255,255,0.8);
-            color: #0F172A;
+            color: #0F1720;
             font-size: 1rem;
             font-weight: 600;
             min-height: 52px;
@@ -289,7 +296,7 @@
         }
         .landing-cta .btn-sec.landing-cta-sec:active {
             background: rgba(226, 232, 240, 0.98);
-            color: #0B1220;
+            color: #0F1720;
         }
         .landing-gallery {
             padding: 48px 20px 56px;
@@ -300,7 +307,7 @@
         }
         .landing-gallery h3.headline-brand {
             font-size: 1.5rem;
-            letter-spacing: 0.02em;
+            letter-spacing: normal;
             margin: 0 0 8px 0;
             text-align: center;
         }
@@ -345,7 +352,7 @@
             background: var(--bg) center/cover no-repeat;
             margin: 0 12px 12px;
             border-radius: 10px;
-            border: 1px solid rgba(91,140,255,0.28);
+            border: 1px solid var(--border);
             position: relative;
             overflow: hidden;
         }
@@ -353,29 +360,29 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(9,13,26,0.12) 0%, rgba(9,13,26,0.6) 100%);
+            background: linear-gradient(180deg, rgba(15,23,32,0.15) 0%, rgba(15,23,32,0.65) 100%);
         }
         .landing-feature-img.feature-3d {
-            background-image: radial-gradient(circle at 22% 28%, rgba(34,211,238,0.95) 0 6px, transparent 7px),
-                              radial-gradient(circle at 52% 52%, rgba(91,140,255,0.85) 0 7px, transparent 8px),
-                              radial-gradient(circle at 78% 34%, rgba(132,204,22,0.9) 0 6px, transparent 7px),
-                              linear-gradient(135deg, #132544 0%, #1a2f54 55%, #0f213f 100%);
+            background-image: radial-gradient(circle at 22% 28%, rgba(43,224,125,0.65) 0 6px, transparent 7px),
+                              radial-gradient(circle at 52% 52%, rgba(43,224,125,0.55) 0 7px, transparent 8px),
+                              radial-gradient(circle at 78% 34%, rgba(43,224,125,0.6) 0 6px, transparent 7px),
+                              linear-gradient(135deg, #16202A 0%, #1B2632 55%, #0F1720 100%);
         }
         .landing-feature-img.feature-route {
             background-image: linear-gradient(115deg, rgba(9,13,26,0.05) 0 36%, rgba(9,13,26,0.42) 37% 100%),
                               url('https://images.unsplash.com/photo-1522163182402-834f871fd851?auto=format&fit=crop&w=900&q=80');
         }
         .landing-feature-img.feature-training {
-            background-image: radial-gradient(circle at 18% 70%, rgba(132,204,22,0.85) 0 7px, transparent 8px),
-                              radial-gradient(circle at 46% 34%, rgba(34,211,238,0.85) 0 7px, transparent 8px),
-                              radial-gradient(circle at 78% 64%, rgba(91,140,255,0.9) 0 7px, transparent 8px),
-                              linear-gradient(120deg, #10203d 0%, #182f58 58%, #112647 100%);
+            background-image: radial-gradient(circle at 18% 70%, rgba(43,224,125,0.6) 0 7px, transparent 8px),
+                              radial-gradient(circle at 46% 34%, rgba(43,224,125,0.55) 0 7px, transparent 8px),
+                              radial-gradient(circle at 78% 64%, rgba(43,224,125,0.65) 0 7px, transparent 8px),
+                              linear-gradient(120deg, #16202A 0%, #1B2632 58%, #0F1720 100%);
         }
         .landing-feature-card .landing-feature-body { padding: 0 20px 20px; flex: 1; }
         .landing-feature-card h4 {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size:18px;
             color: var(--text);
             margin: 0 0 8px 0;
         }
@@ -414,7 +421,7 @@
             font-size: 0.95rem;
             font-weight: 500;
         }
-        .lang-switcher button.active { background: var(--primary); color: var(--text-on-primary); font-weight: 700; }
+        .lang-switcher button.active { background: var(--primary); color: var(--text-on-primary); font-weight: 600; }
         .lang-switcher button:active { opacity: 0.9; }
         .landing-hero .lang-switcher-hero {
             border-color: rgba(255,255,255,0.6);
@@ -427,7 +434,7 @@
         }
         .landing-hero .lang-switcher-hero button.active {
             background: rgba(255,255,255,0.95);
-            color: #0F172A;
+            color: #0F1720;
         }
 
         /* User panel – search & favourites */
@@ -448,12 +455,12 @@
         .user-main-section.active { display: block; }
         .profile-dashboard { margin-bottom: 18px; padding: 16px; display: block; }
         .profile-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-        .profile-header h4 { margin: 0; font-size: 1.1rem; }
+        .profile-header h4 { margin: 0; font-size:18px; }
         .profile-max-grade { color: var(--primary); font-weight: 700; }
         .profile-kpis { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
         .profile-kpi { border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
-        .profile-kpi b { display: block; font-size: 1.1rem; color: var(--text); }
-        .profile-kpi span { font-size: 0.78rem; color: var(--muted); }
+        .profile-kpi b { display: block; font-size:18px; color: var(--text); }
+        .profile-kpi span { font-size:13px; color: var(--muted); }
         .profile-list { display: flex; flex-direction: column; gap: 8px; }
         .profile-log { border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 0.9rem; }
         .profile-log small { color: var(--muted); }
@@ -464,7 +471,7 @@
         .following-section-title { margin: 4px 0 10px; font-size: 1rem; color: var(--text); }
         .following-user-row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
         .following-user-meta { display:flex; align-items:center; gap:10px; min-width:0; }
-        .following-avatar { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:#1B2842; display:grid; place-items:center; color:var(--muted); font-size:0.75rem; font-weight:700; }
+        .following-avatar { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.06); display:grid; place-items:center; color:var(--muted); font-size:0.75rem; font-weight:700; }
         .social-public-card { display:block; }
         .social-user-item { display:flex; align-items:center; justify-content:space-between; gap:10px; }
         .social-user-meta { display:flex; align-items:center; gap:10px; min-width:0; flex:1; cursor:pointer; }
@@ -473,69 +480,90 @@
         .social-user-link b { text-decoration: underline; text-underline-offset: 2px; }
         .social-user-link:active { opacity:0.75; }
         .social-public-header { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
-        .social-public-avatar { width:56px; height:56px; border-radius:999px; border:1px solid var(--border); background:#1B2842; object-fit:cover; display:grid; place-items:center; font-weight:700; }
+        .social-public-avatar { width:56px; height:56px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,0.06); object-fit:cover; display:grid; place-items:center; font-weight:700; }
         .social-public-stats { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; margin:10px 0; }
         .social-stat-btn { border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--text); min-height:52px; font-weight:600; }
         .social-stat-btn span { display:block; color:var(--muted); font-size:0.75rem; font-weight:500; }
-        .social-public-list { margin-top:10px; }
+                .social-public-list { margin-top:10px; }
+        .social-top-tabs { display:flex; gap:8px; margin-bottom:10px; }
+        .social-top-tab { flex:1; min-height:44px; border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--muted); font-weight:600; }
+        .social-top-tab.active { border-color: var(--primary); color: var(--primary); }
+        .social-subpanel { display:none; }
+        .social-subpanel.active { display:block; }
+        .social-feed-card { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); margin-bottom:10px; }
+        .social-feed-card.highlight { border-color: var(--primary); background: rgba(43,224,125,0.08); }
+        .social-feed-head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .social-feed-title { font-size:15px; font-weight:600; color:var(--text); }
+        .social-feed-meta { margin-top:6px; font-size:13px; color:var(--muted); }
+        .social-feed-grade { font-size:22px; font-weight:600; color:var(--primary); }
+        .social-feed-actions { display:flex; gap:8px; margin-top:10px; }
+        .social-action-btn { min-height:36px; padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface-elevated); color:var(--muted); font-size:13px; }
+        .social-action-btn.active { border-color: var(--primary); color: var(--primary); }
+        .social-feed-card.engaged { border-color: rgba(255, 107, 107, 0.45); background: rgba(255, 107, 107, 0.06); }
+        .social-chip { display:inline-flex; align-items:center; gap:6px; padding:2px 8px; border-radius:999px; font-size:11px; border:1px solid var(--border); color:var(--muted); }
+        .social-chip.new { border-color:#ff6b6b; color:#ff6b6b; background:rgba(255,107,107,0.12); }
+        .social-my-comments-preview { margin-top:10px; border-top:1px dashed var(--border); padding-top:10px; }
+        .social-my-comments-preview .profile-log { margin-bottom:8px; }
+        .social-inline-reply { display:flex; gap:8px; margin-top:8px; }
+        .social-inline-reply .social-input { margin:0; }
         .social-modal { position:fixed; inset:0; z-index:1500; background:rgba(4,8,18,0.72); display:none; align-items:flex-end; }
         .social-modal.active { display:flex; }
         .social-modal-sheet { width:100%; max-height:74dvh; overflow:auto; background:var(--card); border-top:1px solid var(--border); border-radius:18px 18px 0 0; padding:16px; }
         .username-hint { margin: -2px 0 8px; min-height: 20px; font-size: 0.86rem; color: var(--muted); text-align: left; }
-        .username-hint.ok { color: #15803d; }
+        .username-hint.ok { color: var(--primary); }
         .username-hint.error { color: var(--danger); }
-        .user-section-title {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-weight: 500;
-            font-size: 1.2rem;
+         .user-section-title {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 600;
+            font-size: 22px;
             color: var(--text);
             margin: 0 0 12px 0;
         }
         .user-gym-card { display:block; width:100%; }
         .gym-3d-card {
             position: relative;
-            border: 1px solid rgba(34,211,238,0.38);
-            background: linear-gradient(140deg, rgba(18,26,43,0.95) 0%, rgba(20,32,56,0.96) 55%, rgba(14,22,42,0.98) 100%);
+            border: 1px solid var(--primary);
+            background: var(--card);
             overflow: hidden;
-            box-shadow: 0 10px 24px rgba(7, 14, 30, 0.36), inset 0 0 0 1px rgba(91,140,255,0.18);
+            box-shadow: 0 10px 24px rgba(7, 14, 30, 0.36), inset 0 0 0 1px var(--border);
             transition: transform 0.15s ease, box-shadow 0.2s ease;
         }
-        .gym-3d-card:active { transform: translateY(1px) scale(0.995); box-shadow: 0 6px 14px rgba(7,14,30,0.3), inset 0 0 0 1px rgba(91,140,255,0.24); }
-        .gym-3d-overlay { position:absolute; inset:0; pointer-events:none; background: radial-gradient(circle at 88% 18%, rgba(34,211,238,0.18), transparent 44%), radial-gradient(circle at 14% 82%, rgba(91,140,255,0.14), transparent 46%); }
+        .gym-3d-card:active { transform: translateY(1px) scale(0.995); box-shadow: 0 6px 14px rgba(7,14,30,0.3), inset 0 0 0 1px var(--border); }
+        .gym-3d-overlay { position:absolute; inset:0; pointer-events:none; background: radial-gradient(circle at 88% 18%, rgba(43,224,125,0.12), transparent 44%), radial-gradient(circle at 14% 82%, rgba(43,224,125,0.1), transparent 46%); }
         .gym-3d-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; position:relative; z-index:1; }
-        .user-gym-card .user-gym-name { flex:1; font-size:1.08rem; line-height:1.3; }
-        .gym-3d-badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; border:1px solid rgba(34,211,238,0.45); padding:6px 10px; font-size:0.78rem; color:#d6f8ff; background:rgba(10,24,45,0.6); font-weight:600; }
-        .gym-3d-badge.off { border-color: rgba(154,168,199,0.38); color: #b8c3db; background: rgba(16,27,45,0.45); }
-        .gym-3d-surface { margin:10px 0 12px; height:8px; border-radius:999px; background: linear-gradient(90deg, rgba(34,211,238,0.28) 0%, rgba(91,140,255,0.42) 50%, rgba(132,204,22,0.3) 100%); border:1px solid rgba(91,140,255,0.26); }
+        .user-gym-card .user-gym-name { flex:1; font-size:18px; font-weight:600; line-height:1.3; }
+        .gym-3d-badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; border:1px solid var(--primary); padding:6px 10px; font-size:0.78rem; color:var(--primary); background:rgba(43,224,125,0.12); font-weight:600; }
+        .gym-3d-badge.off { border-color: var(--border); color: var(--muted); background: rgba(255,255,255,0.04); }
+        .gym-3d-surface { margin:10px 0 12px; height:8px; border-radius:999px; background: rgba(255,255,255,0.06); border:1px solid var(--border); }
         .gym-3d-actions { display:flex; align-items:center; justify-content:space-between; gap:10px; position:relative; z-index:1; }
-        .gym-3d-cta { flex:1; min-height:48px; border:none; border-radius:12px; background: linear-gradient(180deg, #22D3EE 0%, #3B82F6 100%); color:#081225; font-weight:700; letter-spacing:0.01em; box-shadow:0 6px 18px rgba(34,211,238,0.28); }
+        .gym-3d-cta { flex:1; min-height:48px; border:none; border-radius:12px; background: var(--primary); color: var(--text-on-primary); font-weight:600; letter-spacing:normal; box-shadow:0 4px 10px rgba(0,0,0,0.18); }
         .gym-3d-cta:active { transform: scale(0.99); }
         .user-gym-card .btn-fav { background: rgba(9,16,31,0.5); border:1px solid var(--border); color: var(--muted); cursor: pointer; padding: 10px; min-width: 44px; min-height: 44px; font-size: 1.25rem; display:flex; align-items:center; justify-content:center; border-radius:12px; }
-        .user-gym-card .btn-fav.fav { color: var(--danger); border-color: rgba(239,68,68,0.5); }
+        .user-gym-card .btn-fav.fav { color: var(--danger); border-color: var(--danger); }
         .user-detail-view { margin-top: 0; }
         .gym-detail-overview {
             display: block;
             margin: 12px 0 16px;
-            background: linear-gradient(180deg, #121A2B 0%, #0F1628 100%);
-            border: 1px solid rgba(91,140,255,0.3);
+            background: var(--card);
+            border: 1px solid var(--border);
         }
         .gym-detail-overview { box-shadow: 0 12px 24px rgba(7,14,30,0.3); }
-        .gym-detail-hero-cta { margin-top: 12px; padding: 12px; border-radius: 14px; border: 1px solid rgba(34,211,238,0.38); background: linear-gradient(140deg, rgba(16,29,52,0.92) 0%, rgba(18,39,70,0.9) 55%, rgba(12,26,49,0.95) 100%); }
+        .gym-detail-hero-cta { margin-top: 12px; padding: 12px; border-radius: 14px; border: 1px solid var(--primary); background: var(--surface-elevated); }
         .gym-detail-hero-cta b { display:block; font-size: 1rem; margin-bottom: 4px; }
         .gym-detail-hero-cta p { margin: 0 0 10px; color: var(--muted); font-size: 0.88rem; }
         .gym-detail-hero-cta .btn-main { min-height: 50px; }
-        #user-gym-detail-sectors-list .card { border:1px solid rgba(91,140,255,0.26); background: linear-gradient(140deg, rgba(18,26,43,0.95) 0%, rgba(20,32,56,0.96) 100%); box-shadow: 0 8px 16px rgba(7,14,30,0.24); }
+        #user-gym-detail-sectors-list .card { border:1px solid var(--border); background: var(--card); box-shadow: 0 6px 12px rgba(0,0,0,0.18); }
         .gym-detail-title {
-            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 500;
-            font-size: 1.6rem;
+            font-size: 22px;
             color: var(--text);
             margin: 0 0 10px 0;
         }
         .gym-detail-meta { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 0; }
-        .gym-meta-chip { border: 1px solid var(--border); background: #141F33; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+        .gym-meta-chip { border: 1px solid var(--border); background: var(--surface-elevated); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
         .gym-meta-chip b { font-size: 1rem; color: var(--text); }
-        .gym-meta-chip span { font-size: 0.78rem; color: var(--muted); }
+        .gym-meta-chip span { font-size:13px; color: var(--muted); }
         .gym-detail-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
         .gym-tab {
             flex: 1;
@@ -548,23 +576,23 @@
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            letter-spacing: 0.03em;
+            letter-spacing: normal;
         }
-        .gym-tab.active { color: var(--primary); border-color: var(--primary); background: #141F33; }
+        .gym-tab.active { color: var(--primary); border-color: var(--primary); background: var(--surface-elevated); }
         .gym-tab-panel { margin-bottom: 28px; }
         .user-gym-detail-desc { color: var(--muted); font-size: 1rem; line-height: 1.6; margin: 0 0 14px 0; }
-        .gym-info-block { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 14px; background: #141F33; padding: 14px; }
+        .gym-info-block { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-elevated); padding: 14px; }
         .gym-info-heading {
-            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 500;
-            font-size: 1.1rem;
+            font-size:18px;
             color: var(--text);
             margin: 0 0 10px 0;
         }
         .gym-sectors-header { margin-bottom: 14px; }
         .gym-sectors-header p { margin: 6px 0 0; color: var(--muted); font-size: 0.9rem; }
         .gym-about-content { color: var(--text); font-size: 0.95rem; line-height: 1.6; display: flex; flex-direction: column; gap: 8px; }
-        .gym-about-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: #18253D; }
+        .gym-about-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-elevated); }
         .gym-about-label { color: var(--muted); min-width: 92px; }
         .gym-about-value { color: var(--text); text-align: right; word-break: break-word; }
         .gym-about-content a { color: var(--accent); text-decoration: none; }
@@ -576,11 +604,11 @@
         .user-gym-detail-gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; margin-top: 10px; -webkit-overflow-scrolling: touch; }
         .user-gym-detail-gallery img { width: 200px; min-width: 200px; height: 150px; object-fit: cover; border-radius: var(--radius-sm); display: block; }
         .gym-coverage-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
-        .gym-coverage-kpi { border: 1px solid var(--border); border-radius: 10px; background: #141F33; padding: 10px; text-align: center; }
-        .gym-coverage-kpi b { display:block; font-size: 1.1rem; color: var(--text); }
-        .gym-coverage-kpi span { display:block; font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-        .gym-coverage-bar { width: 100%; height: 12px; border-radius: 999px; background: #1B2842; overflow: hidden; border: 1px solid var(--border); }
-        .gym-coverage-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #2EC4B6 0%, #38bdf8 100%); transition: width 0.25s ease; }
+        .gym-coverage-kpi { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-elevated); padding: 10px; text-align: center; }
+        .gym-coverage-kpi b { display:block; font-size:18px; color: var(--text); }
+        .gym-coverage-kpi span { display:block; font-size:13px; color: var(--muted); margin-top: 2px; }
+        .gym-coverage-bar { width: 100%; height: 12px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; border: 1px solid var(--border); }
+        .gym-coverage-fill { height: 100%; border-radius: 999px; background: var(--primary); transition: width 0.25s ease; }
         .gym-coverage-meta { margin-top: 8px; font-size: 0.86rem; color: var(--muted); }
         #user-gym-detail-sectors-list .card { min-height: 56px; }
         #user-gym-detail-sectors-list { margin-bottom: 20px; }
@@ -603,14 +631,44 @@
         .profile-filter-row { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:8px 0; }
         .profile-filter-row select { margin:0; min-height:40px; max-width:200px; }
         .profile-subtitle { color: var(--muted); font-size: 0.9rem; margin: 2px 0 12px; }
-        .profile-milestone-card { border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px; background:linear-gradient(135deg, rgba(91,140,255,0.12), rgba(46,196,182,0.08)); }
+        .profile-milestone-card { border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px; background: rgba(43,224,125,0.08); }
         .profile-milestone-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
         .profile-milestone-level { font-size:1.5rem; font-weight:800; color:var(--primary); line-height:1.1; }
         .profile-chip { border:1px solid var(--border); border-radius:999px; padding:4px 10px; color:var(--muted); font-size:0.75rem; }
-        .profile-progress-bar { height:10px; border-radius:999px; background:#1B2842; overflow:hidden; margin-top:10px; border:1px solid var(--border); }
-        .profile-progress-fill { height:100%; background:linear-gradient(90deg, var(--primary), #2EC4B6); }
+        .profile-progress-bar { height:10px; border-radius:999px; background:rgba(255,255,255,0.06); overflow:hidden; margin-top:10px; border:1px solid var(--border); }
+        .profile-progress-fill { height:100%; background: var(--primary); }
         .profile-progress-meta { display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:0.8rem; color:var(--muted); }
         .profile-section-card { border:1px solid var(--border); border-radius:12px; padding:10px; margin-top:10px; }
+        .profile-shell { display:flex; flex-direction:column; gap:12px; }
+        .profile-header-main { border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--card); }
+        .profile-header-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+        .profile-username { margin:0; font-size:28px; font-weight:600; color:var(--text); line-height:1.1; }
+        .profile-subcopy { margin:8px 0 0; color:var(--muted); font-size:13px; font-weight:500; }
+        .profile-header-actions { display:flex; gap:8px; }
+        .profile-icon-btn { width:38px; height:38px; border-radius:10px; border:1px solid var(--border); background:var(--surface-elevated); color:var(--muted); font-size:16px; }
+        .profile-best-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+        .profile-best-card { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); text-align:center; }
+        .profile-best-card b { display:block; font-size:13px; color:var(--muted); margin-bottom:6px; }
+        .profile-best-grade { font-size:32px; font-weight:600; color:var(--primary); line-height:1; margin:6px 0; }
+        .profile-best-label { font-size:13px; color:var(--muted); }
+        .profile-snapshot-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+        .profile-snap { border:1px solid var(--border); border-radius:12px; padding:10px; background:var(--card); }
+        .profile-snap-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; color:var(--muted); font-size:13px; }
+        .profile-snap-num { font-size:24px; font-weight:600; color:var(--text); }
+        .profile-heatmap { display:grid; grid-template-columns: repeat(10, minmax(0,1fr)); gap:5px; }
+        .profile-heat { height:12px; border-radius:4px; background:rgba(255,255,255,0.06); border:1px solid var(--border); }
+        .profile-heat.on { background:var(--primary-dim); border-color:var(--primary); }
+        .profile-progress-tech { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); }
+        .profile-sparkline { width:100%; height:60px; display:block; }
+        .profile-activity-list { display:flex; flex-direction:column; gap:8px; }
+        .profile-activity-card { border:1px solid var(--border); border-radius:12px; padding:10px; background:var(--card); }
+        .profile-activity-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .profile-activity-grade { font-size:22px; font-weight:600; color:var(--primary); }
+        .profile-activity-state { font-size:13px; color:var(--muted); border:1px solid var(--border); border-radius:999px; padding:3px 8px; }
+        .profile-activity-meta { font-size:13px; color:var(--muted); margin-top:4px; }
+        .profile-tracker-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+        .profile-tracker-col { border:1px solid var(--border); border-radius:12px; padding:10px; background:var(--card); }
+        .profile-tracker-col h5 { margin:0 0 8px; font-size:13px; color:var(--muted); }
         .profile-timeline { display:flex; flex-direction:column; gap:8px; }
         .profile-timeline-row { display:flex; justify-content:space-between; gap:10px; border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
         .profile-timeline-row b { color:var(--text); }
@@ -666,7 +724,7 @@
             min-width: 48px;
             padding: 12px 18px;
             background: rgba(0,0,0,0.7);
-            color: #E6EEFF;
+            color: var(--text);
             border-radius: var(--radius-sm);
         }
         .auth-toggle { cursor: pointer; color: var(--muted); margin-top: 22px; font-size: 1rem; min-height: 44px; display: inline-flex; align-items: center; }
@@ -674,24 +732,25 @@
 
         /* Brand typography – consistent with wordmark */
         .climby-wordmark {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-style: italic;
-            font-weight: 300;
-            letter-spacing: 0.02em;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-style: normal;
+            font-weight: 600;
+            letter-spacing: normal;
         }
         .headline-brand {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-weight: 500;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 600;
             font-style: normal;
-            letter-spacing: 0.01em;
+            letter-spacing: normal;
             color: var(--text);
+            font-size: 22px;
         }
         .headline-brand.primary { color: var(--primary); }
         .subhead {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            font-weight: 600;
-            font-size: 0.95rem;
-            letter-spacing: 0.02em;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 500;
+            font-size: 13px;
+            letter-spacing: normal;
             color: var(--text);
         }
         .subhead.muted { color: var(--muted); }
@@ -774,6 +833,29 @@
         </div>
     </div>
 
+    <div id="social-comments-modal" class="social-modal">
+        <div class="social-modal-sheet">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <h4 class="following-section-title" style="margin:0;">Commenti</h4>
+                <button type="button" class="btn-sec" onclick="window.closeSocialCommentsModal()" data-i18n="viewer.close"></button>
+            </div>
+            <div id="social-comments-list" class="social-public-list" style="margin-top:10px;"></div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <input id="social-comments-input" class="social-input" placeholder="Scrivi un commento..." style="margin:0;">
+                <button type="button" class="btn-main" id="social-comments-send">Invia</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gym-grade-setup-overlay" class="social-modal" style="display:none;">
+        <div class="social-modal-sheet">
+            <h4 class="following-section-title" style="margin-top:0;" data-i18n="admin.gradeSetupRequiredTitle"></h4>
+            <p class="profile-subtitle" data-i18n="admin.gradeSetupRequiredHint"></p>
+            <textarea id="gym-grade-setup-list" data-i18n-placeholder="admin.gradeSystemPlaceholder"></textarea>
+            <button class="btn-main" id="gym-grade-setup-save" data-i18n="admin.saveGradeSystem"></button>
+        </div>
+    </div>
+
     <div id="view-auth" class="view">
         <div class="container">
             <div class="card" style="text-align:center; margin-top:50px; padding: 30px;">
@@ -842,6 +924,13 @@
                     <button class="btn-main" id="admin-save-gym-profile" style="margin-top:12px;" data-i18n="admin.saveGymProfile"></button>
                 </div>
 
+                <h3 class="headline-brand" data-i18n="admin.gradeSystemTitle"></h3>
+                <div class="card admin-grade-setup-card" style="display:block;">
+                    <p class="profile-subtitle" style="margin-top:0;" data-i18n="admin.gradeSystemHint"></p>
+                    <textarea id="admin-grade-setup-input" data-i18n-placeholder="admin.gradeSystemPlaceholder"></textarea>
+                    <button class="btn-main" id="admin-save-grade-system" data-i18n="admin.saveGradeSystem"></button>
+                </div>
+
                 <h3 class="headline-brand" data-i18n="admin.liveData"></h3>
                 <div id="admin-stats-container" class="card" style="padding:0; overflow-x: auto;">
                     </div>
@@ -884,14 +973,30 @@
                 </div>
                 <div id="user-following-view" class="user-main-section">
                     <div id="social-main-view">
-                        <div class="card" style="display:block;">
-                            <h4 class="following-section-title" data-i18n="dash.findUsers"></h4>
-                            <input type="text" id="following-search" class="following-search" data-i18n-placeholder="dash.searchUsers">
-                            <div id="following-users-list"></div>
+                        <div class="social-top-tabs">
+                            <button type="button" class="social-top-tab active" id="social-top-tab-community">Community</button>
+                            <button type="button" class="social-top-tab" id="social-top-tab-users">Utenti</button>
+                            <button type="button" class="social-top-tab" id="social-top-tab-my-posts">Le mie pubblicazioni</button>
                         </div>
-                        <div class="card" style="display:block;">
-                            <h4 class="following-section-title" data-i18n="dash.followingProgress"></h4>
-                            <div id="following-progress-list"></div>
+                        <div id="social-community-panel" class="social-subpanel active">
+                            <div class="card" style="display:block;">
+                                <h4 class="following-section-title">Community Feed</h4>
+                                <select id="social-gym-filter"></select>
+                                <div id="following-progress-list"></div>
+                            </div>
+                        </div>
+                        <div id="social-my-posts-panel" class="social-subpanel">
+                            <div class="card" style="display:block;">
+                                <h4 class="following-section-title">Le mie pubblicazioni</h4>
+                                <div id="social-my-posts-list"></div>
+                            </div>
+                        </div>
+                        <div id="social-users-panel" class="social-subpanel">
+                            <div class="card" style="display:block;">
+                                <h4 class="following-section-title" data-i18n="dash.findUsers"></h4>
+                                <input type="text" id="following-search" class="following-search" data-i18n-placeholder="dash.searchUsers">
+                                <div id="following-users-list"></div>
+                            </div>
                         </div>
                     </div>
                     <div id="social-profile-view" style="display:none;">
@@ -1040,7 +1145,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, limit, serverTimestamp, collectionGroup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, collectionGroup, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -1072,6 +1177,23 @@
         let lastUsersSnap = null;
         let followingFeedMap = new Map();
         let followingProgressUnsubscribers = [];
+        let socialFeedUnsubscriber = null;
+        let socialFeedActivities = [];
+        let socialSelectedGymId = null;
+        let socialTopTab = 'community';
+        let socialFeedError = null;
+        let socialFeedById = new Map();
+        let socialFeedInteractionState = new Map();
+        let socialApplauseByActivity = new Map();
+        let socialApplauseLoadingIds = new Set();
+        let socialMyPostsActivities = [];
+        let socialMyPostsUnsubscribers = [];
+        let socialMyPostsLoading = false;
+        let socialMyPostsError = null;
+        let socialMyPostsInteractionMeta = new Map();
+        let socialMyPostsExpanded = new Set();
+        let socialCommentsUnsubscriber = null;
+        let activeSocialCommentsActivityId = null;
         let gymCoverageUnsubscribers = [];
         let activeGymDetailId = null;
         let routeProgressUnsubscriber = null;
@@ -1089,15 +1211,17 @@
         let currentModelLoadTimeout = null;
         let lastOpen3DRequest = null;
         let gymLevelOrderMap = new Map();
+        let currentGymGradeSystem = null;
+        let forcedGradeSetupActive = false;
         const SOCIAL_PROFILE_ROUTE_PREFIX = '#/social/user/';
 
         const GRADE_SCALE = ["4a","4b","4c","5a","5b","5c","6a","6b","6c","7a","7b","7c","8a","8b","8c","9a","9b","9c"];
         const AVAILABLE_COLORS = [
-            { value: '#5B8CFF', labels: { it: 'Blu elettrico', en: 'Electric blue' } },
-            { value: '#2EC4B6', labels: { it: 'Turchese', en: 'Turquoise' } },
+            { value: '#2BE07D', labels: { it: 'Blu elettrico', en: 'Electric blue' } },
+            { value: '#2BE07D', labels: { it: 'Turchese', en: 'Turquoise' } },
             { value: '#FFD166', labels: { it: 'Giallo', en: 'Yellow' } },
-            { value: '#ef4444', labels: { it: 'Rosso', en: 'Red' } },
-            { value: '#3B82F6', labels: { it: 'Blu', en: 'Blue' } },
+            { value: '#FF5C5C', labels: { it: 'Rosso', en: 'Red' } },
+            { value: '#20C96B', labels: { it: 'Blu', en: 'Blue' } },
             { value: '#22C55E', labels: { it: 'Verde', en: 'Green' } },
             { value: '#8B5CF6', labels: { it: 'Viola', en: 'Purple' } },
             { value: '#EC4899', labels: { it: 'Rosa', en: 'Pink' } },
@@ -1116,7 +1240,7 @@
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
                 auth: { yourName: "Il tuo Nome", username: "Username pubblico", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
                 dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
-                admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media" },
+                admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo." },
                 viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
                 loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D...", retry: "Riprova" },
@@ -1126,7 +1250,7 @@
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
                 auth: { yourName: "Your name", username: "Public username", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
                 dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
-                admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg" },
+                admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg", gradeSystemTitle: "Gym grade system", gradeSystemHint: "Add one grade per line, from easiest to hardest. A numeric order is stored too.", gradeSystemPlaceholder: "E.g.\nGreen\nBlue\nPurple\nRed", saveGradeSystem: "SAVE GRADE SYSTEM", gradeSetupRequiredTitle: "Set up your gym grades", gradeSetupRequiredHint: "Before using the admin panel, configure your gym grade system from easiest to hardest.", gradeSystemSaved: "Grade system saved successfully." },
                 viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
                 loading: { init: "Loading...", verifying: "Verifying...", updatingMesh: "Updating mesh...", loading3d: "Loading 3D...", retry: "Retry" },
@@ -1339,20 +1463,83 @@
                 userRole = data.role === 'admin' ? 'admin' : 'user';
                 currentMode = userRole;
                 document.getElementById('btn-mode-toggle').style.display = userRole === 'admin' ? 'block' : 'none';
-                initDashboard();
+                await initDashboard();
                 await handlePublicProfileRoute();
                 hideLoading();
             } else { showView('view-landing'); hideLoading(); }
         });
 
+        async function getGymGradeSystem(gymId) {
+            if (!gymId) return null;
+            const snap = await getDoc(doc(db, 'gyms', gymId));
+            if (!snap.exists()) return null;
+            const data = snap.data() || {};
+            return { gradeSystem: Array.isArray(data.gradeSystem) ? data.gradeSystem : [], gradeSystemConfigured: !!data.gradeSystemConfigured, gradeSystemLocked: !!data.gradeSystemLocked };
+        }
+
+        function parseGradeSystemInput(text) {
+            const labels = String(text || '').split('\n').map(v => v.trim()).filter(Boolean);
+            return labels.map((label, index) => ({ label, order: index }));
+        }
+
+        async function saveGymGradeSystem(gymId, text) {
+            const rows = parseGradeSystemInput(text);
+            if (!rows.length) throw new Error('Inserisci almeno un grado.');
+            const unique = new Set(rows.map(r => r.label.toLowerCase()));
+            if (unique.size !== rows.length) throw new Error('I gradi devono essere univoci.');
+            const snap = await getDoc(doc(db, 'gyms', gymId));
+            const gymData = snap.exists() ? (snap.data() || {}) : {};
+            if (gymData.gradeSystemLocked && gymData.gradeSystemConfigured) throw new Error('Sistema gradi bloccato.');
+            await setDoc(doc(db, 'gyms', gymId), { gradeSystem: rows, gradeSystemConfigured: true }, { merge: true });
+            currentGymGradeSystem = rows;
+            gymLevelOrderMap.set(gymId, gradeSystemArrayToMap(rows));
+            return rows;
+        }
+
+        function openForcedGymGradeSetup() {
+            forcedGradeSetupActive = true;
+            const overlay = document.getElementById('gym-grade-setup-overlay');
+            if (overlay) overlay.style.display = 'flex';
+            const panel = document.getElementById('admin-panel');
+            if (panel) panel.style.display = 'none';
+            const saveBtn = document.getElementById('gym-grade-setup-save');
+            if (saveBtn) saveBtn.onclick = async () => {
+                try {
+                    const txt = document.getElementById('gym-grade-setup-list')?.value || '';
+                    await saveGymGradeSystem(realUserGymId, txt);
+                    if (overlay) overlay.style.display = 'none';
+                    forcedGradeSetupActive = false;
+                    alert(t('admin.gradeSystemSaved'));
+                    await initDashboard();
+                } catch (e) { alert(e.message || String(e)); }
+            };
+        }
+
+        async function ensureAdminGradeSystemSetup() {
+            if (userRole !== 'admin' || !realUserGymId) return true;
+            const state = await getGymGradeSystem(realUserGymId);
+            currentGymGradeSystem = state?.gradeSystem || [];
+            gymLevelOrderMap.set(realUserGymId, gradeSystemArrayToMap(currentGymGradeSystem));
+            if (!state?.gradeSystemConfigured || !currentGymGradeSystem.length) {
+                openForcedGymGradeSetup();
+                return false;
+            }
+            forcedGradeSetupActive = false;
+            const overlay = document.getElementById('gym-grade-setup-overlay');
+            if (overlay) overlay.style.display = 'none';
+            return true;
+        }
+
         // --- DASHBOARD ---
-        function initDashboard() {
+        async function initDashboard() {
             if (userRole !== 'admin') currentMode = 'user';
             showView('view-dash');
             const userList = document.getElementById('main-list-user');
             const adminList = document.getElementById('main-list-admin');
 
             if(currentMode === 'admin') {
+                const gradeSetupReady = await ensureAdminGradeSystemSetup();
+                if (!gradeSetupReady) return;
                 document.getElementById('admin-panel').style.display = 'block';
                 document.getElementById('user-panel').style.display = 'none';
                 stopFollowingProgressSubscriptions();
@@ -1541,6 +1728,67 @@
             if (Number.isNaN(d.getTime())) return v;
             return d.toLocaleDateString(currentLang === 'it' ? 'it-IT' : 'en-US');
         }
+
+        function areConsecutiveDays(prevYmd, nextYmd) {
+            if (!prevYmd || !nextYmd) return false;
+            const p = new Date(`${prevYmd}T00:00:00`);
+            const n = new Date(`${nextYmd}T00:00:00`);
+            if (Number.isNaN(p.getTime()) || Number.isNaN(n.getTime())) return false;
+            const diff = Math.round((n.getTime() - p.getTime()) / (24*60*60*1000));
+            return diff === 1;
+        }
+
+        async function upsertUserGymStats(userId, gymId, gymName, grade, gradeOrder, attempts = 1) {
+            if (!userId || !gymId) return { isNewMax: false, streakDays: 0 };
+            const statsRef = doc(db, 'users', userId, 'gymStats', gymId);
+            const snap = await getDoc(statsRef);
+            const prev = snap.exists() ? (snap.data() || {}) : {};
+            const today = toYYYYMMDD(new Date());
+            const prevOrder = Number.isFinite(prev.max_grade_order) ? prev.max_grade_order : -1;
+            const nextOrder = Number.isFinite(gradeOrder) ? gradeOrder : prevOrder;
+            const isNewMax = Number.isFinite(nextOrder) && nextOrder > prevOrder;
+            const prevStreak = Number(prev.streak_days || 0);
+            const streakDays = prev.last_activity_day === today
+                ? Math.max(1, prevStreak)
+                : areConsecutiveDays(prev.last_activity_day, today) ? Math.max(1, prevStreak + 1) : 1;
+            const payload = {
+                user_id: userId,
+                gym_id: gymId,
+                gym_name: gymName || gymId,
+                max_grade: isNewMax ? (grade || prev.max_grade || '-') : (prev.max_grade || grade || '-'),
+                max_grade_order: isNewMax ? nextOrder : prevOrder,
+                total_routes: Number(prev.total_routes || 0) + 1,
+                active_days: prev.last_activity_day === today ? Number(prev.active_days || 1) : Number(prev.active_days || 0) + 1,
+                streak_days: streakDays,
+                last_activity_day: today,
+                updated_at: new Date().toISOString()
+            };
+            await setDoc(statsRef, payload, { merge: true });
+            await setDoc(doc(db, 'users', userId), {
+                mainGymName: prev.gym_name || gymName || gymId,
+                mainGymMaxGrade: payload.max_grade
+            }, { merge: true });
+            return { isNewMax, streakDays };
+        }
+
+        async function createSocialActivity({ userId, gymId, gymName, type, grade = null, attempts = 1, isNewMax = false, streakDays = null }) {
+            if (!userId || !gymId || !type) return;
+            await addDoc(collection(db, 'socialActivities'), {
+                user_id: userId,
+                user_name: currentUserName || 'Climber',
+                gym_id: gymId,
+                gym_name: gymName || gymId,
+                activity_type: type,
+                grade,
+                attempts,
+                timestamp: new Date().toISOString(),
+                is_new_max: !!isNewMax,
+                streak_days: streakDays || null,
+                applause_count: 0,
+                comment_count: 0,
+                last_viewed_at: new Date().toISOString()
+            });
+        }
         function getPublicProfileUidFromRoute() {
             const hash = window.location.hash || '';
             if (!hash.startsWith(SOCIAL_PROFILE_ROUTE_PREFIX)) return null;
@@ -1613,22 +1861,21 @@
             return String(v || '').trim();
         }
 
-        function buildLevelOrder(entries) {
-            const levels = Array.from(new Set(entries.map(e => normalizeLevelValue(e.grade)).filter(Boolean)));
-            if (!levels.length) return [];
-            const allInScale = levels.every(g => gradeIndex(g) >= 0);
-            if (allInScale) return levels.sort((a, b) => gradeIndex(a) - gradeIndex(b));
-            return levels.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+        function gradeOrderForEntry(entry, orderMap) {
+            if (Number.isFinite(entry?.gradeOrder)) return Number(entry.gradeOrder);
+            if (!orderMap) return -1;
+            const val = normalizeLevelValue(entry?.grade);
+            return orderMap.has(val) ? orderMap.get(val) : -1;
         }
 
-        function levelRank(level, order) {
-            return order.indexOf(normalizeLevelValue(level));
-        }
-
-        function resolveLocalOrder(gymId, gymEntries) {
-            const fromGymMap = gymId ? gymLevelOrderMap.get(gymId) : null;
-            if (fromGymMap && fromGymMap.length) return fromGymMap;
-            return buildLevelOrder(gymEntries);
+        function gradeSystemArrayToMap(gradeSystem) {
+            const map = new Map();
+            (Array.isArray(gradeSystem) ? gradeSystem : []).forEach(item => {
+                const label = normalizeLevelValue(item?.label);
+                const order = Number(item?.order);
+                if (label && Number.isFinite(order)) map.set(label, order);
+            });
+            return map;
         }
 
         function normalizeProgressValue(localRank, scaleSize) {
@@ -1654,12 +1901,14 @@
             const enriched = [];
 
             for (const [gymKey, gymEntries] of groups.entries()) {
-                const order = resolveLocalOrder(gymEntries[0]?.gymId, gymEntries);
+                const gymId = gymEntries[0]?.gymId;
+                const orderMap = gymId ? gymLevelOrderMap.get(gymId) : null;
+                const scaleSize = Math.max(2, (orderMap?.size || 1));
                 let localMaxRank = -1;
                 let localMaxLabel = '-';
                 for (const e of gymEntries) {
-                    const rank = levelRank(e.grade, order);
-                    const norm = normalizeProgressValue(rank, order.length);
+                    const rank = gradeOrderForEntry(e, orderMap);
+                    const norm = normalizeProgressValue(rank, scaleSize);
                     enriched.push({ ...e, _rank: rank, _norm: norm, _gymKey: gymKey });
                     if (rank > localMaxRank) {
                         localMaxRank = rank;
@@ -1708,72 +1957,97 @@
             if (!box || !activeUser) return;
             const mine = Array.from(profileEntriesMap.values()).filter(e => e.userId === activeUser.uid);
             const mineData = computeProfileData(mine);
-            const latest = mineData.sorted.slice(0, 6).map(e => {
-                const state = e.outcome === 'project' ? t('viewer.project') : t('viewer.climbed');
-                return `<div class="profile-log"><div><b>${escapeHtml(e.grade || '-')}</b> · ${escapeHtml(e.gymName || '-')} / ${escapeHtml(e.sectorName || '-')}</div><small>${state} · ${escapeHtml(formatProfileDate(e.sendDate))}${e.tries ? ` · ${e.tries} ${t('viewer.tries').toLowerCase()}` : ''}</small></div>`;
-            }).join('');
             const trackerAll = Array.from(routeProgressMap.values()).sort((a,b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
             const activeProjects = trackerAll.filter(v => v.state === 'project').length;
-            const trackerEntries = trackerAll.filter(v => profileProgressFilter === 'all' || v.state === profileProgressFilter);
-            const trackerRows = trackerEntries.slice(0, 12).map(v => `<div class="profile-log"><div><b>${escapeHtml(v.routeLabel || v.routeGrade || '-')}</b> · ${v.state === 'climbed' ? t('viewer.climbed') : t('viewer.project')}</div><small>${escapeHtml(v.gymName || '-')} / ${escapeHtml(v.sectorName || '-')} · ${t('viewer.tries')}: ${v.attemptCount || 1}</small></div>`).join('');
-            const milestonesRows = mineData.milestones.slice(-5).reverse().map(m => `<div class="profile-timeline-row"><b>${escapeHtml(m.label)}</b><small>${m.normPct}% · ${escapeHtml(formatProfileDate(m.date || ''))}</small></div>`).join('');
-            const perGymRows = mineData.byGym.map(g => `<div class="profile-timeline-row"><b>${escapeHtml(g.gymName)}</b><small>${escapeHtml(g.localMax)}</small></div>`).join('');
+
+            const bestByGymCards = mineData.byGym.map(g => `
+                <div class="profile-best-card">
+                    <b>${escapeHtml(g.gymName)}</b>
+                    <div class="profile-best-grade">${escapeHtml(g.localMax)}</div>
+                    <div class="profile-best-label">Livello massimo raggiunto</div>
+                </div>`).join('');
+
+            const snapshot = [
+                { icon: '🧗', label: t('dash.totalSends'), value: mineData.totalSends },
+                { icon: '📅', label: t('dash.activeDays'), value: mineData.activeDays },
+                { icon: '🏟️', label: t('dash.reviewedGyms'), value: mineData.reviewedGyms },
+                { icon: '🎯', label: t('dash.projectsActive'), value: activeProjects }
+            ].map(k => `<div class="profile-snap"><div class="profile-snap-top"><span>${k.icon}</span><span>${escapeHtml(k.label)}</span></div><div class="profile-snap-num">${k.value}</div></div>`).join('');
+
+            const activityDays = new Set(mineData.sorted.map(e => e.sendDate).filter(Boolean));
+            const heatCells = [];
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const key = toYYYYMMDD(d);
+                heatCells.push(`<div class="profile-heat ${activityDays.has(key) ? 'on' : ''}" title="${key}"></div>`);
+            }
+
+            const points = (mineData.milestones || []).slice(-12).map((m, idx, arr) => {
+                const x = arr.length <= 1 ? 0 : Math.round((idx / (arr.length - 1)) * 100);
+                const y = 100 - Math.max(0, Math.min(100, m.normPct || 0));
+                return `${x},${y}`;
+            }).join(' ');
+            const spark = points ? `<svg class="profile-sparkline" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline fill="none" stroke="var(--primary)" stroke-width="3" points="${points}" /></svg>` : `<p class="profile-empty">${t('dash.noMilestones')}</p>`;
+
+            const latest = mineData.sorted.slice(0, 6).map(e => {
+                const state = e.outcome === 'project' ? t('viewer.project') : t('viewer.climbed');
+                return `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(e.grade || '-')}</div><span class="profile-activity-state">${escapeHtml(state)}</span></div><div class="profile-activity-meta">${escapeHtml(e.gymName || '-')} / ${escapeHtml(e.sectorName || '-')}</div><div class="profile-activity-meta">${escapeHtml(formatProfileDate(e.sendDate))}${e.tries ? ` · ${e.tries} ${t('viewer.tries').toLowerCase()}` : ''}</div></div>`;
+            }).join('');
+
+            const trackerDone = trackerAll.filter(v => v.state === 'climbed').slice(0, 8).map(v => `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(v.routeLabel || v.routeGrade || '-')}</div><span class="profile-activity-state">${t('viewer.climbed')}</span></div><div class="profile-activity-meta">${escapeHtml(v.gymName || '-')} · ${t('viewer.tries')}: ${v.attemptCount || 1}</div></div>`).join('');
+            const trackerProject = trackerAll.filter(v => v.state === 'project').slice(0, 8).map(v => `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(v.routeLabel || v.routeGrade || '-')}</div><span class="profile-activity-state">${t('viewer.project')}</span></div><div class="profile-activity-meta">${escapeHtml(v.gymName || '-')} · ${t('viewer.tries')}: ${v.attemptCount || 1}</div></div>`).join('');
+
             box.innerHTML = `
-                <div class="profile-header">
-                    <h4>${t('dash.profileTitle')}</h4>
-                    <div class="profile-chip">@${escapeHtml(currentUserName || 'climber')}</div>
-                </div>
-                <div class="profile-subtitle">${t('dash.profileSubtitle')}</div>
-
-                <div class="profile-milestone-card">
-                    <div class="profile-milestone-top">
-                        <div>
-                            <div style="color:var(--muted); font-size:0.82rem;">${t('dash.globalMaxLevel')}</div>
-                            <div class="profile-milestone-level">${escapeHtml(mineData.globalMaxLabel)}</div>
+                <div class="profile-shell">
+                    <div class="profile-header-main">
+                        <div class="profile-header-top">
+                            <div>
+                                <h3 class="profile-username">@${escapeHtml(currentUserName || 'climber')}</h3>
+                                <p class="profile-subcopy">${t('dash.profileSubtitle')}</p>
+                            </div>
+                            <div class="profile-header-actions">
+                                <button type="button" class="profile-icon-btn" aria-label="Modifica profilo">✎</button>
+                                <button type="button" class="profile-icon-btn" aria-label="Impostazioni">⚙</button>
+                            </div>
                         </div>
-                        <div class="profile-chip">${t('dash.normalizedLevel')}: ${mineData.globalMaxNormPct}%</div>
                     </div>
-                    <div class="profile-progress-bar"><div class="profile-progress-fill" style="width:${mineData.progressPct}%"></div></div>
-                    <div class="profile-progress-meta">
-                        <span>${t('dash.progressionToNext')}</span>
-                        <span>${mineData.atMaxCount}/${mineData.targetAtMax}</span>
+
+                    <div class="profile-section-card">
+                        <b>I tuoi migliori risultati</b>
+                        <div class="profile-best-grid" style="margin-top:10px;">${bestByGymCards || `<p class="profile-empty">${t('dash.noMilestones')}</p>`}</div>
                     </div>
-                    <div class="profile-subtitle" style="margin-top:8px; margin-bottom:0;">${t('dash.globalProgressHint')}</div>
-                </div>
 
-                <div class="profile-kpis">
-                    <div class="profile-kpi"><b>${mineData.totalSends}</b><span>${t('dash.totalSends')}</span></div>
-                    <div class="profile-kpi"><b>${mineData.activeDays}</b><span>${t('dash.activeDays')}</span></div>
-                    <div class="profile-kpi"><b>${mineData.reviewedGyms}</b><span>${t('dash.reviewedGyms')}</span></div>
-                    <div class="profile-kpi"><b>${activeProjects}</b><span>${t('dash.projectsActive')}</span></div>
-                </div>
+                    <div class="profile-section-card">
+                        <b>Snapshot attività</b>
+                        <div class="profile-snapshot-grid" style="margin-top:10px;">${snapshot}</div>
+                    </div>
 
-                <div class="profile-section-card">
-                    <b>${t('dash.progressionTitle')}</b>
-                    <div class="profile-subtitle" style="margin-top:6px; margin-bottom:8px;">${t('dash.progressionHint')}</div>
-                    <div class="profile-timeline">${milestonesRows || `<p class="profile-empty">${t('dash.noMilestones')}</p>`}</div>
-                </div>
+                    <div class="profile-section-card">
+                        <b>Heatmap ultimi 30 giorni</b>
+                        <div class="profile-heatmap" style="margin-top:10px;">${heatCells.join('')}</div>
+                    </div>
 
-                <div class="profile-section-card">
-                    <b>${t('dash.localMaxByGym')}</b>
-                    <div class="profile-timeline">${perGymRows || `<p class="profile-empty">${t('dash.noMilestones')}</p>`}</div>
-                </div>
+                    <div class="profile-progress-tech">
+                        <b>${t('dash.globalProgressHint')}</b>
+                        ${spark}
+                        <div class="profile-subcopy" style="margin-top:8px;">${mineData.globalMaxNormPct}% · ${mineData.atMaxCount}/${mineData.targetAtMax}</div>
+                    </div>
 
-                <div class="profile-list" style="margin-top:10px;">
-                    <b>${t('dash.latestActivities')}</b>
-                    ${latest || `<p class="profile-empty">${t('dash.noProgress')}</p>`}
-                </div>
+                    <div class="profile-section-card">
+                        <b>${t('dash.latestActivities')}</b>
+                        <div class="profile-activity-list" style="margin-top:10px;">${latest || `<p class="profile-empty">${t('dash.noProgress')}</p>`}</div>
+                    </div>
 
-                <div class="profile-list" style="margin-top:10px;">
-                    <div class="profile-filter-row">
+                    <div class="profile-section-card">
                         <b>${t('viewer.progressTracker')}</b>
-                        <select id="profile-progress-filter"><option value="all">${t('viewer.filterAll')}</option><option value="project">${t('viewer.filterProject')}</option><option value="climbed">${t('viewer.filterClimbed')}</option></select>
+                        <div class="profile-tracker-grid" style="margin-top:10px;">
+                            <div class="profile-tracker-col"><h5>✅ ${t('viewer.climbed')}</h5>${trackerDone || `<p class="profile-empty">${t('viewer.trackerNone')}</p>`}</div>
+                            <div class="profile-tracker-col"><h5>🧩 ${t('viewer.project')}</h5>${trackerProject || `<p class="profile-empty">${t('viewer.trackerNone')}</p>`}</div>
+                        </div>
                     </div>
-                    ${trackerRows || `<p class="profile-empty">${t('viewer.trackerNone')}</p>`}
                 </div>
             `;
-            const filt = document.getElementById('profile-progress-filter');
-            if (filt) { filt.value = profileProgressFilter; filt.onchange = () => { profileProgressFilter = filt.value; renderProfileDashboard(); }; }
         }
         function followDocId(followerId, followingId) { return `${followerId}__${followingId}`; }
 
@@ -1818,31 +2092,391 @@
                 const unsub = followingProgressUnsubscribers.pop();
                 if (typeof unsub === 'function') unsub();
             }
+            stopSocialFeedSubscription();
+            stopMyPostsSubscription();
             followingFeedMap = new Map();
         }
 
+        function stopMyPostsSubscription() {
+            while (socialMyPostsUnsubscribers.length) {
+                const unsub = socialMyPostsUnsubscribers.pop();
+                if (typeof unsub === 'function') unsub();
+            }
+            socialMyPostsActivities = [];
+            socialMyPostsLoading = false;
+            socialMyPostsError = null;
+            socialMyPostsInteractionMeta = new Map();
+            socialMyPostsExpanded = new Set();
+        }
+
+        function startMyPostsSubscription() {
+            stopMyPostsSubscription();
+            if (!activeUser?.uid) {
+                renderMyPublicationsFeed();
+                return;
+            }
+            socialMyPostsLoading = true;
+            socialMyPostsError = null;
+            renderMyPublicationsFeed();
+
+            const byUserId = query(collection(db, 'socialActivities'), where('user_id', '==', activeUser.uid), limit(250));
+            const byLegacyUserId = query(collection(db, 'socialActivities'), where('userId', '==', activeUser.uid), limit(250));
+            let primaryRows = [];
+            let legacyRows = [];
+
+            const applyMerged = () => {
+                const merged = new Map();
+                [...primaryRows, ...legacyRows].forEach(item => merged.set(item.id, item));
+                socialMyPostsActivities = Array.from(merged.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                socialMyPostsLoading = false;
+                renderMyPublicationsFeed();
+            };
+
+            const unsubPrimary = onSnapshot(byUserId, (snap) => {
+                primaryRows = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                applyMerged();
+            }, (err) => {
+                socialMyPostsError = err;
+                socialMyPostsLoading = false;
+                socialMyPostsActivities = socialFeedActivities.filter(a => (a.user_id || a.userId || null) === activeUser.uid);
+                renderMyPublicationsFeed();
+            });
+
+            const unsubLegacy = onSnapshot(byLegacyUserId, (snap) => {
+                legacyRows = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                applyMerged();
+            }, (err) => {
+                socialMyPostsError = err;
+                socialMyPostsLoading = false;
+                socialMyPostsActivities = socialFeedActivities.filter(a => (a.user_id || a.userId || null) === activeUser.uid);
+                renderMyPublicationsFeed();
+            });
+
+            socialMyPostsUnsubscribers.push(unsubPrimary, unsubLegacy);
+        }
+
+        function stopSocialFeedSubscription() {
+            if (typeof socialFeedUnsubscriber === 'function') socialFeedUnsubscriber();
+            socialFeedUnsubscriber = null;
+            socialFeedActivities = [];
+            socialFeedError = null;
+            socialApplauseByActivity = new Map();
+            socialApplauseLoadingIds = new Set();
+        }
+
+        function startSocialFeedSubscription() {
+            stopSocialFeedSubscription();
+            socialFeedUnsubscriber = onSnapshot(query(collection(db, 'socialActivities'), limit(250)), (snap) => {
+                socialFeedError = null;
+                socialFeedActivities = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                renderFollowingFeed();
+                renderMyPublicationsFeed();
+            }, (err) => {
+                socialFeedError = err;
+                socialFeedActivities = [];
+                renderFollowingFeed();
+                renderMyPublicationsFeed();
+            });
+        }
+
         function buildFollowingFeedItems() {
-            return Array.from(followingFeedMap.values())
-                .filter(e => e && e.isShared)
-                .sort((a,b) => new Date(b.eventDate || 0) - new Date(a.eventDate || 0));
+            const selectedGym = socialSelectedGymId || document.getElementById('social-gym-filter')?.value || null;
+            const followed = new Set(userFollowingIds || []);
+            const buildFallbackActivityId = (v) => `fallback__${v.userId || 'u'}__${v.routeId || 'r'}__${v.eventDate || v.updatedAt || ''}`;
+            const community = socialFeedActivities.filter(a => selectedGym && a.gym_id === selectedGym);
+            const friends = socialFeedActivities.filter(a => followed.has(a.user_id));
+            const fallbackFriends = Array.from(followingFeedMap.values()).map(v => {
+                const fallbackId = buildFallbackActivityId(v);
+                const localState = socialFeedInteractionState.get(fallbackId) || {};
+                return ({
+                id: fallbackId,
+                user_id: v.userId,
+                user_name: v.username || v.userName || 'Climber',
+                gym_id: v.gymId,
+                gym_name: v.gymName || v.gymId,
+                activity_type: v.state === 'project' ? 'streak' : 'route',
+                grade: v.finalGrade || v.routeGrade || '-',
+                attempts: v.attemptCount || 1,
+                timestamp: v.eventDate || v.updatedAt || v.completionDate || v.firstAttemptDate || '',
+                is_new_max: false,
+                streak_days: null,
+                applause_count: Number(localState.applause_count || 0),
+                comment_count: Number(localState.comment_count || 0),
+                is_fallback: true
+            });
+            });
+            const merged = [...fallbackFriends.filter(f => followed.has(f.user_id)), ...community, ...friends];
+            const uniq = new Map();
+            merged.forEach(a => uniq.set(a.id, a));
+            return Array.from(uniq.values()).sort((a,b) => {
+                if (!!b.is_new_max !== !!a.is_new_max) return b.is_new_max ? 1 : -1;
+                return new Date(b.timestamp || 0) - new Date(a.timestamp || 0);
+            });
+        }
+
+        function updateLocalInteractionState(activityId, patch = {}) {
+            if (!activityId) return;
+            const current = socialFeedInteractionState.get(activityId) || {};
+            socialFeedInteractionState.set(activityId, { ...current, ...patch });
+        }
+
+        async function ensureSocialActivityDoc(activityId) {
+            if (!activityId) return null;
+            const activityRef = doc(db, 'socialActivities', activityId);
+            const snap = await getDoc(activityRef);
+            if (snap.exists()) return activityRef;
+            const fallback = socialFeedById.get(activityId) || {};
+            await setDoc(activityRef, {
+                user_id: fallback.user_id || activeUser?.uid || null,
+                user_name: fallback.user_name || resolveUsername(fallback.user_id, 'Climber') || 'Climber',
+                gym_id: fallback.gym_id || null,
+                gym_name: fallback.gym_name || fallback.gym_id || '-',
+                activity_type: fallback.activity_type || 'route',
+                grade: fallback.grade || '-',
+                attempts: fallback.attempts || 1,
+                timestamp: fallback.timestamp || new Date().toISOString(),
+                is_new_max: !!fallback.is_new_max,
+                streak_days: fallback.streak_days || null,
+                applause_count: Number(fallback.applause_count || 0),
+                comment_count: Number(fallback.comment_count || 0)
+            }, { merge: true });
+            return activityRef;
+        }
+
+        async function preloadApplauseState(activityId) {
+            if (!activeUser || !activityId) return false;
+            if (socialApplauseByActivity.has(activityId) || socialApplauseLoadingIds.has(activityId)) {
+                return !!socialApplauseByActivity.get(activityId);
+            }
+            socialApplauseLoadingIds.add(activityId);
+            try {
+                const ref = doc(db, 'socialActivities', activityId, 'applause', activeUser.uid);
+                const snap = await getDoc(ref);
+                socialApplauseByActivity.set(activityId, snap.exists());
+                return snap.exists();
+            } finally {
+                socialApplauseLoadingIds.delete(activityId);
+            }
+        }
+
+        function getActivityApplauseCount(activityId, fallback = 0) {
+            return Number(socialFeedInteractionState.get(activityId)?.applause_count ?? socialFeedById.get(activityId)?.applause_count ?? fallback ?? 0);
+        }
+
+        async function toggleActivityApplause(activityId) {
+            if (!activeUser || !activityId) return;
+            const activityRef = await ensureSocialActivityDoc(activityId);
+            const ref = doc(db, 'socialActivities', activityId, 'applause', activeUser.uid);
+            let wasApplauded = socialApplauseByActivity.get(activityId);
+            if (typeof wasApplauded !== 'boolean') {
+                const snap = await getDoc(ref);
+                wasApplauded = snap.exists();
+            }
+            const currentApplause = getActivityApplauseCount(activityId, 0);
+            const nextApplause = wasApplauded ? Math.max(0, currentApplause - 1) : currentApplause + 1;
+
+            socialApplauseByActivity.set(activityId, !wasApplauded);
+            updateLocalInteractionState(activityId, { applause_count: nextApplause });
+            socialMyPostsInteractionMeta.delete(activityId);
+            renderFollowingFeed();
+            renderMyPublicationsFeed();
+
+            try {
+                if (wasApplauded) {
+                    await deleteDoc(ref);
+                    await updateDoc(activityRef, { applause_count: increment(-1), last_interaction_at: new Date().toISOString() });
+                } else {
+                    await setDoc(ref, { user_id: activeUser.uid, timestamp: new Date().toISOString() }, { merge: true });
+                    await updateDoc(activityRef, { applause_count: increment(1), last_interaction_at: new Date().toISOString() });
+                }
+            } catch (e) {
+                socialApplauseByActivity.set(activityId, wasApplauded);
+                updateLocalInteractionState(activityId, { applause_count: currentApplause });
+                renderFollowingFeed();
+                renderMyPublicationsFeed();
+                throw e;
+            }
+        }
+
+        async function addActivityComment(activityId, textValue = null) {
+            if (!activeUser || !activityId) return;
+            const text = (textValue ?? '').trim();
+            if (!text) return;
+            const activityRef = await ensureSocialActivityDoc(activityId);
+            const nowIso = new Date().toISOString();
+            await addDoc(collection(db, 'socialActivities', activityId, 'comments'), {
+                user_id: activeUser.uid,
+                user_name: currentUserName || 'Climber',
+                text,
+                timestamp: nowIso
+            });
+            await updateDoc(activityRef, { comment_count: increment(1), last_interaction_at: nowIso });
+            const currentComments = Number(socialFeedById.get(activityId)?.comment_count || socialFeedInteractionState.get(activityId)?.comment_count || 0);
+            updateLocalInteractionState(activityId, { comment_count: currentComments + 1 });
+            socialMyPostsInteractionMeta.delete(activityId);
+            renderFollowingFeed();
+            renderMyPublicationsFeed();
+        }
+
+        function sanitizeSocialCount(value) {
+            return Math.max(0, Number(value || 0));
+        }
+
+        function renderSocialFeedCard(activity) {
+            const e = activity || {};
+            const ts = escapeHtml(formatProfileDate(e.timestamp || e.sendDate || ''));
+            const recent24 = (Date.now() - new Date(e.timestamp || 0).getTime()) <= (24*60*60*1000);
+            const applauseCount = sanitizeSocialCount(getActivityApplauseCount(e.id, e.applause_count));
+            const commentCount = sanitizeSocialCount(socialFeedInteractionState.get(e.id)?.comment_count ?? e.comment_count);
+            const isApplauded = !!socialApplauseByActivity.get(e.id);
+            const actionButtons = `<div class="social-feed-actions"><button class="social-action-btn ${isApplauded ? 'active' : ''}" data-action="applause" data-id="${e.id}">🔥 ${applauseCount}</button><button class="social-action-btn" data-action="comment" data-id="${e.id}">💬 ${commentCount}</button></div>`;
+            if (e.activity_type === 'new_max') {
+                return `<div class="social-feed-card ${recent24 ? 'highlight' : ''}"><div class="social-feed-head"><div class="social-feed-title">🔥 Nuovo massimo personale!</div><small>${ts}</small></div><div class="social-feed-grade">${escapeHtml(e.grade || '-')}</div><div class="social-feed-meta">${escapeHtml(e.user_name || 'Climber')} · ${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
+            }
+            if (e.activity_type === 'streak') {
+                return `<div class="social-feed-card highlight"><div class="social-feed-head"><div class="social-feed-title">🔁 ${escapeHtml(e.user_name || 'Climber')} è a ${e.streak_days || 1} giorni consecutivi</div><small>${ts}</small></div><div class="social-feed-meta">${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
+            }
+            return `<div class="social-feed-card"><div class="social-feed-head"><div class="social-feed-title">${escapeHtml(e.user_name || 'Climber')} ha scalato ${escapeHtml(e.grade || '-')} a ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><small>${ts}</small></div><div class="social-feed-meta">Tentativi: ${e.attempts || 1}</div>${actionButtons}</div>`;
+        }
+
+        function bindSocialFeedActions(root) {
+            if (!root) return;
+            root.querySelectorAll('[data-action="applause"]').forEach(btn => {
+                preloadApplauseState(btn.dataset.id).then(() => {
+                    btn.classList.toggle('active', !!socialApplauseByActivity.get(btn.dataset.id));
+                }).catch(() => {});
+                btn.onclick = () => toggleActivityApplause(btn.dataset.id).catch(alertWriteError);
+            });
+            root.querySelectorAll('[data-action="comment"]').forEach(btn => btn.onclick = () => openSocialCommentsModal(btn.dataset.id).catch(alertWriteError));
+        }
+
+        async function loadMyPostInteractionMeta(activityId) {
+            if (!activityId || socialMyPostsInteractionMeta.get(activityId)?.loading) return;
+            const current = socialMyPostsInteractionMeta.get(activityId) || {};
+            socialMyPostsInteractionMeta.set(activityId, { ...current, loading: true });
+            try {
+                const commentsRef = collection(db, 'socialActivities', activityId, 'comments');
+                const commentsSnap = await getDocs(query(commentsRef, orderBy('timestamp', 'desc'), limit(2)));
+                const latestCommentSnap = await getDocs(query(commentsRef, orderBy('timestamp', 'desc'), limit(1)));
+                const applauseSnap = await getDocs(query(collection(db, 'socialActivities', activityId, 'applause'), orderBy('timestamp', 'desc'), limit(1)));
+                const latestComments = commentsSnap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                const latestCommentTs = latestCommentSnap.docs[0]?.data()?.timestamp || null;
+                const latestApplauseTs = applauseSnap.docs[0]?.data()?.timestamp || null;
+                const source = socialMyPostsActivities.find(a => a.id === activityId) || socialFeedById.get(activityId) || {};
+                const lastViewed = source.last_viewed_at || null;
+                const lastInteractionTs = [latestCommentTs, latestApplauseTs].filter(Boolean).sort().slice(-1)[0] || null;
+                const hasNew = !!(lastInteractionTs && (!lastViewed || new Date(lastInteractionTs).getTime() > new Date(lastViewed).getTime()));
+                socialMyPostsInteractionMeta.set(activityId, { loading: false, latestComments, latestCommentTs, latestApplauseTs, hasNew });
+                renderMyPublicationsFeed();
+            } catch (_) {
+                socialMyPostsInteractionMeta.set(activityId, { ...(socialMyPostsInteractionMeta.get(activityId) || {}), loading: false });
+            }
+        }
+
+        async function markMyPostViewed(activityId) {
+            if (!activityId || !activeUser?.uid) return;
+            const row = socialMyPostsActivities.find(a => a.id === activityId);
+            if (!row || (row.user_id || row.userId) !== activeUser.uid) return;
+            const nowIso = new Date().toISOString();
+            await updateDoc(doc(db, 'socialActivities', activityId), { last_viewed_at: nowIso });
+            socialMyPostsActivities = socialMyPostsActivities.map(a => a.id === activityId ? { ...a, last_viewed_at: nowIso } : a);
+            const meta = socialMyPostsInteractionMeta.get(activityId) || {};
+            socialMyPostsInteractionMeta.set(activityId, { ...meta, hasNew: false });
+        }
+
+        async function deleteMyPost(activityId) {
+            if (!activityId || !activeUser?.uid) return;
+            const row = socialMyPostsActivities.find(a => a.id === activityId);
+            if (!row || (row.user_id || row.userId) !== activeUser.uid) return;
+            if (!confirm('Eliminare questa pubblicazione?')) return;
+            await deleteDoc(doc(db, 'socialActivities', activityId));
+            socialMyPostsActivities = socialMyPostsActivities.filter(a => a.id !== activityId);
+            socialMyPostsInteractionMeta.delete(activityId);
+            socialMyPostsExpanded.delete(activityId);
+            renderMyPublicationsFeed();
+            renderFollowingFeed();
+        }
+
+        async function deleteActivityComment(activityId, commentId) {
+            if (!activityId || !commentId || !activeUser?.uid) return;
+            const row = socialMyPostsActivities.find(a => a.id === activityId) || socialFeedById.get(activityId);
+            if (!row || (row.user_id || row.userId) !== activeUser.uid) return;
+            await deleteDoc(doc(db, 'socialActivities', activityId, 'comments', commentId));
+            const activityRef = await ensureSocialActivityDoc(activityId);
+            await updateDoc(activityRef, { comment_count: increment(-1) });
+            const currentComments = Number(socialFeedById.get(activityId)?.comment_count || socialFeedInteractionState.get(activityId)?.comment_count || 0);
+            updateLocalInteractionState(activityId, { comment_count: Math.max(0, currentComments - 1) });
+            socialMyPostsInteractionMeta.delete(activityId);
+            renderMyPublicationsFeed();
+            renderFollowingFeed();
+        }
+
+        function renderMyPublicationCard(e) {
+            const ts = escapeHtml(formatProfileDate(e.timestamp || e.sendDate || ''));
+            const applauseCount = sanitizeSocialCount(getActivityApplauseCount(e.id, e.applause_count));
+            const commentCount = sanitizeSocialCount(socialFeedInteractionState.get(e.id)?.comment_count ?? e.comment_count);
+            const totalInteractions = applauseCount + commentCount;
+            const meta = socialMyPostsInteractionMeta.get(e.id) || {};
+            if (!meta.loading && !meta.latestComments) loadMyPostInteractionMeta(e.id);
+            const hasNew = !!meta.hasNew;
+            const expanded = socialMyPostsExpanded.has(e.id);
+            const latestComments = Array.isArray(meta.latestComments) ? meta.latestComments : [];
+            const previewRows = latestComments.slice(0, 2).map(c => {
+                const canDelete = ((e.user_id || e.userId || null) === activeUser?.uid);
+                return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="delete-comment" data-activity-id="${e.id}" data-comment-id="${c.id}">Elimina commento</button> <button type="button" class="btn-sec" data-action="reply-comment" data-activity-id="${e.id}" data-username="${escapeHtml(c.user_name || 'Climber')}">Rispondi</button></div>` : ''}</div>`;
+            }).join('') || '<p class="profile-empty">Nessun commento.</p>';
+            const newBadge = hasNew ? '<span class="social-chip new">Nuovo</span>' : '';
+            const maxBadge = e.is_new_max ? '<span class="social-chip">🔥 Nuovo massimo</span>' : '';
+            return `<div class="social-feed-card ${totalInteractions > 5 ? 'engaged' : ''}" data-my-post-id="${e.id}"><div class="social-feed-head"><div class="social-feed-title">Hai scalato ${escapeHtml(e.grade || '-')} a ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><div style="display:flex;gap:6px;align-items:center;">${newBadge}${maxBadge}<small>${ts}</small></div></div><div class="social-feed-meta">Tentativi: ${e.attempts || 1}</div><div class="social-feed-actions"><button class="social-action-btn ${socialApplauseByActivity.get(e.id) ? 'active' : ''}" data-action="applause" data-id="${e.id}">🔥 ${applauseCount} applausi</button><button class="social-action-btn" data-action="comment" data-id="${e.id}">💬 ${commentCount} commenti</button><button class="social-action-btn" data-action="toggle-comments" data-id="${e.id}">${expanded ? 'Nascondi commenti' : 'Mostra commenti'}</button><button class="social-action-btn" data-action="delete-post" data-id="${e.id}">Elimina post</button></div><div class="social-my-comments-preview" style="display:${expanded ? 'block' : 'none'};">${previewRows}<button type="button" class="btn-sec" data-action="open-all-comments" data-id="${e.id}">Mostra tutti i commenti</button></div></div>`;
+        }
+
+        function renderMyPublicationsFeed() {
+            const myList = document.getElementById('social-my-posts-list');
+            if (!myList) return;
+            if (!activeUser?.uid) {
+                myList.innerHTML = '<p class="profile-empty">Accedi per vedere le tue pubblicazioni.</p>';
+                return;
+            }
+            if (socialMyPostsLoading) {
+                myList.innerHTML = '<p class="profile-empty">Caricamento pubblicazioni...</p>';
+                return;
+            }
+            const feed = socialMyPostsActivities
+                .filter(a => (a.user_id || a.userId || null) === activeUser.uid)
+                .sort((a,b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+            if (socialMyPostsError && !feed.length) {
+                myList.innerHTML = '<p class="profile-empty">Impossibile caricare le tue pubblicazioni.</p>';
+                return;
+            }
+            myList.innerHTML = feed.map(renderSocialFeedCard).join('') || '<p class="profile-empty">Scala una via per comparire nel feed</p>';
+            bindSocialFeedActions(myList);
         }
 
         function renderFollowingFeed() {
             const progList = document.getElementById('following-progress-list');
             if (!progList) return;
             const feed = buildFollowingFeedItems();
-            progList.innerHTML = feed.slice(0, 50).map(e => {
-                const notes = e.notes ? ` · ${escapeHtml(e.notes)}` : '';
-                const grade = e.state === 'climbed' ? (e.finalGrade || e.suggestedGrade || e.routeGrade || '-') : (e.suggestedGrade || e.routeGrade || '-');
-                return `<div class="profile-log"><div><b>${escapeHtml(e.username || 'Climber')}</b> · ${escapeHtml(e.gymName || '-')} / ${escapeHtml(e.routeLabel || e.routeId || '-')}</div><small>${e.state === 'project' ? t('viewer.project') : t('viewer.climbed')} · ${t('viewer.tries')}: ${e.attemptCount || 1} · ${escapeHtml(grade)}${notes} · ${escapeHtml(formatProfileDate(e.eventDate))}</small></div>`;
-            }).join('') || `<p class="profile-empty">${t('dash.noFollowingProgress')}</p>`;
+            socialFeedById = new Map(feed.map(e => [e.id, e]));
+            const lastMine = feed.filter(a => a.user_id === activeUser?.uid).sort((a,b)=> new Date(b.timestamp||0)-new Date(a.timestamp||0))[0];
+            const mineInactive = !lastMine || ((Date.now() - new Date(lastMine.timestamp || 0).getTime()) > (7*24*60*60*1000));
+            const recentFriendCount = new Set(feed.filter(a => userFollowingIds.includes(a.user_id) && (Date.now()-new Date(a.timestamp||0).getTime()) <= (7*24*60*60*1000)).map(a => a.user_id)).size;
+            const inactivityMsg = mineInactive && recentFriendCount > 0 ? `<div class="profile-log" style="margin-bottom:10px;">${recentFriendCount} amici hanno scalato questa settimana</div>` : '';
+            const rulesWarn = socialFeedError && isPermissionDeniedError(socialFeedError) ? `<div class="profile-log" style="margin-bottom:10px;">Permessi feed limitati: mostra attività condivise degli amici.</div>` : '';
+
+            progList.innerHTML = rulesWarn + inactivityMsg + (feed.slice(0, 60).map(renderSocialFeedCard).join('') || `<p class="profile-empty">${t('dash.noFollowingProgress')}</p>`);
+            bindSocialFeedActions(progList);
         }
 
         function syncFollowingProgressSubscriptions() {
-            if (!activeUser) return;
-            stopFollowingProgressSubscriptions();
+            while (followingProgressUnsubscribers.length) {
+                const unsub = followingProgressUnsubscribers.pop();
+                if (typeof unsub === 'function') unsub();
+            }
+            followingFeedMap = new Map();
+            startSocialFeedSubscription();
+            startMyPostsSubscription();
+
             const followed = [...new Set(userFollowingIds)].filter(Boolean);
-            if (!followed.length) { renderFollowingFeed(); return; }
             followed.forEach(uid => {
                 const qRef = query(collection(db, 'users', uid, 'routeProgress'), where('shareOnFeed', '==', true));
                 const unsub = onSnapshot(qRef, (snap) => {
@@ -1855,10 +2489,7 @@
                             ...v,
                             userId: uid,
                             username: resolveUsername(uid, v.userName || 'Climber'),
-                            routeId: v.routeId || d.id,
-                            routeLabel: v.routeLabel || v.routeGrade || d.id,
-                            eventDate: v.completionDate || v.firstAttemptDate || v.updatedAt || v.sendDate || '',
-                            isShared: v.shareOnFeed !== false
+                            eventDate: v.completionDate || v.firstAttemptDate || v.updatedAt || v.sendDate || ''
                         });
                     });
                     renderFollowingFeed();
@@ -1928,28 +2559,28 @@
                 if (snap) data = snap.data() || {};
             }
             if (!data) {
-                try {
-                    const direct = await getDoc(doc(db, 'users', uid));
-                    if (!direct.exists()) return;
-                    data = direct.data() || {};
-                } catch (e) {
-                    if (isPermissionDeniedError(e)) {
-                        alert(t('errors.permissionDenied'));
-                        return;
-                    }
-                    throw e;
-                }
+                const direct = await getDoc(doc(db, 'users', uid));
+                if (!direct.exists()) return;
+                data = direct.data() || {};
             }
+
             const username = data.username || 'Climber';
-            const publicBio = (data.bio || '').trim();
             const avatar = data.avatarUrl ? `<img class="social-public-avatar" src="${escapeHtml(data.avatarUrl)}" alt="">` : `<div class="social-public-avatar">${escapeHtml((username || 'U').slice(0,2).toUpperCase())}</div>`;
-            const pubSnap = await safeGetDocs(query(collection(db, 'users', uid, 'routeProgress'), where('shareOnFeed', '==', true), limit(20)));
-            const publicEntries = pubSnap ? pubSnap.docs.map(d => d.data() || {}) : [];
-            const routesPublic = publicEntries.length;
-            const feedbackCount = await getPublicFeedbackCount(uid);
             const counts = await getFollowCounts(uid);
             const isFollowing = userFollowingIds.includes(uid);
-            const rows = publicEntries.slice(0, 8).map(v => `<div class="profile-log"><div><b>${escapeHtml(v.routeLabel || v.routeGrade || '-')}</b> · ${escapeHtml(v.gymName || '-')}</div><small>${v.state === 'project' ? t('viewer.project') : t('viewer.climbed')} · ${escapeHtml(formatProfileDate(v.updatedAt || v.completionDate || v.firstAttemptDate || v.sendDate || ''))}</small></div>`).join('');
+
+            const statsSnap = await safeGetDocs(query(collection(db, 'users', uid, 'gymStats'), limit(30)));
+            const stats = statsSnap ? statsSnap.docs.map(d => ({ id: d.id, ...(d.data() || {}) })) : [];
+            const mainGym = stats[0]?.gym_name || data.mainGymName || data.gymManaged || '-';
+            const streakNow = Math.max(0, ...stats.map(s => Number(s.streak_days || 0)));
+            const totalRoutes = stats.reduce((a,s)=> a + Number(s.total_routes || 0), 0);
+            const activeDays = stats.reduce((a,s)=> a + Number(s.active_days || 0), 0);
+            const maxByGym = stats.map(s => `<div class="profile-timeline-row" style="${(activeGymDetailId && s.gym_id===activeGymDetailId) ? 'border-color:var(--primary);' : ''}"><b>${escapeHtml(s.gym_name || s.gym_id || '-')}</b><small>${escapeHtml(s.max_grade || '-')}</small></div>`).join('');
+
+            const actsSnap = await safeGetDocs(query(collection(db, 'socialActivities'), where('user_id', '==', uid), limit(20)));
+            const acts = actsSnap ? actsSnap.docs.map(d => d.data() || {}).sort((a,b)=> new Date(b.timestamp||0)-new Date(a.timestamp||0)) : [];
+            const latestRows = acts.slice(0,8).map(a => `<div class="profile-log"><div><b>${escapeHtml(a.grade || (a.activity_type==='streak' ? `🔁 ${a.streak_days || 1} giorni` : '-'))}</b> · ${escapeHtml(a.gym_name || a.gym_id || '-')}</div><small>${escapeHtml(formatProfileDate(a.timestamp || ''))} · ${escapeHtml(a.activity_type || 'route')}</small></div>`).join('');
+
             wrap.style.display = 'block';
             wrap.innerHTML = `
                 <div class="social-public-header">
@@ -1957,19 +2588,26 @@
                     <div style="min-width:0; flex:1;">
                         <b>${escapeHtml(username)}</b>
                         <div style="color:var(--muted); font-size:0.86rem;">${t('dash.socialPublicProfile')}</div>
-                        ${publicBio ? `<p style="margin:6px 0 0; color:var(--muted); font-size:0.85rem;">${escapeHtml(publicBio)}</p>` : ''}
                     </div>
                     <button type="button" class="btn-sec" data-action="public-follow-toggle" data-uid="${uid}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button>
                 </div>
                 <div class="social-public-stats">
                     <button type="button" class="social-stat-btn" data-action="open-follow-list" data-kind="followers" data-uid="${uid}"><b>${counts.followers}</b><span>${t('dash.followers')}</span></button>
                     <button type="button" class="social-stat-btn" data-action="open-follow-list" data-kind="following" data-uid="${uid}"><b>${counts.following}</b><span>${t('dash.followingCount')}</span></button>
-                    <div class="social-stat-btn" style="display:grid; place-items:center;"><b>${routesPublic}</b><span>${t('dash.publicRoutes')}</span></div>
+                    <div class="social-stat-btn" style="display:grid; place-items:center;"><b>${streakNow}</b><span>Streak</span></div>
                 </div>
-                <div class="profile-log" style="margin-bottom:10px;"><b>${feedbackCount}</b> <span style="color:var(--muted);">${t('dash.publicFeedbacks')}</span></div>
                 <div class="profile-list social-public-list">
-                    <b>${t('dash.publicContent')}</b>
-                    ${rows || `<p class="profile-empty">${t('dash.noPublicContent')}</p>`}
+                    <b>Palestra principale</b>
+                    <div class="profile-log">${escapeHtml(mainGym)}</div>
+                    <b>Max grade per palestra</b>
+                    <div class="profile-timeline">${maxByGym || `<p class="profile-empty">-</p>`}</div>
+                    <div class="profile-kpis" style="margin-top:10px;">
+                        <div class="profile-kpi"><b>${totalRoutes}</b><span>${t('dash.totalSends')}</span></div>
+                        <div class="profile-kpi"><b>${activeDays}</b><span>${t('dash.activeDays')}</span></div>
+                        <div class="profile-kpi"><b>${streakNow}</b><span>Streak attuale</span></div>
+                    </div>
+                    <b style="margin-top:8px; display:block;">${t('dash.latestActivities')}</b>
+                    ${latestRows || `<p class="profile-empty">${t('dash.noPublicContent')}</p>`}
                 </div>
             `;
             activePublicProfileUid = uid;
@@ -1982,6 +2620,68 @@
             const profileWrap = document.getElementById('social-profile-view');
             if (!profileWrap || profileWrap.style.display === 'none') return;
             renderPublicProfile(activePublicProfileUid).catch(() => {});
+        }
+
+        function stopSocialCommentsSubscription() {
+            if (typeof socialCommentsUnsubscriber === 'function') socialCommentsUnsubscriber();
+            socialCommentsUnsubscriber = null;
+        }
+
+        async function openSocialCommentsModal(activityId) {
+            if (!activityId || !activeUser) return;
+            await ensureSocialActivityDoc(activityId);
+            activeSocialCommentsActivityId = activityId;
+            await markMyPostViewed(activityId).catch(() => {});
+            const modal = document.getElementById('social-comments-modal');
+            const list = document.getElementById('social-comments-list');
+            const input = document.getElementById('social-comments-input');
+            const sendBtn = document.getElementById('social-comments-send');
+            if (!modal || !list || !input || !sendBtn) return;
+            stopSocialCommentsSubscription();
+            socialCommentsUnsubscriber = onSnapshot(
+                query(collection(db, 'socialActivities', activityId, 'comments'), orderBy('timestamp', 'asc'), limit(200)),
+                (snap) => {
+                    const ownerRow = socialMyPostsActivities.find(a => a.id === activityId) || socialFeedById.get(activityId) || {};
+                    const owner = ownerRow.user_id || ownerRow.userId || null;
+                    const rows = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                    const commentCount = rows.length;
+                    updateLocalInteractionState(activityId, { comment_count: commentCount });
+                    list.innerHTML = rows.map(c => {
+                        const canDelete = !!owner && owner === activeUser.uid;
+                        const actions = canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="modal-delete-comment" data-activity-id="${activityId}" data-comment-id="${c.id}">Elimina</button> <button type="button" class="btn-sec" data-action="modal-reply-comment" data-username="${escapeHtml(c.user_name || 'Climber')}">Rispondi</button></div>` : '';
+                        return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${actions}</div>`;
+                    }).join('') || '<p class="profile-empty">Nessun commento.</p>';
+                    list.querySelectorAll('[data-action="modal-delete-comment"]').forEach(btn => btn.onclick = () => deleteActivityComment(btn.dataset.activityId, btn.dataset.commentId).catch(alertWriteError));
+                    list.querySelectorAll('[data-action="modal-reply-comment"]').forEach(btn => btn.onclick = () => { input.value = `@${btn.dataset.username} `; input.focus(); });
+                    renderFollowingFeed();
+                    renderMyPublicationsFeed();
+                    list.scrollTop = list.scrollHeight;
+                },
+                () => {
+                    list.innerHTML = '<p class="profile-empty">Impossibile caricare i commenti.</p>';
+                }
+            );
+            sendBtn.onclick = async () => {
+                const text = (input.value || '').trim();
+                if (!text) return;
+                sendBtn.disabled = true;
+                try {
+                    await addActivityComment(activityId, text);
+                    input.value = '';
+                } catch (e) {
+                    alertWriteError(e);
+                } finally {
+                    sendBtn.disabled = false;
+                }
+            };
+            input.onkeydown = (ev) => {
+                if (ev.key === 'Enter') {
+                    ev.preventDefault();
+                    sendBtn.click();
+                }
+            };
+            modal.classList.add('active');
+            input.focus();
         }
 
         async function openSocialListModal(uid, kind) {
@@ -2015,6 +2715,12 @@
             document.getElementById('social-list-modal')?.classList.remove('active');
         };
 
+        window.closeSocialCommentsModal = function closeSocialCommentsModal() {
+            document.getElementById('social-comments-modal')?.classList.remove('active');
+            stopSocialCommentsSubscription();
+            activeSocialCommentsActivityId = null;
+        };
+
         window.addEventListener('hashchange', () => {
             handlePublicProfileRoute().catch(() => {});
         });
@@ -2028,11 +2734,51 @@
             const usersList = document.getElementById('following-users-list');
             const progList = document.getElementById('following-progress-list');
             if (!usersList || !progList) return;
+
+            const tabCommunity = document.getElementById('social-top-tab-community');
+            const tabUsers = document.getElementById('social-top-tab-users');
+            const tabMyPosts = document.getElementById('social-top-tab-my-posts');
+            const panelCommunity = document.getElementById('social-community-panel');
+            const panelUsers = document.getElementById('social-users-panel');
+            const panelMyPosts = document.getElementById('social-my-posts-panel');
+            const gymFilter = document.getElementById('social-gym-filter');
+
+            if (tabCommunity && tabUsers && tabMyPosts && panelCommunity && panelUsers && panelMyPosts) {
+                const applyTab = () => {
+                    const isCommunity = socialTopTab === 'community';
+                    const isUsers = socialTopTab === 'users';
+                    const isMyPosts = socialTopTab === 'my_posts';
+                    tabCommunity.classList.toggle('active', isCommunity);
+                    tabUsers.classList.toggle('active', isUsers);
+                    tabMyPosts.classList.toggle('active', isMyPosts);
+                    panelCommunity.classList.toggle('active', isCommunity);
+                    panelUsers.classList.toggle('active', isUsers);
+                    panelMyPosts.classList.toggle('active', isMyPosts);
+                };
+                tabCommunity.onclick = () => { socialTopTab = 'community'; applyTab(); };
+                tabUsers.onclick = () => { socialTopTab = 'users'; applyTab(); };
+                tabMyPosts.onclick = () => { socialTopTab = 'my_posts'; applyTab(); };
+                applyTab();
+            }
+
+            if (gymFilter && lastUserGymsSnap) {
+                const gyms = [];
+                lastUserGymsSnap.forEach(g => gyms.push({ id: g.id, name: g.data()?.name || g.id }));
+                const opts = gyms.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+                gymFilter.innerHTML = opts;
+                if (!socialSelectedGymId && gyms[0]) socialSelectedGymId = gyms[0].id;
+                if (socialSelectedGymId) gymFilter.value = socialSelectedGymId;
+                gymFilter.onchange = () => { socialSelectedGymId = gymFilter.value; renderFollowingFeed(); };
+            }
+
             if (!lastUsersSnap) {
                 usersList.innerHTML = '';
                 progList.innerHTML = `<p class="profile-empty">${t('dash.noFollowingProgress')}</p>`;
                 return;
             }
+
+            renderMyPublicationsFeed();
+
             const q = (document.getElementById('following-search')?.value || '').trim();
             if (!q) {
                 usersList.innerHTML = `<p class="profile-empty">${t('dash.searchStart')}</p>`;
@@ -2041,7 +2787,9 @@
                 usersList.innerHTML = discover.map(u => {
                     const isFollowing = userFollowingIds.includes(u.id);
                     const avatar = u.avatarUrl ? `<img class="following-avatar" src="${escapeHtml(u.avatarUrl)}" alt="">` : `<div class="following-avatar">${escapeHtml((u.username || 'U').slice(0,2).toUpperCase())}</div>`;
-                    return `<div class="profile-log"><div class="social-user-item"><button type="button" class="social-user-meta social-user-link" data-action="open-profile" data-uid="${u.id}">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></button><button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button></div></div>`;
+                    const mainGym = escapeHtml(u.mainGymName || u.gymManaged || '-');
+                    const mainMax = escapeHtml(u.mainGymMaxGrade || '-');
+                    return `<div class="profile-log"><div class="social-user-item"><button type="button" class="social-user-meta social-user-link" data-action="open-profile" data-uid="${u.id}">${avatar}<div><b>${escapeHtml(u.username || 'Climber')}</b><small style="display:block;color:var(--muted);">${mainGym} · max ${mainMax}</small></div></button><button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${u.id}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button></div></div>`;
                 }).join('') || `<p class="profile-empty">${t('dash.noUserResults')}</p>`;
                 usersList.querySelectorAll('[data-action="toggle-follow"]').forEach(btn => btn.onclick = () => toggleFollowUser(btn.dataset.uid));
                 usersList.querySelectorAll('[data-action="open-profile"]').forEach(el => el.onclick = () => openPublicProfile(el.dataset.uid));
@@ -2057,13 +2805,14 @@
             const gyms = [];
             lastUserGymsSnap.forEach(g => gyms.push({ id: g.id, name: g.data()?.name || g.id }));
             for (const gym of gyms) {
+                const gymSnap = await getDoc(doc(db, 'gyms', gym.id));
+                const gymData = gymSnap.exists() ? gymSnap.data() : {};
+                gymLevelOrderMap.set(gym.id, gradeSystemArrayToMap(gymData?.gradeSystem));
                 const sectorsSnap = await getDocs(collection(db, 'gyms', gym.id, 'Sectors'));
                 sectorsSnap.forEach(sec => {
                     const unsub = onSnapshot(collection(db, `gyms/${gym.id}/Sectors/${sec.id}/routes`), (routesSnap) => {
-                        const gymGrades = new Set();
                         routesSnap.forEach(routeDoc => {
                             const routeData = routeDoc.data();
-                            if (routeData?.grade) gymGrades.add(String(routeData.grade).trim());
                             const reviewsPath = `gyms/${gym.id}/Sectors/${sec.id}/routes/${routeDoc.id}/reviews`;
                             const keyPrefix = `${gym.id}__${sec.id}__${routeDoc.id}__`;
                             const reviewsUnsub = onSnapshot(collection(db, reviewsPath), (revSnap) => {
@@ -2071,14 +2820,13 @@
                                 revSnap.forEach(rev => {
                                     const r = rev.data();
                                     const dt = r.sendDate || (r.date?.toDate ? toYYYYMMDD(r.date.toDate()) : toYYYYMMDD(new Date()));
-                                    profileEntriesMap.set(`${keyPrefix}${rev.id}`, { userId: r.userId || null, userName: resolveUsername(r.userId, r.userName || 'Climber'), gymId: gym.id, gymName: gym.name, sectorName: sec.data().name || sec.id, grade: routeData.grade || '-', outcome: r.outcome || 'climbed', sendDate: dt, tries: r.tries || null, date: r.date || null });
+                                    profileEntriesMap.set(`${keyPrefix}${rev.id}`, { userId: r.userId || null, userName: resolveUsername(r.userId, r.userName || 'Climber'), gymId: gym.id, gymName: gym.name, sectorName: sec.data().name || sec.id, grade: r.climbedGrade || routeData.grade || '-', gradeOrder: Number.isFinite(r.climbedGradeOrder) ? r.climbedGradeOrder : null, outcome: r.outcome || 'climbed', sendDate: dt, tries: r.tries || null, date: r.date || null });
                                 });
                                 renderProfileDashboard();
                                 renderFollowingSection();
                             });
                             profileUnsubscribers.push(reviewsUnsub);
                         });
-                        gymLevelOrderMap.set(gym.id, buildLevelOrder(Array.from(gymGrades).map(g => ({ grade: g }))));
                     });
                     profileUnsubscribers.push(unsub);
                 });
@@ -2420,10 +3168,24 @@
         function startAdminGymProfileSubscription() {
             if (!realUserGymId) return;
             const saveBtn = document.getElementById('admin-save-gym-profile');
+            const saveGradesBtn = document.getElementById('admin-save-grade-system');
             if (saveBtn) saveBtn.onclick = () => saveAdminGymProfile().catch(e => alert(e.message));
+            if (saveGradesBtn) saveGradesBtn.onclick = async () => {
+                try {
+                    const txt = document.getElementById('admin-grade-setup-input')?.value || '';
+                    await saveGymGradeSystem(realUserGymId, txt);
+                    alert(t('admin.gradeSystemSaved'));
+                    renderProfileDashboard();
+                } catch (e) { alert(e.message || String(e)); }
+            };
             const unsub = onSnapshot(doc(db, 'gyms', realUserGymId), (snap) => {
                 const data = snap.exists() ? (snap.data() || {}) : {};
                 setAdminGymProfileForm(data);
+                const gradeText = (data.gradeSystem || []).sort((a,b) => (a.order ?? 0) - (b.order ?? 0)).map(g => g.label).join('\n');
+                const txtArea = document.getElementById('admin-grade-setup-input');
+                if (txtArea) txtArea.value = gradeText;
+                currentGymGradeSystem = Array.isArray(data.gradeSystem) ? data.gradeSystem : [];
+                gymLevelOrderMap.set(realUserGymId, gradeSystemArrayToMap(currentGymGradeSystem));
             });
             adminCoverageUnsubscribers.push(unsub);
         }
@@ -2577,7 +3339,7 @@
                         <div>
                             <b>${stats.selectedCoverage}%</b><span>${t('admin.selectedCoverage')}</span>
                         </div>
-                        <div class="admin-donut" style="background:conic-gradient(var(--accent) 0 ${donutPct}%, #1B2842 ${donutPct}% 100%);">
+                        <div class="admin-donut" style="background:conic-gradient(var(--accent) 0 ${donutPct}%, rgba(255,255,255,0.06) ${donutPct}% 100%);">
                             <div class="admin-donut-inner">${donutPct}%</div>
                         </div>
                     </div>
@@ -2933,6 +3695,8 @@
             const completionDate = nextState === 'climbed' ? (document.getElementById('tracker-completion-date')?.value || prev.completionDate || nowDate) : null;
             const notes = document.getElementById('tracker-notes')?.value || prev.notes || '';
             const shareOnFeed = !!document.getElementById('tracker-share-feed')?.checked;
+            const gradeMap = gymLevelOrderMap.get(socialRouteContext.gymId) || new Map();
+            const finalGradeOrder = finalGrade && gradeMap.has(normalizeLevelValue(finalGrade)) ? gradeMap.get(normalizeLevelValue(finalGrade)) : null;
             const payload = {
                 userId: activeUser.uid,
                 gymId: socialRouteContext.gymId,
@@ -2941,6 +3705,7 @@
                 state: nextState,
                 attemptCount: attempt,
                 finalGrade,
+                finalGradeOrder,
                 firstAttemptDate,
                 completionDate,
                 notes,
@@ -3001,14 +3766,27 @@
                     alert(t('viewer.reviewAlreadySent'));
                     return;
                 }
+                const routeSnap = await getDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId));
+                const routeData = routeSnap.exists() ? (routeSnap.data() || {}) : {};
+                const gradeLabel = normalizeLevelValue(routeData.grade || proposedGrade || '-');
+                const orderMap = gymLevelOrderMap.get(activeGymId) || new Map();
+                const climbedOrder = orderMap.has(gradeLabel) ? orderMap.get(gradeLabel) : null;
                 await setDoc(reviewRef, {
                     rating: selectedStars,
                     text: text || "",
                     proposedGrade: proposedGrade || null,
+                    climbedGrade: gradeLabel,
+                    climbedGradeOrder: climbedOrder,
                     date: new Date(),
                     userId: signedUser.uid,
                     userName: currentUserName || 'Climber'
                 }, { merge: false });
+                const gymSnap = await getDoc(doc(db, 'gyms', activeGymId));
+                const gymName = gymSnap.exists() ? (gymSnap.data()?.name || activeGymId) : activeGymId;
+                const statResult = await upsertUserGymStats(signedUser.uid, activeGymId, gymName, gradeLabel, climbedOrder, 1);
+                await createSocialActivity({ userId: signedUser.uid, gymId: activeGymId, gymName, type: 'route', grade: gradeLabel, attempts: 1, isNewMax: false, streakDays: statResult.streakDays });
+                if (statResult.isNewMax) await createSocialActivity({ userId: signedUser.uid, gymId: activeGymId, gymName, type: 'new_max', grade: gradeLabel, attempts: 1, isNewMax: true, streakDays: statResult.streakDays });
+                if (statResult.streakDays > 1) await createSocialActivity({ userId: signedUser.uid, gymId: activeGymId, gymName, type: 'streak', grade: null, attempts: 1, isNewMax: false, streakDays: statResult.streakDays });
                 if (commentInput) commentInput.value = "";
                 if (gradeInput) gradeInput.value = "";
                 alert(t('viewer.reviewSuccess'));
@@ -3132,10 +3910,10 @@
 
         window.goToAuth = () => showView('view-auth');
         window.logout = () => { stopFollowingProgressSubscriptions(); stopFollowsSubscription(); signOut(auth).then(() => location.reload()); };
-        window.switchMode = () => {
+        window.switchMode = async () => {
             if (userRole !== 'admin') return;
             currentMode = currentMode === 'admin' ? 'user' : 'admin';
-            initDashboard();
+            await initDashboard();
         };
         window.closeViewer = () => { cleanupModelLoadGuards(); document.getElementById('viewer-container').style.display = 'none'; hideLoading(); };
         window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; };
