@@ -164,6 +164,18 @@
         .admin-sector-badge { border-radius:999px; padding:4px 8px; font-size:0.75rem; background:rgba(255,92,92,0.14); color:#ff9c9c; border:1px solid rgba(255,92,92,0.25); }
         .admin-activity-trend { margin-top:8px; font-size:0.88rem; color:var(--muted); }
         .admin-settings-block { margin-bottom:14px; }
+        .admin-feedback-analytics { margin-top:12px; display:grid; gap:12px; }
+        .admin-feedback-card { border:1px solid var(--border); border-radius:12px; background:var(--card); padding:12px; }
+        .admin-feedback-card h5 { margin:0 0 10px 0; font-size:0.95rem; }
+        .admin-feedback-empty { color:var(--muted); font-size:0.9rem; }
+        .admin-feedback-list { display:grid; gap:8px; }
+        .admin-feedback-row { display:grid; grid-template-columns:minmax(0,1fr) 140px; gap:10px; align-items:center; }
+        .admin-feedback-label { font-size:0.86rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .admin-feedback-bar-wrap { height:10px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid var(--border); overflow:hidden; }
+        .admin-feedback-bar { height:100%; background:var(--primary); border-radius:999px; }
+        .admin-feedback-meta { font-size:0.8rem; color:var(--muted); text-align:right; white-space:nowrap; }
+        .admin-feedback-line { display:grid; grid-template-columns: repeat(30, minmax(0,1fr)); gap:3px; align-items:end; height:110px; }
+        .admin-feedback-line i { display:block; width:100%; background:var(--primary); border-radius:4px 4px 0 0; min-height:2px; opacity:0.95; }
         @media (max-width: 900px) {
             .admin-layout { grid-template-columns:1fr; }
             .admin-sidebar { position:static; grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -1005,6 +1017,8 @@
                             <div class="card" style="display:block;">
                                 <div id="admin-users-summary"></div>
                             </div>
+                            <h4 class="admin-section-title" style="margin-top:14px;">💬 Analytics Feedback Utenti</h4>
+                            <div id="admin-feedback-analytics" class="admin-feedback-analytics"></div>
                         </div>
 
                         <div id="admin-tab-settings" class="admin-tab-panel">
@@ -1313,7 +1327,7 @@
         let socialTrackerState = null;
         let currentGymCoverage = { totalUsers: 0, activeUsers: 0, coveragePct: 0 };
         let adminCoverageUnsubscribers = [];
-        let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), reviewsByRoute: new Map() };
+        let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), routeMeta: new Map(), reviewsByRoute: new Map() };
         let gymDetailUnsubscriber = null;
         let currentModelLoadToken = 0;
         let currentModelLoadCleanup = null;
@@ -3335,7 +3349,7 @@
                 const unsub = adminCoverageUnsubscribers.pop();
                 if (typeof unsub === 'function') unsub();
             }
-            adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), reviewsByRoute: new Map() };
+            adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), routeMeta: new Map(), reviewsByRoute: new Map() };
         }
 
         function setAdminGymProfileForm(data = {}) {
@@ -3637,6 +3651,7 @@
             renderAdminDashboardKpis(stats);
             renderAdminSectorPerformanceTable(stats);
             renderAdminUsersSection(stats);
+            renderAdminFeedbackAnalytics();
             const maxTrend = Math.max(1, ...stats.trend.map(t => t.users));
             const donutPct = stats.selectedCoverage;
             const trendHtml = stats.trend.map(ti => {
@@ -3692,6 +3707,99 @@
             }
         }
 
+
+        function renderAnalyticsBarRows(rows, valueMax, valueFormatter) {
+            if (!rows.length) return `<p class="admin-feedback-empty">Nessun dato disponibile.</p>`;
+            const max = Math.max(1, valueMax || 1);
+            return `<div class="admin-feedback-list">${rows.map(row => {
+                const pct = Math.max(4, Math.round((row.value / max) * 100));
+                return `<div class="admin-feedback-row">
+                    <div>
+                        <div class="admin-feedback-label" title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</div>
+                        <div class="admin-feedback-bar-wrap"><div class="admin-feedback-bar" style="width:${pct}%;"></div></div>
+                    </div>
+                    <div class="admin-feedback-meta">${valueFormatter(row)}</div>
+                </div>`;
+            }).join('')}</div>`;
+        }
+
+        function buildAdminFeedbackAnalytics() {
+            const routeAgg = new Map();
+            const sectorAgg = new Map();
+            const now = new Date();
+            const trend = [];
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date(now);
+                d.setHours(0, 0, 0, 0);
+                d.setDate(d.getDate() - i);
+                trend.push({ key: d.toISOString().slice(0, 10), count: 0 });
+            }
+            const trendMap = new Map(trend.map(t => [t.key, t]));
+
+            for (const [routeKey, reviewsMap] of adminCoverageSnapshot.reviewsByRoute.entries()) {
+                const meta = adminCoverageSnapshot.routeMeta.get(routeKey) || {};
+                const sectorId = meta.sectorId || routeKey.split('/')[0] || 'unknown';
+                const sectorName = adminCoverageSnapshot.sectorNames.get(sectorId) || sectorId;
+                const routeLabel = meta.routeLabel || routeKey;
+                if (!routeAgg.has(routeKey)) routeAgg.set(routeKey, { label: `${sectorName} · ${routeLabel}`, sum: 0, count: 0 });
+                if (!sectorAgg.has(sectorId)) sectorAgg.set(sectorId, { label: sectorName, sum: 0, count: 0 });
+                const r = routeAgg.get(routeKey);
+                const sct = sectorAgg.get(sectorId);
+                for (const rv of reviewsMap.values()) {
+                    const rating = Number(rv?.rating);
+                    if (Number.isFinite(rating)) {
+                        r.sum += rating;
+                        r.count += 1;
+                        sct.sum += rating;
+                        sct.count += 1;
+                    }
+                    if (rv?.dt instanceof Date) {
+                        const k = rv.dt.toISOString().slice(0, 10);
+                        const slot = trendMap.get(k);
+                        if (slot) slot.count += 1;
+                    }
+                }
+            }
+
+            const routeAverages = Array.from(routeAgg.values()).filter(v => v.count > 0).map(v => ({ label: v.label, value: v.sum / v.count, votes: v.count })).sort((a, b) => b.value - a.value).slice(0, 10);
+            const topReviewed = Array.from(routeAgg.values()).filter(v => v.count > 0).map(v => ({ label: v.label, value: v.count, avg: v.sum / v.count })).sort((a, b) => b.value - a.value).slice(0, 5);
+            const sectorAverages = Array.from(sectorAgg.values()).filter(v => v.count > 0).map(v => ({ label: v.label, value: v.sum / v.count, votes: v.count })).sort((a, b) => b.value - a.value);
+
+            return { routeAverages, topReviewed, sectorAverages, trend };
+        }
+
+        function renderAdminFeedbackAnalytics() {
+            const wrap = document.getElementById('admin-feedback-analytics');
+            if (!wrap) return;
+            if (adminCoverageSnapshot.routeMeta.size === 0) {
+                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">Nessun dato disponibile.</p></div>`;
+                return;
+            }
+            if (adminCoverageSnapshot.reviewsByRoute.size === 0) {
+                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">Loading feedback analytics...</p></div>`;
+                return;
+            }
+            try {
+                const data = buildAdminFeedbackAnalytics();
+                const avgRows = renderAnalyticsBarRows(data.routeAverages, 5, row => `${row.value.toFixed(2)} ⭐ · ${row.votes} voti`);
+                const topRows = renderAnalyticsBarRows(data.topReviewed, data.topReviewed[0]?.value || 1, row => `${row.value} recensioni · ${row.avg.toFixed(2)} ⭐`);
+                const sectorRows = renderAnalyticsBarRows(data.sectorAverages, 5, row => `${row.value.toFixed(2)} ⭐ · ${row.votes} voti`);
+                const maxTrend = Math.max(1, ...data.trend.map(t => t.count));
+                const trendHtml = data.trend.map(t => {
+                    const h = Math.max(4, Math.round((t.count / maxTrend) * 100));
+                    return `<i style="height:${h}%;" title="${t.key}: ${t.count}"></i>`;
+                }).join('');
+                wrap.innerHTML = `
+                    <div class="admin-feedback-card"><h5>Media voti per via</h5>${avgRows}</div>
+                    <div class="admin-feedback-card"><h5>Top 5 vie più votate</h5>${topRows}</div>
+                    <div class="admin-feedback-card"><h5>Media voti per settore</h5>${sectorRows}</div>
+                    <div class="admin-feedback-card"><h5>Recensioni ultimi 30 giorni</h5>${data.trend.some(t => t.count > 0) ? `<div class="admin-feedback-line">${trendHtml}</div>` : `<p class="admin-feedback-empty">Nessun dato disponibile.</p>`}</div>
+                `;
+            } catch (_) {
+                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">Errore nel caricamento analytics feedback.</p></div>`;
+            }
+        }
+
         function startAdminCoverageSubscriptions(gymId) {
             stopAdminCoverageListeners();
             adminCoverageSnapshot.gymId = gymId;
@@ -3703,6 +3811,7 @@
                 if (typeof unsub === 'function') unsub();
                 routeReviewUnsubs.delete(routeKey);
                 adminCoverageSnapshot.reviewsByRoute.delete(routeKey);
+                adminCoverageSnapshot.routeMeta.delete(routeKey);
             }
 
             const sectorsUnsub = onSnapshot(collection(db, `gyms/${gymId}/Sectors`), (sectorsSnap) => {
@@ -3718,13 +3827,15 @@
                         routesSnap.forEach((routeDoc) => {
                             const routeKey = `${sectorId}/${routeDoc.id}`;
                             currentRoutes.add(routeKey);
+                            const routeData = routeDoc.data() || {};
+                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id });
                             if (routeReviewUnsubs.has(routeKey)) return;
 
                             const reviewsUnsub = onSnapshot(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes/${routeDoc.id}/reviews`), (reviewsSnap) => {
                                 const m = new Map();
                                 reviewsSnap.forEach((rvDoc) => {
                                     const d = rvDoc.data() || {};
-                                    m.set(rvDoc.id, { uid: d.userId || null, dt: normalizeDateFromReview(d) });
+                                    m.set(rvDoc.id, { uid: d.userId || null, rating: Number(d.rating), dt: normalizeDateFromReview(d) });
                                 });
                                 adminCoverageSnapshot.reviewsByRoute.set(routeKey, m);
                                 renderAdminCoverage();
