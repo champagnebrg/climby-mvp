@@ -511,6 +511,30 @@
             cursor: pointer;
         }
         .user-main-tab.active { border-color: var(--primary); color: var(--primary); }
+        .dash-profile-btn { min-width:44px; min-height:44px; padding:10px 12px; border-radius:12px; font-size:1.1rem; }
+        .social-comment-input-wrap { display:flex; gap:8px; margin-top:12px; align-items:center; }
+        .social-comment-send { width:44px; min-width:44px; min-height:44px; padding:0; display:grid; place-items:center; border-radius:999px; font-size:1.15rem; }
+        .viewer-move-guide { position:absolute; top:max(72px, calc(var(--safe-top) + 56px)); right:max(16px, var(--safe-right)); z-index:1105; width:min(320px, calc(100% - 32px)); background:rgba(22,32,42,0.94); border:1px solid rgba(43,224,125,0.35); border-radius:12px; padding:10px 12px; box-shadow:0 10px 24px rgba(0,0,0,0.35); }
+        .viewer-move-guide h5 { margin:0 0 6px 0; font-size:0.9rem; }
+        .viewer-move-guide p { margin:0; color:var(--muted); font-size:0.85rem; line-height:1.4; white-space:pre-line; }
+        .viewer-move-guide button { margin-top:8px; min-height:36px; padding:6px 10px; border-radius:8px; }
+        .social-top-tab#social-top-tab-community::before { content: '👥 '; }
+        .user-main-tab#tab-btn-explore::before { content: '🧗 '; }
+        .user-main-tab#tab-btn-following::before { content: '💬 '; }
+        .user-main-tab#tab-btn-challenges::before { content: '🏆 '; }
+        .challenges-hub-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+        .challenge-hub-card { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); }
+        .challenge-hub-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+        .challenge-hub-head b { font-size:1rem; }
+        .challenge-hub-desc { color:var(--muted); font-size:0.85rem; margin-top:4px; }
+        .challenge-hub-badge { border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:0.75rem; color:var(--text); }
+        .challenge-progress { margin-top:10px; height:8px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden; }
+        .challenge-progress > span { display:block; height:100%; background:linear-gradient(90deg, #2BE07D, #20C96B); }
+        .challenge-hub-meta { margin-top:8px; display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:0.8rem; }
+        .challenge-month-note { color:var(--muted); font-size:0.82rem; margin:6px 0 0; }
+        .user-badge-pill { display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:1px 7px; border-radius:999px; border:1px solid var(--border); font-size:0.7rem; vertical-align:middle; color:var(--text); }
+        .challenge-levelup-toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(30px); opacity:0; z-index:2100; background:rgba(22,32,42,0.96); border:1px solid rgba(43,224,125,0.45); border-radius:12px; padding:12px 14px; min-width:min(92vw, 360px); box-shadow:0 10px 24px rgba(0,0,0,0.35); transition:all 220ms ease; pointer-events:none; }
+        .challenge-levelup-toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
         .user-main-section { display: none; }
         .user-main-section.active { display: block; }
         .profile-dashboard { margin-bottom: 18px; padding: 16px; display: block; }
@@ -525,6 +549,10 @@
         .profile-log { border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 0.9rem; }
         .profile-log small { color: var(--muted); }
         .profile-empty { color: var(--muted); font-size: 0.9rem; }
+        .challenges-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:10px; }
+        .challenge-card { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card-soft); }
+        .challenge-value { font-size:1.4rem; font-weight:700; color:var(--primary); line-height:1.1; }
+        .challenge-label { margin-top:4px; font-size:0.85rem; color:var(--muted); }
         .community-wrap { margin: 22px 0 8px; }
         .gym-progress-wrap { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; width: 100%; }
         .following-search { margin-top: 0; }
@@ -900,12 +928,14 @@
                 <button type="button" class="btn-sec" onclick="window.closeSocialCommentsModal()" data-i18n="viewer.close"></button>
             </div>
             <div id="social-comments-list" class="social-public-list" style="margin-top:10px;"></div>
-            <div style="display:flex; gap:8px; margin-top:12px;">
-                <input id="social-comments-input" class="social-input" placeholder="Scrivi un commento..." style="margin:0;">
-                <button type="button" class="btn-main" id="social-comments-send">Invia</button>
+            <div class="social-comment-input-wrap">
+                <input id="social-comments-input" class="social-input" placeholder="Scrivi un commento..." style="margin:0; flex:1;">
+                <button type="button" class="btn-main social-comment-send" id="social-comments-send" aria-label="Invia">➤</button>
             </div>
         </div>
     </div>
+
+    <div id="challenge-levelup-toast" class="challenge-levelup-toast" aria-live="polite"></div>
 
     <div id="gym-grade-setup-overlay" class="social-modal" style="display:none;">
         <div class="social-modal-sheet">
@@ -960,6 +990,7 @@
                     </div>
                     <button class="btn-sec" id="btn-gym-owner-request" onclick="window.openGymOwnerRequest()" style="display:none;">Sono il proprietario di una palestra</button>
                     <button class="btn-sec" id="btn-mode-toggle" onclick="window.switchMode()" data-i18n="dash.switchView"></button>
+                    <button class="btn-sec dash-profile-btn" id="btn-profile-quick" onclick="window.openProfileQuick()" aria-label="Profilo">👤</button>
                     <button class="btn-sec" onclick="window.logout()" data-i18n="dash.logout"></button>
                 </div>
             </div>
@@ -1062,7 +1093,7 @@
             <div id="user-panel">
                 <div class="user-main-tabs" id="user-main-tabs">
                     <button type="button" id="tab-btn-explore" class="user-main-tab active" data-i18n="dash.tabExplore"></button>
-                    <button type="button" id="tab-btn-profile" class="user-main-tab" data-i18n="dash.tabProfile"></button>
+                    <button type="button" id="tab-btn-challenges" class="user-main-tab" data-i18n="dash.tabChallenges"></button>
                     <button type="button" id="tab-btn-following" class="user-main-tab" data-i18n="dash.tabSocial"></button>
                 </div>
                 <div id="user-list-view" class="user-main-section active">
@@ -1078,6 +1109,9 @@
                 <div id="user-profile-view" class="user-main-section">
                     <div id="profile-dashboard" class="card profile-dashboard"></div>
                 </div>
+                <div id="user-challenges-view" class="user-main-section">
+                    <div id="challenges-hub" class="card profile-dashboard"></div>
+                </div>
                 <div id="user-following-view" class="user-main-section">
                     <div id="social-main-view">
                         <div class="social-top-tabs">
@@ -1088,7 +1122,6 @@
                         <div id="social-community-panel" class="social-subpanel active">
                             <div class="card" style="display:block;">
                                 <h4 class="following-section-title">Community Feed</h4>
-                                <select id="social-gym-filter"></select>
                                 <div id="following-progress-list"></div>
                             </div>
                         </div>
@@ -1157,6 +1190,13 @@
 
     <div id="viewer-container">
         <button type="button" class="btn-sec viewer-close" onclick="window.closeViewer()" data-i18n="viewer.close"></button>
+        <div id="viewer-move-guide" class="viewer-move-guide" style="display:none;" aria-live="polite">
+            <h5>Muovi la parete</h5>
+            <p>Trascina con un dito per ruotare.
+Usa due dita per spostare la vista.
+Pizzica per zoommare.</p>
+            <button type="button" class="btn-sec" id="viewer-move-guide-close">Ho capito</button>
+        </div>
         <model-viewer id="main-viewer" camera-controls shadow-intensity="1">
             <button id="ghost" class="hotspot" slot="hotspot-ghost" style="display:none; border:2px dashed var(--primary); background:var(--primary-dim)"></button>
 
@@ -1299,6 +1339,7 @@
         let followingFeedMap = new Map();
         let followingProgressUnsubscribers = [];
         let socialFeedUnsubscriber = null;
+        let socialFeedLoading = false;
         let socialFeedActivities = [];
         let socialSelectedGymId = null;
         let socialTopTab = 'community';
@@ -1322,6 +1363,8 @@
         let currentViewerRoutesUnsubscriber = null;
         let currentRouteReviewsUnsubscriber = null;
         let routeProgressMap = new Map();
+        let monthlyChallengesState = { monthKey: '', metrics: [], highestBadge: null, history: {} };
+        let challengeLevelToastTimer = null;
         let profileProgressFilter = 'all';
         let socialRouteContext = null;
         let socialTrackerState = null;
@@ -1336,6 +1379,7 @@
         let gymLevelOrderMap = new Map();
         let currentGymGradeSystem = null;
         let forcedGradeSetupActive = false;
+        let viewerMoveGuideShownThisSession = false;
         const SOCIAL_PROFILE_ROUTE_PREFIX = '#/social/user/';
 
         const START_GUIDE_PREF_KEY = 'has_seen_3d_start_instruction';
@@ -1365,7 +1409,7 @@
             it: {
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
                 auth: { yourName: "Il tuo Nome", username: "Username pubblico", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
-                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
+                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
                 admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo." },
                 viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate", startGuideTitle: "📍 Crea lo start della via", startGuideText: "Tocca nel modello 3D il punto di inizio della via per impostare lo START.", startGuideAcknowledge: "Ho capito", startGuideDontShow: "Non mostrare più" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
@@ -1375,7 +1419,7 @@
             en: {
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
                 auth: { yourName: "Your name", username: "Public username", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
-                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
+                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabChallenges: "Challenges", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
                 admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg", gradeSystemTitle: "Gym grade system", gradeSystemHint: "Add one grade per line, from easiest to hardest. A numeric order is stored too.", gradeSystemPlaceholder: "E.g.\nGreen\nBlue\nPurple\nRed", saveGradeSystem: "SAVE GRADE SYSTEM", gradeSetupRequiredTitle: "Set up your gym grades", gradeSetupRequiredHint: "Before using the admin panel, configure your gym grade system from easiest to hardest.", gradeSystemSaved: "Grade system saved successfully." },
                 viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed", startGuideTitle: "📍 Set the route start", startGuideText: "Tap the route start point directly on the 3D model to set START.", startGuideAcknowledge: "Got it", startGuideDontShow: "Do not show again" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
@@ -1410,7 +1454,7 @@
             }
             const lt = document.getElementById('loading-text'); if (lt) lt.innerText = t('loading.init');
         }
-        window.setLang = (lang) => { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); populateAdminColorOptions(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (typeof renderActivePublicProfile === 'function') renderActivePublicProfile(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) renderAdminCoverage(); };
+        window.setLang = (lang) => { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); populateAdminColorOptions(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderChallengesHub === 'function') renderChallengesHub(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (typeof renderActivePublicProfile === 'function') renderActivePublicProfile(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) renderAdminCoverage(); };
 
         const showLoading = (msg, showRetry = false) => {
             document.getElementById('loading-text').innerText = msg;
@@ -1822,10 +1866,12 @@
                 (async () => {
                     const profile = await getUserProfileByAuthUid(activeUser.uid);
                     userFavouriteGyms = profile.data?.favouriteGyms || [];
+                    monthlyChallengesState.history = profile.data?.challengesMonthlyHistory || {};
                     renderUserGymList();
+                    renderChallengesHub();
                 })();
                 document.getElementById('tab-btn-explore').onclick = () => setUserMainTab('explore');
-                document.getElementById('tab-btn-profile').onclick = () => { setUserMainTab('profile'); renderProfileDashboard(); };
+                document.getElementById('tab-btn-challenges').onclick = () => { setUserMainTab('challenges'); renderChallengesHub(); };
                 document.getElementById('tab-btn-following').onclick = () => { setUserMainTab('social'); setSocialSubView('main'); renderFollowingSection(); };
                 const searchInput = document.getElementById('user-search-gyms');
                 searchInput.oninput = () => renderUserGymList();
@@ -1986,8 +2032,9 @@
             const prev = snap.exists() ? (snap.data() || {}) : {};
             const today = toYYYYMMDD(new Date());
             const prevOrder = Number.isFinite(prev.max_grade_order) ? prev.max_grade_order : -1;
+            const hasLegacyMaxWithoutOrder = !Number.isFinite(prev.max_grade_order) && !!prev.max_grade;
             const nextOrder = Number.isFinite(gradeOrder) ? gradeOrder : prevOrder;
-            const isNewMax = Number.isFinite(nextOrder) && nextOrder > prevOrder;
+            const isNewMax = Number.isFinite(nextOrder) && !hasLegacyMaxWithoutOrder && nextOrder > prevOrder;
             const prevStreak = Number(prev.streak_days || 0);
             const streakDays = prev.last_activity_day === today
                 ? Math.max(1, prevStreak)
@@ -2061,18 +2108,24 @@
         function setUserMainTab(tab) {
             const explore = document.getElementById('user-list-view');
             const profile = document.getElementById('user-profile-view');
+            const challenges = document.getElementById('user-challenges-view');
             const following = document.getElementById('user-following-view');
             const btnExplore = document.getElementById('tab-btn-explore');
-            const btnProfile = document.getElementById('tab-btn-profile');
+            const btnChallenges = document.getElementById('tab-btn-challenges');
             const btnFollowing = document.getElementById('tab-btn-following');
-            if (!explore || !profile || !following || !btnExplore || !btnProfile || !btnFollowing) return;
+            const quickBtn = document.getElementById('btn-profile-quick');
+            if (!explore || !profile || !challenges || !following || !btnExplore || !btnChallenges || !btnFollowing) return;
             explore.classList.toggle('active', tab === 'explore');
             profile.classList.toggle('active', tab === 'profile');
+            challenges.classList.toggle('active', tab === 'challenges');
             following.classList.toggle('active', tab === 'social');
             btnExplore.classList.toggle('active', tab === 'explore');
-            btnProfile.classList.toggle('active', tab === 'profile');
+            btnChallenges.classList.toggle('active', tab === 'challenges');
             btnFollowing.classList.toggle('active', tab === 'social');
+            if (quickBtn) quickBtn.classList.toggle('active', tab === 'profile');
         }
+        window.openProfileQuick = () => { setUserMainTab('profile'); renderProfileDashboard(); };
+
         function setSocialSubView(mode) {
             const main = document.getElementById('social-main-view');
             const profile = document.getElementById('social-profile-view');
@@ -2094,6 +2147,7 @@
                 routeProgressMap = new Map();
                 snap.forEach(d => routeProgressMap.set(d.id, d.data() || {}));
                 renderProfileDashboard();
+                renderChallengesHub();
             });
         }
 
@@ -2191,6 +2245,208 @@
                 milestones,
                 byGym
             };
+        }
+
+        function getDateKeyFromAnyValue(value) {
+            if (!value) return '';
+            let d = null;
+            if (value instanceof Date) d = value;
+            else if (typeof value?.toDate === 'function') d = value.toDate();
+            else if (typeof value === 'string' || typeof value === 'number') d = new Date(value);
+            if (!d || Number.isNaN(d.getTime())) return '';
+            return toYYYYMMDD(d);
+        }
+
+        function computeUserChallenges(trackerAll = []) {
+            const climbedEntries = trackerAll.filter(v => v.state === 'climbed');
+            const daysInGym = new Set();
+            const sectors = new Set();
+            const gyms = new Set();
+
+            trackerAll.forEach(v => {
+                const dayKey = getDateKeyFromAnyValue(v.eventDate || v.completionDate || v.updatedAt || v.createdAt);
+                if (dayKey) daysInGym.add(dayKey);
+                const sectorKey = String(v.sectorId || v.sectorName || '').trim();
+                if (sectorKey) sectors.add(sectorKey);
+                const gymKey = String(v.gymId || v.gymName || '').trim();
+                if (gymKey) gyms.add(gymKey);
+            });
+
+            const sortedDays = Array.from(daysInGym).sort();
+            let longestStreak = 0;
+            let currentStreak = 0;
+            let prev = null;
+            sortedDays.forEach(day => {
+                if (!prev) currentStreak = 1;
+                else currentStreak = areConsecutiveDays(prev, day) ? currentStreak + 1 : 1;
+                longestStreak = Math.max(longestStreak, currentStreak);
+                prev = day;
+            });
+
+            const metrics = [
+                { key: 'routes', label: 'Vie chiuse totali', value: climbedEntries.length, available: trackerAll.some(v => Object.prototype.hasOwnProperty.call(v || {}, 'state')) },
+                { key: 'days', label: 'Giorni in palestra', value: daysInGym.size, available: trackerAll.some(v => getDateKeyFromAnyValue(v.eventDate || v.completionDate || v.updatedAt || v.createdAt)) },
+                { key: 'streak', label: 'Giorni consecutivi', value: longestStreak, available: daysInGym.size > 0 },
+                { key: 'sectors', label: 'Settori provati', value: sectors.size, available: trackerAll.some(v => !!(v.sectorId || v.sectorName)) },
+                { key: 'gyms', label: 'Palestre provate', value: gyms.size, available: trackerAll.some(v => !!(v.gymId || v.gymName)) }
+            ];
+            return metrics.filter(m => m.available);
+        }
+
+        const CHALLENGE_MONTHLY_DEFS = [
+            { key: 'routes', category: '🧗 Attività', name: 'Vie chiuse', desc: 'Vie completate nel mese corrente.', levels: [10, 25, 50, 100] },
+            { key: 'days', category: '🧗 Attività', name: 'Giorni in palestra', desc: 'Giorni distinti con attività nel mese.', levels: [4, 8, 12, 20] },
+            { key: 'streak', category: '🧗 Attività', name: 'Streak mensile', desc: 'Massima sequenza di giorni consecutivi nel mese.', levels: [3, 7, 12, 20] },
+            { key: 'sectors', category: '🌍 Esplorazione', name: 'Settori provati', desc: 'Settori distinti visitati nel mese.', levels: [2, 5, 9, 14] },
+            { key: 'gyms', category: '🌍 Esplorazione', name: 'Palestre visitate', desc: 'Palestre diverse visitate nel mese.', levels: [1, 2, 4, 6] }
+        ];
+        const CHALLENGE_LEVEL_LABELS = ['Bronzo', 'Argento', 'Oro', 'Platino'];
+
+        function nowMonthKey(date = new Date()) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function getUserDocByUid(uid) {
+            if (!uid || !lastUsersSnap) return null;
+            return lastUsersSnap.docs.find(d => d.id === uid || d.data()?.authUid === uid) || null;
+        }
+
+        function resolveUserHighestBadge(uid) {
+            const docRef = getUserDocByUid(uid);
+            const data = docRef?.data?.() || {};
+            return data.publicMonthlyBadge || null;
+        }
+
+        function badgePillHtml(badge) {
+            if (!badge || !badge.level) return '';
+            const icon = badge.icon || '🏅';
+            const label = badge.level || '';
+            return `<span class="user-badge-pill" title="${escapeHtml(label)} ${escapeHtml(badge.challenge || '')}">${icon} ${escapeHtml(label)}</span>`;
+        }
+
+        function computeMonthlyChallenges(trackerAll = []) {
+            const mk = nowMonthKey();
+            const monthRows = trackerAll.filter(v => getDateKeyFromAnyValue(v.eventDate || v.completionDate || v.updatedAt || v.createdAt).startsWith(mk));
+            const climbed = monthRows.filter(v => v.state === 'climbed');
+            const days = new Set();
+            const sectors = new Set();
+            const gyms = new Set();
+            monthRows.forEach(v => {
+                const d = getDateKeyFromAnyValue(v.eventDate || v.completionDate || v.updatedAt || v.createdAt);
+                if (d) days.add(d);
+                const sk = String(v.sectorId || v.sectorName || '').trim();
+                if (sk) sectors.add(sk);
+                const gk = String(v.gymId || v.gymName || '').trim();
+                if (gk) gyms.add(gk);
+            });
+            const sorted = Array.from(days).sort();
+            let bestStreak = 0;
+            let cur = 0;
+            let prev = null;
+            sorted.forEach(day => {
+                if (!prev) cur = 1;
+                else cur = areConsecutiveDays(prev, day) ? cur + 1 : 1;
+                bestStreak = Math.max(bestStreak, cur);
+                prev = day;
+            });
+            const values = { routes: climbed.length, days: days.size, streak: bestStreak, sectors: sectors.size, gyms: gyms.size };
+            const metrics = CHALLENGE_MONTHLY_DEFS.map(def => {
+                const value = Number(values[def.key] || 0);
+                const lvlIdx = def.levels.reduce((acc, thr, i) => (value >= thr ? i : acc), -1);
+                const nextThr = lvlIdx < def.levels.length - 1 ? def.levels[lvlIdx + 1] : def.levels[def.levels.length - 1];
+                const currentThr = lvlIdx >= 0 ? def.levels[lvlIdx] : 0;
+                const pct = Math.max(0, Math.min(100, Math.round((value / Math.max(1, nextThr)) * 100)));
+                return { ...def, value, levelIndex: lvlIdx, level: lvlIdx >= 0 ? CHALLENGE_LEVEL_LABELS[lvlIdx] : 'Nessuno', nextLevel: lvlIdx < CHALLENGE_LEVEL_LABELS.length - 1 ? CHALLENGE_LEVEL_LABELS[lvlIdx + 1] : 'Completata', currentThr, nextThr, pct };
+            });
+            const ranked = metrics.filter(m => m.levelIndex >= 0).sort((a,b) => b.levelIndex - a.levelIndex || b.value - a.value);
+            const highest = ranked[0] ? { month: mk, challenge: ranked[0].name, level: ranked[0].level, icon: ['🥉','🥈','🥇','🏆'][ranked[0].levelIndex] || '🏅' } : null;
+            return { monthKey: mk, metrics, highest };
+        }
+
+        function showChallengeLevelUpToast(metric, nextLevel) {
+            const toast = document.getElementById('challenge-levelup-toast');
+            if (!toast || !metric || !nextLevel) return;
+            toast.innerHTML = `<b>🎉 Livello sbloccato!</b><div style="margin-top:4px;">${escapeHtml(metric.name)} → <b>${escapeHtml(nextLevel)}</b></div>`;
+            toast.classList.add('show');
+            if (challengeLevelToastTimer) clearTimeout(challengeLevelToastTimer);
+            challengeLevelToastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+        }
+
+        async function persistMonthlyBadgeState(state) {
+            if (!activeUser || !state?.monthKey) return;
+            const prev = monthlyChallengesState || {};
+            const nextHistory = { ...(prev.history || {}) };
+            const currentLevels = {};
+            (state.metrics || []).forEach(m => { if (m.levelIndex >= 0) currentLevels[m.key] = m.level; });
+            nextHistory[state.monthKey] = { ...(nextHistory[state.monthKey] || {}), ...currentLevels };
+            const prevMonthData = (prev.history || {})[state.monthKey] || {};
+            const nextMonthData = nextHistory[state.monthKey] || {};
+            const prevBadgeStr = JSON.stringify(prev.highestBadge || null);
+            const nextBadgeStr = JSON.stringify(state.highest || null);
+            const sameLevels = JSON.stringify(prevMonthData) === JSON.stringify(nextMonthData);
+            if (sameLevels && prev.monthKey === state.monthKey && prevBadgeStr == nextBadgeStr) {
+                monthlyChallengesState = { ...state, history: nextHistory };
+                return;
+            }
+            const profile = await getUserProfileByAuthUid(activeUser.uid);
+            if (!profile.ref) return;
+            state.metrics.forEach(m => {
+                const oldLvl = CHALLENGE_LEVEL_LABELS.indexOf(prevMonthData[m.key] || '');
+                if (m.levelIndex > oldLvl && m.levelIndex >= 0) showChallengeLevelUpToast(m, m.level);
+            });
+            await setDoc(profile.ref, {
+                authUid: activeUser.uid,
+                challengesMonthlyHistory: nextHistory,
+                publicMonthlyBadge: state.highest ? state.highest : null
+            }, { merge: true });
+            monthlyChallengesState = { ...state, history: nextHistory };
+        }
+
+        function renderChallengesHub() {
+            const wrap = document.getElementById('challenges-hub');
+            if (!wrap || !activeUser) return;
+            const trackerAll = Array.from(routeProgressMap.values()).sort((a,b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+            const monthly = computeMonthlyChallenges(trackerAll);
+            const byCategory = new Map();
+            monthly.metrics.forEach(m => {
+                if (!byCategory.has(m.category)) byCategory.set(m.category, []);
+                byCategory.get(m.category).push(m);
+            });
+            const sections = Array.from(byCategory.entries()).map(([cat, items]) => `
+                <div class="profile-section-card">
+                    <b>${cat}</b>
+                    <div class="challenges-hub-grid">
+                        ${items.map(m => `
+                            <div class="challenge-hub-card ${m.levelIndex >= 0 ? 'highlight' : ''}">
+                                <div class="challenge-hub-head">
+                                    <div>
+                                        <b>${escapeHtml(m.name)}</b>
+                                        <div class="challenge-hub-desc">${escapeHtml(m.desc)}</div>
+                                    </div>
+                                    <span class="challenge-hub-badge">${m.level}</span>
+                                </div>
+                                <div class="challenge-progress"><span style="width:${m.pct}%"></span></div>
+                                <div class="challenge-hub-meta">
+                                    <span>${m.value}/${m.nextThr}</span>
+                                    <span>${m.level} → ${m.nextLevel}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            const badge = monthly.highest ? `${monthly.highest.icon} ${monthly.highest.level} · ${monthly.highest.challenge}` : 'Nessun badge mensile';
+            wrap.innerHTML = `
+                <div class="profile-shell">
+                    <div class="profile-section-card">
+                        <b>Le tue Sfide</b>
+                        <p class="challenge-month-note">Sfide mensili: progressi azzerati a inizio mese. I badge restano nello storico.</p>
+                        <div class="profile-log" style="margin-top:10px;">Badge mensile principale: <b>${escapeHtml(badge)}</b></div>
+                    </div>
+                    ${sections}
+                </div>
+            `;
+            persistMonthlyBadgeState(monthly).catch(() => {});
         }
 
         function renderProfileDashboard() {
@@ -2407,13 +2663,17 @@
 
         function startSocialFeedSubscription() {
             stopSocialFeedSubscription();
+            socialFeedLoading = true;
+            renderFollowingFeed();
             socialFeedUnsubscriber = onSnapshot(query(collection(db, 'socialActivities'), limit(250)), (snap) => {
                 socialFeedError = null;
+                socialFeedLoading = false;
                 socialFeedActivities = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
                 renderFollowingFeed();
                 renderMyPublicationsFeed();
             }, (err) => {
                 socialFeedError = err;
+                socialFeedLoading = false;
                 socialFeedActivities = [];
                 renderFollowingFeed();
                 renderMyPublicationsFeed();
@@ -2421,10 +2681,8 @@
         }
 
         function buildFollowingFeedItems() {
-            const selectedGym = socialSelectedGymId || document.getElementById('social-gym-filter')?.value || null;
-            const followed = new Set(userFollowingIds || []);
+            const followed = new Set((userFollowingIds || []).filter(uid => uid && uid !== activeUser?.uid));
             const buildFallbackActivityId = (v) => `fallback__${v.userId || 'u'}__${v.routeId || 'r'}__${v.eventDate || v.updatedAt || ''}`;
-            const community = socialFeedActivities.filter(a => selectedGym && a.gym_id === selectedGym);
             const friends = socialFeedActivities.filter(a => followed.has(a.user_id));
             const fallbackFriends = Array.from(followingFeedMap.values()).map(v => {
                 const fallbackId = buildFallbackActivityId(v);
@@ -2446,7 +2704,7 @@
                 is_fallback: true
             });
             });
-            const merged = [...fallbackFriends.filter(f => followed.has(f.user_id)), ...community, ...friends];
+            const merged = [...fallbackFriends.filter(f => followed.has(f.user_id)), ...friends];
             const uniq = new Map();
             merged.forEach(a => uniq.set(a.id, a));
             return Array.from(uniq.values()).sort((a,b) => {
@@ -2572,12 +2830,12 @@
             const isApplauded = !!socialApplauseByActivity.get(e.id);
             const actionButtons = `<div class="social-feed-actions"><button class="social-action-btn ${isApplauded ? 'active' : ''}" data-action="applause" data-id="${e.id}">🔥 ${applauseCount}</button><button class="social-action-btn" data-action="comment" data-id="${e.id}">💬 ${commentCount}</button></div>`;
             if (e.activity_type === 'new_max') {
-                return `<div class="social-feed-card ${recent24 ? 'highlight' : ''}"><div class="social-feed-head"><div class="social-feed-title">🔥 Nuovo massimo personale!</div><small>${ts}</small></div><div class="social-feed-grade">${escapeHtml(e.grade || '-')}</div><div class="social-feed-meta">${escapeHtml(e.user_name || 'Climber')} · ${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
+                return `<div class="social-feed-card ${recent24 ? 'highlight' : ''}"><div class="social-feed-head"><div class="social-feed-title">🔥 Nuovo massimo personale!</div><small>${ts}</small></div><div class="social-feed-grade">${escapeHtml(e.grade || '-')}</div><div class="social-feed-meta">${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} · ${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
             }
             if (e.activity_type === 'streak') {
-                return `<div class="social-feed-card highlight"><div class="social-feed-head"><div class="social-feed-title">🔁 ${escapeHtml(e.user_name || 'Climber')} è a ${e.streak_days || 1} giorni consecutivi</div><small>${ts}</small></div><div class="social-feed-meta">${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
+                return `<div class="social-feed-card highlight"><div class="social-feed-head"><div class="social-feed-title">🔁 ${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} è a ${e.streak_days || 1} giorni consecutivi</div><small>${ts}</small></div><div class="social-feed-meta">${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
             }
-            return `<div class="social-feed-card"><div class="social-feed-head"><div class="social-feed-title">${escapeHtml(e.user_name || 'Climber')} ha scalato ${escapeHtml(e.grade || '-')} a ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><small>${ts}</small></div><div class="social-feed-meta">Tentativi: ${e.attempts || 1}</div>${actionButtons}</div>`;
+            return `<div class="social-feed-card"><div class="social-feed-head"><div class="social-feed-title">${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} ha scalato ${escapeHtml(e.grade || '-')} a ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><small>${ts}</small></div><div class="social-feed-meta">Tentativi: ${e.attempts || 1}</div>${actionButtons}</div>`;
         }
 
         function bindSocialFeedActions(root) {
@@ -2664,7 +2922,7 @@
             const latestComments = Array.isArray(meta.latestComments) ? meta.latestComments : [];
             const previewRows = latestComments.slice(0, 2).map(c => {
                 const canDelete = ((e.user_id || e.userId || null) === activeUser?.uid);
-                return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="delete-comment" data-activity-id="${e.id}" data-comment-id="${c.id}">Elimina commento</button> <button type="button" class="btn-sec" data-action="reply-comment" data-activity-id="${e.id}" data-username="${escapeHtml(c.user_name || 'Climber')}">Rispondi</button></div>` : ''}</div>`;
+                return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}${badgePillHtml(resolveUserHighestBadge(c.user_id))}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="delete-comment" data-activity-id="${e.id}" data-comment-id="${c.id}">Elimina commento</button> <button type="button" class="btn-sec" data-action="reply-comment" data-activity-id="${e.id}" data-username="${escapeHtml(c.user_name || 'Climber')}">Rispondi</button></div>` : ''}</div>`;
             }).join('') || '<p class="profile-empty">Nessun commento.</p>';
             const newBadge = hasNew ? '<span class="social-chip new">Nuovo</span>' : '';
             const maxBadge = e.is_new_max ? '<span class="social-chip">🔥 Nuovo massimo</span>' : '';
@@ -2696,15 +2954,14 @@
         function renderFollowingFeed() {
             const progList = document.getElementById('following-progress-list');
             if (!progList) return;
+            if (socialFeedLoading) {
+                progList.innerHTML = `<p class="profile-empty">Loading...</p>`;
+                return;
+            }
             const feed = buildFollowingFeedItems();
             socialFeedById = new Map(feed.map(e => [e.id, e]));
-            const lastMine = feed.filter(a => a.user_id === activeUser?.uid).sort((a,b)=> new Date(b.timestamp||0)-new Date(a.timestamp||0))[0];
-            const mineInactive = !lastMine || ((Date.now() - new Date(lastMine.timestamp || 0).getTime()) > (7*24*60*60*1000));
-            const recentFriendCount = new Set(feed.filter(a => userFollowingIds.includes(a.user_id) && (Date.now()-new Date(a.timestamp||0).getTime()) <= (7*24*60*60*1000)).map(a => a.user_id)).size;
-            const inactivityMsg = mineInactive && recentFriendCount > 0 ? `<div class="profile-log" style="margin-bottom:10px;">${recentFriendCount} amici hanno scalato questa settimana</div>` : '';
             const rulesWarn = socialFeedError && isPermissionDeniedError(socialFeedError) ? `<div class="profile-log" style="margin-bottom:10px;">Permessi feed limitati: mostra attività condivise degli amici.</div>` : '';
-
-            progList.innerHTML = rulesWarn + inactivityMsg + (feed.slice(0, 60).map(renderSocialFeedCard).join('') || `<p class="profile-empty">${t('dash.noFollowingProgress')}</p>`);
+            progList.innerHTML = rulesWarn + (feed.slice(0, 60).map(renderSocialFeedCard).join('') || `<p class="profile-empty">${t('dash.noFollowingProgress')}</p>`);
             bindSocialFeedActions(progList);
         }
 
@@ -2890,7 +3147,7 @@
                     list.innerHTML = rows.map(c => {
                         const canDelete = !!owner && owner === activeUser.uid;
                         const actions = canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="modal-delete-comment" data-activity-id="${activityId}" data-comment-id="${c.id}">Elimina</button> <button type="button" class="btn-sec" data-action="modal-reply-comment" data-username="${escapeHtml(c.user_name || 'Climber')}">Rispondi</button></div>` : '';
-                        return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${actions}</div>`;
+                        return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}${badgePillHtml(resolveUserHighestBadge(c.user_id))}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${actions}</div>`;
                     }).join('') || '<p class="profile-empty">Nessun commento.</p>';
                     list.querySelectorAll('[data-action="modal-delete-comment"]').forEach(btn => btn.onclick = () => deleteActivityComment(btn.dataset.activityId, btn.dataset.commentId).catch(alertWriteError));
                     list.querySelectorAll('[data-action="modal-reply-comment"]').forEach(btn => btn.onclick = () => { input.value = `@${btn.dataset.username} `; input.focus(); });
@@ -2945,7 +3202,7 @@
                     const avatar = u.avatarUrl ? `<img class="following-avatar" src="${escapeHtml(u.avatarUrl)}" alt="">` : `<div class="following-avatar">${escapeHtml((u.username || 'U').slice(0,2).toUpperCase())}</div>`;
                     const uid = u.authUid || u.id;
                     const isFollowing = userFollowingIds.includes(uid);
-                    return `<div class="profile-log"><div class="social-user-item"><button type="button" class="social-user-meta social-user-link" data-action="open-profile" data-uid="${uid}">${avatar}<b>${escapeHtml(u.username || 'Climber')}</b></button>${uid === activeUser?.uid ? '' : `<button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${uid}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button>`}</div></div>`;
+                    return `<div class="profile-log"><div class="social-user-item"><button type="button" class="social-user-meta social-user-link" data-action="open-profile" data-uid="${uid}">${avatar}<b>${escapeHtml(u.username || 'Climber')}${badgePillHtml(resolveUserHighestBadge(uid))}</b></button>${uid === activeUser?.uid ? '' : `<button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${uid}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button>`}</div></div>`;
                 }).join('');
                 body.querySelectorAll('[data-action="toggle-follow"]').forEach(btn => btn.addEventListener('click', () => toggleFollowUser(btn.dataset.uid)));
                 body.querySelectorAll('[data-action="open-profile"]').forEach(el => el.addEventListener('click', () => openPublicProfile(el.dataset.uid, { closeModal: true })));
@@ -2983,7 +3240,6 @@
             const panelCommunity = document.getElementById('social-community-panel');
             const panelUsers = document.getElementById('social-users-panel');
             const panelMyPosts = document.getElementById('social-my-posts-panel');
-            const gymFilter = document.getElementById('social-gym-filter');
 
             if (tabCommunity && tabUsers && tabMyPosts && panelCommunity && panelUsers && panelMyPosts) {
                 const applyTab = () => {
@@ -3001,16 +3257,6 @@
                 tabUsers.onclick = () => { socialTopTab = 'users'; applyTab(); };
                 tabMyPosts.onclick = () => { socialTopTab = 'my_posts'; applyTab(); };
                 applyTab();
-            }
-
-            if (gymFilter && lastUserGymsSnap) {
-                const gyms = [];
-                lastUserGymsSnap.forEach(g => gyms.push({ id: g.id, name: g.data()?.name || g.id }));
-                const opts = gyms.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
-                gymFilter.innerHTML = opts;
-                if (!socialSelectedGymId && gyms[0]) socialSelectedGymId = gyms[0].id;
-                if (socialSelectedGymId) gymFilter.value = socialSelectedGymId;
-                gymFilter.onchange = () => { socialSelectedGymId = gymFilter.value; renderFollowingFeed(); };
             }
 
             if (!lastUsersSnap) {
@@ -3032,7 +3278,7 @@
                     const avatar = u.avatarUrl ? `<img class="following-avatar" src="${escapeHtml(u.avatarUrl)}" alt="">` : `<div class="following-avatar">${escapeHtml((u.username || 'U').slice(0,2).toUpperCase())}</div>`;
                     const mainGym = escapeHtml(u.mainGymName || u.gymManaged || '-');
                     const mainMax = escapeHtml(u.mainGymMaxGrade || '-');
-                    return `<div class="profile-log"><div class="social-user-item"><button type="button" class="social-user-meta social-user-link" data-action="open-profile" data-uid="${uid}">${avatar}<div><b>${escapeHtml(u.username || 'Climber')}</b><small style="display:block;color:var(--muted);">${mainGym} · max ${mainMax}</small></div></button><button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${uid}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button></div></div>`;
+                    return `<div class="profile-log"><div class="social-user-item"><button type="button" class="social-user-meta social-user-link" data-action="open-profile" data-uid="${uid}">${avatar}<div><b>${escapeHtml(u.username || 'Climber')}${badgePillHtml(resolveUserHighestBadge(uid))}</b><small style="display:block;color:var(--muted);">${mainGym} · max ${mainMax}</small></div></button><button type="button" class="btn-sec" data-action="toggle-follow" data-uid="${uid}">${isFollowing ? t('dash.unfollow') : t('dash.follow')}</button></div></div>`;
                 }).join('') || `<p class="profile-empty">${t('dash.noUserResults')}</p>`;
                 usersList.querySelectorAll('[data-action="toggle-follow"]').forEach(btn => btn.onclick = () => toggleFollowUser(btn.dataset.uid));
                 usersList.querySelectorAll('[data-action="open-profile"]').forEach(el => el.onclick = () => openPublicProfile(el.dataset.uid));
@@ -3631,7 +3877,7 @@
             const rows = topUsers.map(([uid, count], index) => {
                 const sector = stats.userMainSector.get(uid) || '-';
                 const days = stats.userActiveDays.get(uid) || 0;
-                return `<tr><td>${index + 1}. ${escapeHtml(resolveUsername(uid, 'Climber'))}</td><td>${count}</td><td>${days}</td><td>${escapeHtml(sector)}</td></tr>`;
+                return `<tr><td>${index + 1}. ${escapeHtml(resolveUsername(uid, 'Climber'))}${badgePillHtml(resolveUserHighestBadge(uid))}</td><td>${count}</td><td>${days}</td><td>${escapeHtml(sector)}</td></tr>`;
             }).join('') || '<tr><td colspan="4">-</td></tr>';
             usersWrap.innerHTML = `
                 <div class="admin-kpi-grid" style="margin-bottom:8px;">
@@ -4018,6 +4264,19 @@
             }
         }
 
+        function showViewerMoveGuide() {
+            const guide = document.getElementById('viewer-move-guide');
+            if (!guide) return;
+            if (viewerMoveGuideShownThisSession) return;
+            guide.style.display = 'block';
+            viewerMoveGuideShownThisSession = true;
+        }
+
+        function hideViewerMoveGuide() {
+            const guide = document.getElementById('viewer-move-guide');
+            if (guide) guide.style.display = 'none';
+        }
+
         window.open3D = async (gId, sId) => {
             const viewer = document.getElementById('main-viewer');
             const token = ++currentModelLoadToken;
@@ -4027,6 +4286,7 @@
             showLoading(t('loading.loading3d'));
             activeGymId = gId; activeSectorId = sId;
             setStartGuideVisible(shouldShowStartGuide(gId, sId));
+            showViewerMoveGuide();
 
             const onLoad = () => {
                 if (token !== currentModelLoadToken) return;
@@ -4359,6 +4619,8 @@
                 setStartGuideVisible(false);
             });
         }
+        const viewerMoveGuideClose = document.getElementById('viewer-move-guide-close');
+        if (viewerMoveGuideClose) viewerMoveGuideClose.addEventListener('click', hideViewerMoveGuide);
 
         mainViewer.addEventListener('pointerdown', (e) => {
             if (e.pointerType === 'touch') {
@@ -4437,7 +4699,7 @@
             currentMode = currentMode === 'admin' ? 'user' : 'admin';
             await initDashboard();
         };
-        window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); setStartGuideVisible(false); document.getElementById('viewer-container').style.display = 'none'; hideLoading(); };
+        window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); setStartGuideVisible(false); hideViewerMoveGuide(); document.getElementById('viewer-container').style.display = 'none'; hideLoading(); };
         window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; };
         function showView(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
     </script>
