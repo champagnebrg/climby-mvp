@@ -13,20 +13,22 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
         :root {
-            --bg: #0F1720;
-            --card: #16202A;
-            --surface-elevated: #1B2632;
-            --text: #F5F7FA;
-            --muted: #A8B3C2;
-            --text-disabled: #6B7785;
-            --border: rgba(255,255,255,0.08);
-            --primary: #2BE07D;
-            --primary-hover: #20C96B;
-            --primary-dim: rgba(43, 224, 125, 0.12);
-            --accent: #2BE07D;
-            --danger: #FF5C5C;
-            --yellow: #2BE07D;
-            --text-on-primary: #0F1720;
+            --bg: #f4f6ff;
+            --bg-soft: radial-gradient(circle at 8% 4%, rgba(255, 106, 180, 0.12), transparent 34%), radial-gradient(circle at 94% 2%, rgba(122, 92, 255, 0.18), transparent 42%), radial-gradient(circle at 50% 100%, rgba(63, 151, 255, 0.14), transparent 45%), linear-gradient(160deg, #f7f2ff 0%, #f4f7ff 48%, #eff5ff 100%);
+            --card: rgba(255, 255, 255, 0.92);
+            --surface-elevated: rgba(255, 255, 255, 0.97);
+            --text: #1b2241;
+            --muted: #6d7694;
+            --text-disabled: #9ca3bc;
+            --border: rgba(120, 134, 175, 0.22);
+            --primary: #6f4dff;
+            --primary-hover: #5b3bdf;
+            --primary-dim: rgba(111, 77, 255, 0.14);
+            --accent: #4b6fff;
+            --danger: #ff5d85;
+            --yellow: #ffb245;
+            --text-on-primary: #ffffff;
+            --gradient-primary: linear-gradient(125deg, #ff63c2 0%, #7b54ff 48%, #4396ff 100%);
             --touch: 44px;
             --radius: 16px;
             --radius-sm: 12px;
@@ -40,6 +42,8 @@
         body {
             margin: 0;
             background: var(--bg);
+            background-image: var(--bg-soft);
+            background-attachment: fixed;
             color: var(--text);
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 15px;
@@ -57,7 +61,7 @@
         .view { display: none; min-height: 100dvh; min-height: 100vh; width: 100%; }
         .view.active { display: flex; flex-direction: column; }
         .container {
-            padding: 20px 20px calc(20px + var(--safe-bottom));
+            padding: 20px 20px calc(100px + var(--safe-bottom));
             padding-left: max(20px, var(--safe-left));
             padding-right: max(20px, var(--safe-right));
             max-width: 800px;
@@ -72,6 +76,7 @@
             border-radius: var(--radius);
             margin-bottom: 14px;
             border: 1px solid var(--border);
+            box-shadow: 0 10px 24px rgba(63, 80, 124, 0.09);
             min-height: var(--touch);
             display: flex;
             align-items: center;
@@ -82,7 +87,7 @@
             width: 100%;
             min-height: 52px;
             padding: 16px 24px;
-            background: var(--primary);
+            background: var(--gradient-primary);
             color: var(--text-on-primary);
             border: none;
             border-radius: var(--radius);
@@ -91,16 +96,16 @@
             letter-spacing: normal;
             cursor: pointer;
             transition: transform 0.1s, background 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+            box-shadow: 0 8px 20px rgba(102, 85, 194, 0.3);
         }
-        .btn-main:hover { background: var(--primary-hover); }
+        .btn-main:hover { filter: brightness(0.96); }
         .btn-main:active { transform: scale(0.98); }
         .btn-sec {
             min-height: var(--touch);
             padding: 12px 18px;
-            background: var(--card);
+            background: rgba(255, 255, 255, 0.75);
             border: 1px solid var(--border);
-            color: var(--muted);
+            color: var(--text);
             border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 0.95rem;
@@ -114,7 +119,7 @@
             min-height: 52px;
             padding: 14px 18px;
             margin: 10px 0;
-            background: var(--card);
+            background: rgba(255,255,255,0.95);
             border: 1px solid var(--border);
             color: var(--text);
             border-radius: var(--radius-sm);
@@ -529,7 +534,7 @@
         .challenge-hub-desc { color:var(--muted); font-size:0.85rem; margin-top:4px; }
         .challenge-hub-badge { border:1px solid var(--border); border-radius:999px; padding:3px 8px; font-size:0.75rem; color:var(--text); }
         .challenge-progress { margin-top:10px; height:8px; border-radius:999px; background:rgba(255,255,255,0.08); overflow:hidden; }
-        .challenge-progress > span { display:block; height:100%; background:linear-gradient(90deg, #2BE07D, #20C96B); }
+        .challenge-progress > span { display:block; height:100%; background:var(--gradient-primary); }
         .challenge-hub-meta { margin-top:8px; display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:0.8rem; }
         .challenge-month-note { color:var(--muted); font-size:0.82rem; margin:6px 0 0; }
         .user-badge-pill { display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:1px 7px; border-radius:999px; border:1px solid var(--border); font-size:0.7rem; vertical-align:middle; color:var(--text); }
@@ -724,7 +729,7 @@
         .profile-milestone-level { font-size:1.5rem; font-weight:800; color:var(--primary); line-height:1.1; }
         .profile-chip { border:1px solid var(--border); border-radius:999px; padding:4px 10px; color:var(--muted); font-size:0.75rem; }
         .profile-progress-bar { height:10px; border-radius:999px; background:rgba(255,255,255,0.06); overflow:hidden; margin-top:10px; border:1px solid var(--border); }
-        .profile-progress-fill { height:100%; background: var(--primary); }
+        .profile-progress-fill { height:100%; background: var(--gradient-primary); }
         .profile-progress-meta { display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:0.8rem; color:var(--muted); }
         .profile-section-card { border:1px solid var(--border); border-radius:12px; padding:10px; margin-top:10px; }
         .profile-shell { display:flex; flex-direction:column; gap:12px; }
@@ -798,9 +803,13 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
-            padding-top: var(--safe-top);
+            padding: calc(var(--safe-top) + 8px) 12px 12px;
             flex-wrap: wrap;
             gap: 12px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: 0 8px 18px rgba(73, 88, 130, 0.1);
         }
         .dash-header .lang-switcher { flex-shrink: 0; }
         .viewer-close {
@@ -817,6 +826,47 @@
         }
         .auth-toggle { cursor: pointer; color: var(--muted); margin-top: 22px; font-size: 1rem; min-height: 44px; display: inline-flex; align-items: center; }
         .auth-toggle:active { color: var(--primary); }
+
+        .app-bottom-nav {
+            position: fixed;
+            left: max(10px, calc(var(--safe-left) + 10px));
+            right: max(10px, calc(var(--safe-right) + 10px));
+            bottom: max(10px, calc(var(--safe-bottom) + 10px));
+            z-index: 1200;
+            background: rgba(255,255,255,0.94);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 14px 36px rgba(67, 91, 138, 0.22);
+            display: none;
+            padding: 8px;
+            gap: 6px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .app-bottom-nav.active { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); }
+        .bottom-nav-item {
+            min-height: 58px;
+            border-radius: 14px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transition: all 180ms ease;
+        }
+        .bottom-nav-item .nav-ico { font-size: 1.15rem; line-height: 1; }
+        .bottom-nav-item.active {
+            color: #fff;
+            background: var(--gradient-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(92, 88, 204, 0.35);
+        }
+        .bottom-nav-item:active { transform: scale(0.97); }
 
         /* Brand typography – consistent with wordmark */
         .climby-wordmark {
@@ -990,8 +1040,7 @@
                     </div>
                     <button class="btn-sec" id="btn-gym-owner-request" onclick="window.openGymOwnerRequest()" style="display:none;">Sono il proprietario di una palestra</button>
                     <button class="btn-sec" id="btn-mode-toggle" onclick="window.switchMode()" data-i18n="dash.switchView"></button>
-                    <button class="btn-sec dash-profile-btn" id="btn-profile-quick" onclick="window.openProfileQuick()" aria-label="Profilo">👤</button>
-                    <button class="btn-sec" onclick="window.logout()" data-i18n="dash.logout"></button>
+                                        <button class="btn-sec" onclick="window.logout()" data-i18n="dash.logout"></button>
                 </div>
             </div>
 
@@ -1091,11 +1140,7 @@
             </div>
 
             <div id="user-panel">
-                <div class="user-main-tabs" id="user-main-tabs">
-                    <button type="button" id="tab-btn-explore" class="user-main-tab active" data-i18n="dash.tabExplore"></button>
-                    <button type="button" id="tab-btn-challenges" class="user-main-tab" data-i18n="dash.tabChallenges"></button>
-                    <button type="button" id="tab-btn-following" class="user-main-tab" data-i18n="dash.tabSocial"></button>
-                </div>
+                <div class="user-main-tabs" id="user-main-tabs" style="display:none;"></div>
                 <div id="user-list-view" class="user-main-section active">
                     <h3 id="list-title" class="headline-brand" style="font-size:1.25rem; margin:0 0 8px 0;" data-i18n="dash.exploreGyms"></h3>
                     <input type="text" id="user-search-gyms" class="user-search-input" data-i18n-placeholder="dash.searchGyms" autocomplete="off">
@@ -1187,6 +1232,14 @@
             </div>
         </div>
     </div>
+
+
+    <nav id="app-bottom-nav" class="app-bottom-nav" aria-label="Navigazione principale">
+        <button type="button" id="tab-btn-explore" class="bottom-nav-item active"><span class="nav-ico">🔍</span><span data-i18n="dash.tabExplore"></span></button>
+        <button type="button" id="tab-btn-challenges" class="bottom-nav-item"><span class="nav-ico">🏆</span><span data-i18n="dash.tabChallenges"></span></button>
+        <button type="button" id="tab-btn-following" class="bottom-nav-item"><span class="nav-ico">💬</span><span data-i18n="dash.tabSocial"></span></button>
+        <button type="button" id="tab-btn-profile" class="bottom-nav-item"><span class="nav-ico">👤</span><span>Profilo</span></button>
+    </nav>
 
     <div id="viewer-container">
         <button type="button" class="btn-sec viewer-close" onclick="window.closeViewer()" data-i18n="viewer.close"></button>
@@ -1828,6 +1881,7 @@ Pizzica per zoommare.</p>
                 document.getElementById('admin-panel').style.display = 'block';
                 initAdminTabs();
                 document.getElementById('user-panel').style.display = 'none';
+                const bottomNav = document.getElementById('app-bottom-nav'); if (bottomNav) bottomNav.classList.remove('active');
                 stopFollowingProgressSubscriptions();
                 stopFollowsSubscription();
                 if (typeof stopRouteProgressSubscription === 'function') stopRouteProgressSubscription();
@@ -1861,7 +1915,12 @@ Pizzica per zoommare.</p>
                 destroyProfileListeners();
                 subscribeUserRouteProgress();
                 document.getElementById('user-gym-detail').style.display = 'none';
-                document.getElementById('user-main-tabs').style.display = 'flex';
+                document.getElementById('user-main-tabs').style.display = 'none';
+                const bottomNav = document.getElementById('app-bottom-nav');
+                if (bottomNav) {
+                    bottomNav.style.display = '';
+                    bottomNav.classList.add('active');
+                }
                 setUserMainTab('explore');
                 (async () => {
                     const profile = await getUserProfileByAuthUid(activeUser.uid);
@@ -1873,6 +1932,7 @@ Pizzica per zoommare.</p>
                 document.getElementById('tab-btn-explore').onclick = () => setUserMainTab('explore');
                 document.getElementById('tab-btn-challenges').onclick = () => { setUserMainTab('challenges'); renderChallengesHub(); };
                 document.getElementById('tab-btn-following').onclick = () => { setUserMainTab('social'); setSocialSubView('main'); renderFollowingSection(); };
+                document.getElementById('tab-btn-profile').onclick = () => { setUserMainTab('profile'); renderProfileDashboard(); };
                 const searchInput = document.getElementById('user-search-gyms');
                 searchInput.oninput = () => renderUserGymList();
                 document.getElementById('social-profile-back').onclick = () => {
@@ -2113,8 +2173,8 @@ Pizzica per zoommare.</p>
             const btnExplore = document.getElementById('tab-btn-explore');
             const btnChallenges = document.getElementById('tab-btn-challenges');
             const btnFollowing = document.getElementById('tab-btn-following');
-            const quickBtn = document.getElementById('btn-profile-quick');
-            if (!explore || !profile || !challenges || !following || !btnExplore || !btnChallenges || !btnFollowing) return;
+            const btnProfile = document.getElementById('tab-btn-profile');
+            if (!explore || !profile || !challenges || !following || !btnExplore || !btnChallenges || !btnFollowing || !btnProfile) return;
             explore.classList.toggle('active', tab === 'explore');
             profile.classList.toggle('active', tab === 'profile');
             challenges.classList.toggle('active', tab === 'challenges');
@@ -2122,7 +2182,7 @@ Pizzica per zoommare.</p>
             btnExplore.classList.toggle('active', tab === 'explore');
             btnChallenges.classList.toggle('active', tab === 'challenges');
             btnFollowing.classList.toggle('active', tab === 'social');
-            if (quickBtn) quickBtn.classList.toggle('active', tab === 'profile');
+            btnProfile.classList.toggle('active', tab === 'profile');
         }
         window.openProfileQuick = () => { setUserMainTab('profile'); renderProfileDashboard(); };
 
@@ -3521,6 +3581,8 @@ Pizzica per zoommare.</p>
             };
 
             document.getElementById('user-main-tabs').style.display = 'none';
+            const bottomNav = document.getElementById('app-bottom-nav');
+            if (bottomNav) bottomNav.style.display = 'none';
             document.getElementById('user-list-view').classList.remove('active');
             document.getElementById('user-profile-view').classList.remove('active');
             document.getElementById('user-following-view').classList.remove('active');
@@ -3549,7 +3611,12 @@ Pizzica per zoommare.</p>
                 stopGymDetailListener();
                 activeGymDetailId = null;
                 document.getElementById('user-gym-detail').style.display = 'none';
-                document.getElementById('user-main-tabs').style.display = 'flex';
+                document.getElementById('user-main-tabs').style.display = 'none';
+                const bottomNav = document.getElementById('app-bottom-nav');
+                if (bottomNav) {
+                    bottomNav.style.display = '';
+                    bottomNav.classList.add('active');
+                }
                 setUserMainTab('explore');
                 renderUserGymList();
             };
@@ -3579,7 +3646,8 @@ Pizzica per zoommare.</p>
             stopGymDetailListener();
             activeGymDetailId = null;
             document.getElementById('user-gym-detail').style.display = 'none';
-            document.getElementById('user-main-tabs').style.display = 'flex';
+            document.getElementById('user-main-tabs').style.display = 'none';
+            const bottomNavMain = document.getElementById('app-bottom-nav'); if (bottomNavMain) { bottomNavMain.style.display = ''; bottomNavMain.classList.add('active'); }
             setUserMainTab('explore');
             document.getElementById('list-title').style.display = 'block';
             document.getElementById('user-search-gyms').style.display = 'block';
@@ -4125,7 +4193,8 @@ Pizzica per zoommare.</p>
             activeGymId = gId;
             stopGymDetailListener();
             document.getElementById('user-gym-detail').style.display = 'none';
-            document.getElementById('user-main-tabs').style.display = 'flex';
+            document.getElementById('user-main-tabs').style.display = 'none';
+            const bottomNavMain = document.getElementById('app-bottom-nav'); if (bottomNavMain) { bottomNavMain.style.display = ''; bottomNavMain.classList.add('active'); }
             setUserMainTab('explore');
             document.getElementById('list-title').style.display = 'none';
             document.getElementById('user-search-gyms').style.display = 'none';
@@ -4701,7 +4770,7 @@ Pizzica per zoommare.</p>
         };
         window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); setStartGuideVisible(false); hideViewerMoveGuide(); document.getElementById('viewer-container').style.display = 'none'; hideLoading(); };
         window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; };
-        function showView(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function showView(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); const nav = document.getElementById('app-bottom-nav'); if (nav && id !== 'view-dash') nav.classList.remove('active'); }
     </script>
 </body>
 </html>
