@@ -538,7 +538,7 @@
         .challenge-hub-meta { margin-top:8px; display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:0.8rem; }
         .challenge-month-note { color:var(--muted); font-size:0.82rem; margin:6px 0 0; }
         .user-badge-pill { display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:1px 7px; border-radius:999px; border:1px solid var(--border); font-size:0.7rem; vertical-align:middle; color:var(--text); }
-        .challenge-levelup-toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(30px); opacity:0; z-index:2100; background:rgba(22,32,42,0.96); border:1px solid rgba(43,224,125,0.45); border-radius:12px; padding:12px 14px; min-width:min(92vw, 360px); box-shadow:0 10px 24px rgba(0,0,0,0.35); transition:all 220ms ease; pointer-events:none; }
+        .challenge-levelup-toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(30px); opacity:0; z-index:2100; background:rgba(15,23,32,0.98); border:1px solid rgba(67,150,255,0.55); border-radius:12px; padding:12px 14px; min-width:min(92vw, 360px); box-shadow:0 10px 24px rgba(0,0,0,0.35); transition:all 220ms ease; pointer-events:none; color:#fff; }
         .challenge-levelup-toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
         .user-main-section { display: none; }
         .user-main-section.active { display: block; }
@@ -1000,12 +1000,12 @@
     <div id="gym-owner-request-modal" class="social-modal" style="display:none;">
         <div class="social-modal-sheet">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                <h4 class="following-section-title" style="margin:0;">Richiesta accesso proprietario</h4>
-                <button type="button" class="btn-sec" onclick="window.closeGymOwnerRequest()">Chiudi</button>
+                <h4 class="following-section-title" style="margin:0;" data-i18n="ownerRequest.title"></h4>
+                <button type="button" class="btn-sec" onclick="window.closeGymOwnerRequest()" data-i18n="common.close">Chiudi</button>
             </div>
-            <p class="profile-subtitle">Inserisci i dati per richiedere l'accesso come proprietario palestra.</p>
-            <input type="text" id="gym-owner-request-name" placeholder="Nome palestra">
-            <button type="button" class="btn-main" id="gym-owner-request-submit">Invia richiesta</button>
+            <p class="profile-subtitle" data-i18n="ownerRequest.hint"></p>
+            <input type="text" id="gym-owner-request-name" data-i18n-placeholder="ownerRequest.gymName">
+            <button type="button" class="btn-main" id="gym-owner-request-submit" data-i18n="ownerRequest.submit"></button>
         </div>
     </div>
 
@@ -1019,6 +1019,8 @@
                 <h1 class="climby-wordmark" style="color:var(--primary)">Climby</h1>
                 <div id="reg-fields">
                     <input type="text" id="f-name" data-i18n-placeholder="auth.username" autocomplete="off" autocapitalize="none" spellcheck="false">
+                    <input type="date" id="f-birthdate" data-i18n-placeholder="auth.birthDate" max="2099-12-31">
+                    <input type="text" id="f-city" data-i18n-placeholder="auth.city" autocomplete="address-level2">
                     <p id="username-status" class="username-hint" aria-live="polite"></p>
                 </div>
                 <input type="email" id="email" data-i18n-placeholder="auth.email">
@@ -1136,6 +1138,28 @@
                             </div>
                         </div>
                     </section>
+                </div>
+            </div>
+
+
+            <div id="superadmin-panel" style="display:none;">
+                <h3 class="headline-brand" data-i18n="superadmin.title"></h3>
+                <div class="card" style="display:block;">
+                    <p class="profile-subtitle" style="margin-top:0;" data-i18n="superadmin.subtitle"></p>
+                    <div class="admin-kpi-grid" id="superadmin-kpi-general"></div>
+                </div>
+                <div class="card" style="display:block;">
+                    <h4 class="admin-section-title" data-i18n="superadmin.performanceTitle"></h4>
+                    <div class="admin-kpi-grid" id="superadmin-kpi-performance"></div>
+                    <p class="profile-subtitle" data-i18n="superadmin.performanceHint"></p>
+                </div>
+                <div class="card" style="display:block;">
+                    <h4 class="admin-section-title" data-i18n="superadmin.behaviorTitle"></h4>
+                    <div class="admin-kpi-grid" id="superadmin-kpi-behavior"></div>
+                </div>
+                <div class="card" style="display:block;">
+                    <h4 class="admin-section-title" data-i18n="superadmin.cityTitle"></h4>
+                    <div id="superadmin-city-distribution" class="admin-sector-table-wrap"></div>
                 </div>
             </div>
 
@@ -1278,7 +1302,7 @@ Pizzica per zoommare.</p>
                 <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()" data-i18n="viewer.delete"></button>
             </div>
 
-            <div id="social-panel" class="bottom-sheet">
+            <div id="social-panel" class="bottom-sheet" style="max-height:96dvh;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div><h2 id="social-grade" style="color:var(--primary); margin:0"></h2><div id="avg-stars-view" style="color:var(--yellow); margin-top:5px;"></div></div>
                     <button type="button" onclick="document.getElementById('social-panel').style.display='none'" style="background:none; border:none; color:var(--text); font-size:28px;">×</button>
@@ -1378,6 +1402,7 @@ Pizzica per zoommare.</p>
 
         let activeUser, realUserGymId, activeGymId, activeSectorId, activeRouteId, currentUserName, currentUserProfileRef = null;
         let isLogin = false, currentMode = 'user', userRole = 'user', tempPos, tempNorm, selectedStars = 0;
+        let superadminKpiUnsub = null;
         let userFavouriteGyms = [];
         let lastUserGymsSnap = null;
         let profileUnsubscribers = [];
@@ -1461,18 +1486,18 @@ Pizzica per zoommare.</p>
         const translations = {
             it: {
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
-                auth: { yourName: "Il tuo Nome", username: "Username pubblico", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
-                dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
+                auth: { yourName: "Il tuo Nome", username: "Username pubblico", birthDate: "Data di nascita", city: "Città", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
+                common: { close: "Chiudi" }, ownerRequest: { title: "Richiesta accesso proprietario", hint: "Inserisci i dati per richiedere l'accesso come proprietario palestra.", gymName: "Nome palestra", submit: "Invia richiesta" }, superadmin: { title: "Superadmin Dashboard", subtitle: "KPI globali aggregati (senza confrontare gradi assoluti tra palestre diverse).", performanceTitle: "KPI performance (grading-safe)", performanceHint: "Le metriche di performance sono calcolate internamente a ciascuna palestra e poi aggregate.", behaviorTitle: "KPI comportamentali", cityTitle: "Distribuzione difficoltà per città (percentuali interne)", city: "Città", internalDistribution: "Distribuzione interna", noData: "Nessun dato disponibile.", totalUsers: "Utenti totali", active7d: "Attivi ultimi 7 giorni", active30d: "Attivi ultimi 30 giorni", activeGyms: "Palestre attive", sectorsLoaded: "Settori caricati", routesRegistered: "Vie registrate", avgRoutesPerUser: "Media vie per utente", monthlyGrowth: "Crescita mensile utenti", monthlyRetention: "Retention mensile", activeVsRegistered: "% attivi / registrati", avgProgressUser: "Progressione media utente", improvement3m: "Miglioramento medio (3 mesi)", avgTimeNextLevel: "Tempo medio livello successivo", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Tentativi medi per via", weeklyFrequency: "Frequenza settimanale media", topDays: "Giorni più frequentati", topHours: "Fasce orarie attive", returnRate: "Tasso di ritorno" }, dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
                 admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo." },
                 viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate", startGuideTitle: "📍 Crea lo start della via", startGuideText: "Tocca nel modello 3D il punto di inizio della via per impostare lo START.", startGuideAcknowledge: "Ho capito", startGuideDontShow: "Non mostrare più" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
                 loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D...", retry: "Riprova" },
-                errors: { completeData: "Inserisci dati completi", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore", authRequired: "Devi accedere per completare questa azione.", permissionDenied: "Permessi insufficienti su Firestore: controlla le regole di sicurezza.", saveFailed: "Salvataggio non riuscito. Riprova." }
+                errors: { completeData: "Inserisci dati completi", birthDateRequired: "La data di nascita è obbligatoria.", cityRequired: "La città è obbligatoria.", profileLoad: "Errore durante il caricamento del profilo.", adminGymMissing: "Profilo admin senza palestra associata.", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore", authRequired: "Devi accedere per completare questa azione.", permissionDenied: "Permessi insufficienti su Firestore: controlla le regole di sicurezza.", saveFailed: "Salvataggio non riuscito. Riprova." }
             },
             en: {
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
-                auth: { yourName: "Your name", username: "Public username", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
-                dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabChallenges: "Challenges", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
+                auth: { yourName: "Your name", username: "Public username", birthDate: "Birth date", city: "City", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
+                common: { close: "Close" }, ownerRequest: { title: "Gym owner access request", hint: "Enter details to request gym owner access.", gymName: "Gym name", submit: "Submit request" }, superadmin: { title: "Superadmin Dashboard", subtitle: "Global aggregated KPIs (without comparing absolute grades across different gyms).", performanceTitle: "Performance KPIs (grading-safe)", performanceHint: "Performance metrics are computed within each gym and then aggregated.", behaviorTitle: "Behavioral KPIs", cityTitle: "Difficulty distribution by city (internal percentages)", city: "City", internalDistribution: "Internal distribution", noData: "No data available.", totalUsers: "Total users", active7d: "Active last 7 days", active30d: "Active last 30 days", activeGyms: "Active gyms", sectorsLoaded: "Loaded sectors", routesRegistered: "Registered routes", avgRoutesPerUser: "Avg routes per user", monthlyGrowth: "Monthly user growth", monthlyRetention: "Monthly retention", activeVsRegistered: "% active / registered", avgProgressUser: "Avg user progression", improvement3m: "Avg improvement (3 months)", avgTimeNextLevel: "Avg time to next level", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Avg attempts per route", weeklyFrequency: "Avg weekly frequency", topDays: "Most active days", topHours: "Most active time slots", returnRate: "Return rate" }, dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabChallenges: "Challenges", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
                 admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg", gradeSystemTitle: "Gym grade system", gradeSystemHint: "Add one grade per line, from easiest to hardest. A numeric order is stored too.", gradeSystemPlaceholder: "E.g.\nGreen\nBlue\nPurple\nRed", saveGradeSystem: "SAVE GRADE SYSTEM", gradeSetupRequiredTitle: "Set up your gym grades", gradeSetupRequiredHint: "Before using the admin panel, configure your gym grade system from easiest to hardest.", gradeSystemSaved: "Grade system saved successfully." },
                 viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed", startGuideTitle: "📍 Set the route start", startGuideText: "Tap the route start point directly on the 3D model to set START.", startGuideAcknowledge: "Got it", startGuideDontShow: "Do not show again" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
@@ -1680,6 +1705,10 @@ Pizzica per zoommare.</p>
                     if (usernameField && usernameField.value !== username) usernameField.value = username;
                     if (!username) throw new Error(t('errors.usernameRequired'));
                     if (!isValidUsername(username)) throw new Error(t('errors.usernameInvalid'));
+                    const birthDate = document.getElementById('f-birthdate')?.value || '';
+                    const city = (document.getElementById('f-city')?.value || '').trim();
+                    if (!birthDate) throw new Error(t('errors.birthDateRequired'));
+                    if (!city) throw new Error(t('errors.cityRequired'));
                     const lower = usernameLower(username);
                     const res = await createUserWithEmailAndPassword(auth, email, pass);
                     try {
@@ -1687,7 +1716,18 @@ Pizzica per zoommare.</p>
                         const existsSnap = await getDocs(qRef);
                         const taken = existsSnap.docs.some(d => (d.data()?.authUid || d.id) !== res.user.uid);
                         if (taken) throw new Error('USERNAME_TAKEN');
-                        await setDoc(doc(db, "users", username), { authUid: res.user.uid, role: 'user', gymManaged: null, username, usernameLower: lower, following: [], favouriteGyms: [] });
+                        await setDoc(doc(db, "users", username), {
+                            authUid: res.user.uid,
+                            role: 'user',
+                            gymManaged: null,
+                            username,
+                            usernameLower: lower,
+                            birthDate,
+                            city,
+                            following: [],
+                            favouriteGyms: [],
+                            createdAt: serverTimestamp()
+                        });
                     } catch (e) {
                         try { await deleteUser(res.user); } catch (_) {}
                         if (e?.message === 'USERNAME_TAKEN') throw new Error(t('errors.usernameTaken'));
@@ -1743,6 +1783,12 @@ Pizzica per zoommare.</p>
             }
         }
 
+        function normalizeUserRole(rawRole) {
+            if (rawRole === 'superadmin') return 'superadmin';
+            if (rawRole === 'gym_admin' || rawRole === 'admin') return 'admin';
+            return 'user';
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 showView('view-landing');
@@ -1757,19 +1803,19 @@ Pizzica per zoommare.</p>
                 currentUserName = data.username || 'Climber';
                 userFollowingIds = data.following || [];
                 activePublicProfileUid = null;
-                userRole = data.role === 'admin' ? 'admin' : 'user';
+                userRole = normalizeUserRole(data.role);
                 realUserGymId = userRole === 'admin'
                     ? await resolveAdminGymId(user.uid, data.gymManaged)
                     : data.gymManaged;
-                currentMode = userRole;
+                currentMode = userRole === 'superadmin' ? 'superadmin' : userRole;
                 if (userRole === 'admin' && !realUserGymId) currentMode = 'user';
-                document.getElementById('btn-mode-toggle').style.display = userRole === 'admin' ? 'block' : 'none';
+                document.getElementById('btn-mode-toggle').style.display = (userRole === 'admin' || userRole === 'superadmin') ? 'block' : 'none';
                 document.getElementById('btn-gym-owner-request').style.display = userRole === 'user' ? 'block' : 'none';
                 await initDashboard();
                 await handlePublicProfileRoute();
             } catch (e) {
                 console.error('Auth bootstrap error:', e);
-                alert('Errore durante il caricamento del profilo.');
+                alert(t('errors.profileLoad'));
                 showView('view-landing');
             } finally {
                 hideLoading();
@@ -1870,14 +1916,25 @@ Pizzica per zoommare.</p>
 
         // --- DASHBOARD ---
         async function initDashboard() {
-            if (userRole !== 'admin') currentMode = 'user';
+            if (userRole !== 'admin' && userRole !== 'superadmin') currentMode = 'user';
             showView('view-dash');
             const userList = document.getElementById('main-list-user');
             const adminList = document.getElementById('main-list-admin');
 
-            if(currentMode === 'admin') {
+            if (currentMode === 'superadmin') {
+                document.getElementById('superadmin-panel').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'none';
+                document.getElementById('user-panel').style.display = 'none';
+                document.getElementById('superadmin-panel').style.display = 'block';
+                const bottomNav = document.getElementById('app-bottom-nav'); if (bottomNav) bottomNav.classList.remove('active');
+                stopAdminCoverageListeners();
+                stopGym3DSubscriptions();
+                destroyProfileListeners();
+                subscribeSuperadminDashboard();
+            } else if(currentMode === 'admin') {
                 const gradeSetupReady = await ensureAdminGradeSystemSetup();
                 if (!gradeSetupReady) return;
+                document.getElementById('superadmin-panel').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
                 initAdminTabs();
                 document.getElementById('user-panel').style.display = 'none';
@@ -2426,7 +2483,7 @@ Pizzica per zoommare.</p>
         function showChallengeLevelUpToast(metric, nextLevel) {
             const toast = document.getElementById('challenge-levelup-toast');
             if (!toast || !metric || !nextLevel) return;
-            toast.innerHTML = `<b>🎉 Livello sbloccato!</b><div style="margin-top:4px;">${escapeHtml(metric.name)} → <b>${escapeHtml(nextLevel)}</b></div>`;
+            toast.innerHTML = `<b>🎉 ${t('challenges.levelUnlocked')}</b><div style="margin-top:4px;">${escapeHtml(metric.name)} → <b>${escapeHtml(nextLevel)}</b></div>`;
             toast.classList.add('show');
             if (challengeLevelToastTimer) clearTimeout(challengeLevelToastTimer);
             challengeLevelToastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
@@ -3911,6 +3968,193 @@ Pizzica per zoommare.</p>
             setAdminTab('dashboard');
         }
 
+
+        function getMillisFromAny(value) {
+            if (!value) return 0;
+            if (typeof value?.toMillis === 'function') return value.toMillis();
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') {
+                const t = Date.parse(value);
+                return Number.isFinite(t) ? t : 0;
+            }
+            return 0;
+        }
+
+        function buildLiveSuperadminKpis(state) {
+            const usersSnap = state.users;
+            const gymsSnap = state.gyms;
+            const sectorsSnap = state.sectors;
+            const routesSnap = state.routes;
+
+            const now = Date.now();
+            const d7 = now - 7 * 24 * 60 * 60 * 1000;
+            const d30 = now - 30 * 24 * 60 * 60 * 1000;
+            const d60 = now - 60 * 24 * 60 * 60 * 1000;
+
+            let totalUsers = usersSnap?.size || 0;
+            let activeUsers7d = 0;
+            let activeUsers30d = 0;
+            let users30d = 0;
+            let prevUsers30d = 0;
+            const cityMap = new Map();
+
+            if (usersSnap && typeof usersSnap.forEach === 'function') {
+                usersSnap.forEach((d) => {
+                    const u = d.data() || {};
+                    const lastMs = getMillisFromAny(u.lastActiveAt) || getMillisFromAny(u.updatedAt) || getMillisFromAny(u.createdAt);
+                    const createdMs = getMillisFromAny(u.createdAt);
+                    if (lastMs >= d7) activeUsers7d += 1;
+                    if (lastMs >= d30) activeUsers30d += 1;
+                    if (createdMs >= d30) users30d += 1;
+                    if (createdMs >= d60 && createdMs < d30) prevUsers30d += 1;
+                    const city = String(u.city || '').trim();
+                    if (city) cityMap.set(city, (cityMap.get(city) || 0) + 1);
+                });
+            }
+
+            const activeGyms = gymsSnap?.size || 0;
+            const sectorsCount = sectorsSnap?.size || 0;
+            const routesCount = routesSnap?.size || 0;
+            const avgRoutesPerUser = totalUsers > 0 ? Number((routesCount / totalUsers).toFixed(2)) : 0;
+            const monthlyUserGrowthPct = prevUsers30d > 0
+                ? Number((((users30d - prevUsers30d) / prevUsers30d) * 100).toFixed(2))
+                : (users30d > 0 ? 100 : 0);
+            const monthlyRetentionPct = totalUsers > 0 ? Number(((activeUsers30d / totalUsers) * 100).toFixed(2)) : 0;
+
+            const cityDifficultyDistribution = Array.from(cityMap.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 12)
+                .map(([city, users]) => ({ city, distribution: `${users} utenti registrati` }));
+
+            return {
+                totalUsers,
+                activeUsers7d,
+                activeUsers30d,
+                activeGyms,
+                sectorsCount,
+                routesCount,
+                avgRoutesPerUser,
+                monthlyUserGrowthPct,
+                monthlyRetentionPct,
+                activeVsRegisteredPct: monthlyRetentionPct,
+                cityDifficultyDistribution
+            };
+        }
+
+        function formatBoulderLead(v) {
+            if (typeof v === 'string' && v.trim()) return v;
+            const n = Number(v);
+            return Number.isFinite(n) ? `${n.toLocaleString('it-IT', { maximumFractionDigits: 1 })}%` : '0% / 0%';
+        }
+
+        function formatKpiNumber(v, suffix = '') {
+            const n = Number(v);
+            if (!Number.isFinite(n)) return `0${suffix}`;
+            return `${n.toLocaleString('it-IT', { maximumFractionDigits: 2 })}${suffix}`;
+        }
+
+        function renderSuperadminCityDistribution(rows = []) {
+            const wrap = document.getElementById('superadmin-city-distribution');
+            if (!wrap) return;
+            if (!rows.length) {
+                wrap.innerHTML = `<table><tr><th>${t('superadmin.city')}</th><th>${t('superadmin.internalDistribution')}</th></tr><tr><td colspan="2">${t('superadmin.noData')}</td></tr></table>`;
+                return;
+            }
+            const body = rows.map(r => `<tr><td>${escapeHtml(r.city || '-')}</td><td>${escapeHtml(r.distribution || '-')}</td></tr>`).join('');
+            wrap.innerHTML = `<table><tr><th>${t('superadmin.city')}</th><th>${t('superadmin.internalDistribution')}</th></tr>${body}</table>`;
+        }
+
+        function renderSuperadminDashboard(kpis = {}) {
+            const general = document.getElementById('superadmin-kpi-general');
+            const performance = document.getElementById('superadmin-kpi-performance');
+            const behavior = document.getElementById('superadmin-kpi-behavior');
+            if (!general || !performance || !behavior) return;
+
+            general.innerHTML = `
+                <div class="admin-kpi-card"><i>👥 ${t('superadmin.totalUsers')}</i><b>${formatKpiNumber(kpis.totalUsers)}</b></div>
+                <div class="admin-kpi-card"><i>⚡ ${t('superadmin.active7d')}</i><b>${formatKpiNumber(kpis.activeUsers7d)}</b></div>
+                <div class="admin-kpi-card"><i>📆 ${t('superadmin.active30d')}</i><b>${formatKpiNumber(kpis.activeUsers30d)}</b></div>
+                <div class="admin-kpi-card"><i>🏟 ${t('superadmin.activeGyms')}</i><b>${formatKpiNumber(kpis.activeGyms)}</b></div>
+                <div class="admin-kpi-card"><i>🧩 ${t('superadmin.sectorsLoaded')}</i><b>${formatKpiNumber(kpis.sectorsCount)}</b></div>
+                <div class="admin-kpi-card"><i>🛣 ${t('superadmin.routesRegistered')}</i><b>${formatKpiNumber(kpis.routesCount)}</b></div>
+                <div class="admin-kpi-card"><i>📈 ${t('superadmin.avgRoutesPerUser')}</i><b>${formatKpiNumber(kpis.avgRoutesPerUser)}</b></div>
+                <div class="admin-kpi-card"><i>🚀 ${t('superadmin.monthlyGrowth')}</i><b>${formatKpiNumber(kpis.monthlyUserGrowthPct, '%')}</b></div>
+                <div class="admin-kpi-card"><i>🧲 ${t('superadmin.monthlyRetention')}</i><b>${formatKpiNumber(kpis.monthlyRetentionPct, '%')}</b></div>
+                <div class="admin-kpi-card"><i>✅ ${t('superadmin.activeVsRegistered')}</i><b>${formatKpiNumber(kpis.activeVsRegisteredPct, '%')}</b></div>
+            `;
+
+            performance.innerHTML = `
+                <div class="admin-kpi-card"><i>🧗 ${t('superadmin.avgProgressUser')}</i><b>${formatKpiNumber(kpis.avgInternalProgressPerUser)}</b></div>
+                <div class="admin-kpi-card"><i>📊 ${t('superadmin.improvement3m')}</i><b>${formatKpiNumber(kpis.avgImprovementRate3m, '%')}</b></div>
+                <div class="admin-kpi-card"><i>⏱ ${t('superadmin.avgTimeNextLevel')}</i><b>${formatKpiNumber(kpis.avgDaysToNextLevel)} gg</b></div>
+                <div class="admin-kpi-card"><i>🧱 ${t('superadmin.boulderVsLead')}</i><b>${formatBoulderLead(kpis.boulderVsLeadPct)}</b></div>
+                <div class="admin-kpi-card"><i>🎯 ${t('superadmin.avgAttemptsPerRoute')}</i><b>${formatKpiNumber(kpis.avgAttemptsPerRoute)}</b></div>
+            `;
+
+            behavior.innerHTML = `
+                <div class="admin-kpi-card"><i>📅 ${t('superadmin.weeklyFrequency')}</i><b>${formatKpiNumber(kpis.avgWeeklyFrequency)}</b></div>
+                <div class="admin-kpi-card"><i>🗓 ${t('superadmin.topDays')}</i><b>${escapeHtml(kpis.topWeekdays || '-')}</b></div>
+                <div class="admin-kpi-card"><i>🕒 ${t('superadmin.topHours')}</i><b>${escapeHtml(kpis.topTimeSlots || '-')}</b></div>
+                <div class="admin-kpi-card"><i>♻️ ${t('superadmin.returnRate')}</i><b>${formatKpiNumber(kpis.returnRatePct, '%')}</b></div>
+            `;
+
+            renderSuperadminCityDistribution(kpis.cityDifficultyDistribution || []);
+        }
+
+        function subscribeSuperadminDashboard() {
+            if (typeof superadminKpiUnsub === 'function') {
+                superadminKpiUnsub();
+                superadminKpiUnsub = null;
+            }
+
+            const state = { users: null, gyms: null, sectors: null, routes: null, analytics: null };
+            const unsubs = [];
+
+            const renderFromState = () => {
+                const live = buildLiveSuperadminKpis(state) || {};
+                const analytics = state.analytics || {};
+                const merged = {
+                    ...live,
+                    ...analytics,
+                    totalUsers: live.totalUsers ?? analytics.totalUsers ?? 0,
+                    activeUsers7d: live.activeUsers7d ?? analytics.activeUsers7d ?? 0,
+                    activeUsers30d: live.activeUsers30d ?? analytics.activeUsers30d ?? 0,
+                    activeGyms: live.activeGyms ?? analytics.activeGyms ?? 0,
+                    sectorsCount: live.sectorsCount ?? analytics.sectorsCount ?? 0,
+                    routesCount: live.routesCount ?? analytics.routesCount ?? 0,
+                    avgRoutesPerUser: live.avgRoutesPerUser ?? analytics.avgRoutesPerUser ?? 0,
+                    monthlyUserGrowthPct: live.monthlyUserGrowthPct ?? analytics.monthlyUserGrowthPct ?? 0,
+                    monthlyRetentionPct: live.monthlyRetentionPct ?? analytics.monthlyRetentionPct ?? 0,
+                    activeVsRegisteredPct: live.activeVsRegisteredPct ?? analytics.activeVsRegisteredPct ?? 0,
+                    cityDifficultyDistribution: (analytics.cityDifficultyDistribution && analytics.cityDifficultyDistribution.length)
+                        ? analytics.cityDifficultyDistribution
+                        : (live.cityDifficultyDistribution || [])
+                };
+                renderSuperadminDashboard(merged);
+            };
+
+            const onErr = (label) => (err) => {
+                console.warn(`[superadmin-dashboard] ${label} snapshot error`, err);
+                renderFromState();
+            };
+
+            unsubs.push(onSnapshot(collection(db, 'users'), (snap) => { state.users = snap; renderFromState(); }, onErr('users')));
+            unsubs.push(onSnapshot(collection(db, 'gyms'), (snap) => { state.gyms = snap; renderFromState(); }, onErr('gyms')));
+            unsubs.push(onSnapshot(collectionGroup(db, 'Sectors'), (snap) => { state.sectors = snap; renderFromState(); }, onErr('sectors')));
+            unsubs.push(onSnapshot(collectionGroup(db, 'routes'), (snap) => { state.routes = snap; renderFromState(); }, onErr('routes')));
+            unsubs.push(onSnapshot(doc(db, 'analytics', 'superadmin_kpis'), (snap) => {
+                state.analytics = snap.exists() ? (snap.data() || {}) : {};
+                renderFromState();
+            }, () => {
+                state.analytics = {};
+                renderFromState();
+            }));
+
+            superadminKpiUnsub = () => {
+                for (const u of unsubs) { if (typeof u === 'function') u(); }
+            };
+        }
+
         function renderAdminDashboardKpis(stats) {
             const kpiWrap = document.getElementById('admin-dashboard-kpis');
             if (!kpiWrap) return;
@@ -4380,6 +4624,8 @@ Pizzica per zoommare.</p>
                     return;
                 }
                 document.getElementById('viewer-container').style.display = 'block';
+                const nav = document.getElementById('app-bottom-nav');
+                if (nav) nav.style.display = 'none';
                 viewer.removeAttribute('src');
                 viewer.src = '';
                 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -4756,11 +5002,21 @@ Pizzica per zoommare.</p>
         window.deleteRoute = async () => { if(confirm(t('viewer.confirmDelete'))) { await deleteDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId)); window.cancelAdminEdit(); } };
 
         window.goToAuth = () => showView('view-auth');
-        window.logout = () => { stopFollowingProgressSubscriptions(); stopFollowsSubscription(); signOut(auth).then(() => location.reload()); };
+        window.logout = () => { if (typeof superadminKpiUnsub === 'function') superadminKpiUnsub(); stopFollowingProgressSubscriptions(); stopFollowsSubscription(); signOut(auth).then(() => location.reload()); };
         window.switchMode = async () => {
+            if (userRole === 'superadmin') {
+                const nextModes = realUserGymId
+                    ? ['superadmin', 'admin', 'user']
+                    : ['superadmin', 'user'];
+                const idx = nextModes.indexOf(currentMode);
+                currentMode = nextModes[(idx + 1) % nextModes.length];
+                await initDashboard();
+                return;
+            }
+
             if (userRole !== 'admin') return;
             if (!realUserGymId) {
-                alert('Profilo admin senza palestra associata.');
+                alert(t('errors.adminGymMissing'));
                 currentMode = 'user';
                 await initDashboard();
                 return;
@@ -4768,7 +5024,7 @@ Pizzica per zoommare.</p>
             currentMode = currentMode === 'admin' ? 'user' : 'admin';
             await initDashboard();
         };
-        window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); setStartGuideVisible(false); hideViewerMoveGuide(); document.getElementById('viewer-container').style.display = 'none'; hideLoading(); };
+        window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); setStartGuideVisible(false); hideViewerMoveGuide(); document.getElementById('viewer-container').style.display = 'none'; const nav = document.getElementById('app-bottom-nav'); if (nav && currentMode !== 'admin' && currentMode !== 'superadmin') { nav.style.display = ''; nav.classList.add('active'); } hideLoading(); };
         window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; };
         function showView(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); const nav = document.getElementById('app-bottom-nav'); if (nav && id !== 'view-dash') nav.classList.remove('active'); }
     </script>
