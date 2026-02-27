@@ -181,10 +181,76 @@
         .admin-feedback-meta { font-size:0.8rem; color:var(--muted); text-align:right; white-space:nowrap; }
         .admin-feedback-line { display:grid; grid-template-columns: repeat(30, minmax(0,1fr)); gap:3px; align-items:end; height:110px; }
         .admin-feedback-line i { display:block; width:100%; background:var(--primary); border-radius:4px 4px 0 0; min-height:2px; opacity:0.95; }
+        .admin-users-page { display:grid; gap:14px; }
+        .admin-block-card { border:1px solid var(--border); border-radius:14px; background:var(--card); padding:14px; box-shadow:0 8px 20px rgba(63,80,124,0.08); }
+        .admin-block-card h5 { margin:0 0 10px 0; font-size:0.98rem; }
+        .admin-kpi-grid.modern { grid-template-columns:repeat(4,minmax(0,1fr)); margin:0; }
+        .admin-kpi-card.modern { padding:14px; border-radius:14px; display:grid; gap:4px; }
+        .admin-kpi-card.modern b { font-size:1.5rem; }
+        .admin-kpi-label { color:var(--muted); font-size:0.8rem; }
+        .admin-kpi-trend { color:var(--primary); font-size:0.78rem; }
+        .admin-user-table-wrap { overflow:auto; border:1px solid var(--border); border-radius:12px; }
+        .admin-user-table-wrap table { margin-top:0; }
+        .admin-user-table-wrap tr:first-child td { background:rgba(43,224,125,0.08); }
+        .admin-rank { display:inline-grid; place-items:center; min-width:24px; height:24px; border-radius:999px; font-weight:700; font-size:0.8rem; border:1px solid var(--border); }
+        .admin-rank.top { background:rgba(43,224,125,0.16); color:#1ea56f; border-color:rgba(43,224,125,0.35); }
+        .admin-feedback-analytics.compact { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .admin-feedback-compact-item { display:flex; justify-content:space-between; gap:10px; align-items:center; border-bottom:1px dashed var(--border); padding:6px 0; }
+        .admin-feedback-compact-item:last-child { border-bottom:none; }
+        .admin-feedback-compact-item b { font-size:0.9rem; }
+        .admin-stars { letter-spacing:1px; color:#f2b94b; white-space:nowrap; }
+        .admin-sector-analytics { display:grid; gap:12px; }
+        .admin-sector-analytics-card { border:1px solid var(--border); border-radius:14px; background:var(--card); padding:14px; }
+        .admin-sector-analytics-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
+        .admin-sector-analytics-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin:10px 0; }
+        .admin-sector-analytics-kpi { border:1px solid var(--border); border-radius:10px; padding:10px; background:var(--surface-elevated); }
+        .admin-sector-analytics-kpi b { display:block; font-size:1.05rem; }
+        .admin-sector-analytics-kpi span { color:var(--muted); font-size:0.78rem; }
+        .admin-sector-analytics-subgrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+        .admin-pill { border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:0.75rem; color:var(--muted); }
+        .admin-sticky-filters { position:sticky; top:8px; z-index:20; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--card) 90%, #ffffff 10%); backdrop-filter: blur(6px); padding:10px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:10px; box-shadow:0 8px 18px rgba(23,31,56,0.14); }
+        .admin-sticky-filters select { min-height:46px; margin:0; padding:10px 12px; font-size:0.82rem; font-weight:600; line-height:1.2; color:var(--text); background:var(--surface-elevated); border:1px solid color-mix(in srgb, var(--border) 70%, var(--primary) 30%); border-radius:10px; }
+        .admin-toggle { display:flex; align-items:center; gap:8px; min-height:46px; font-size:0.8rem; font-weight:600; color:var(--text); border:1px solid color-mix(in srgb, var(--border) 70%, var(--primary) 30%); border-radius:10px; padding:8px 10px; background:var(--surface-elevated); }
+        .admin-toggle input { width:auto; min-height:unset; margin:0; accent-color: var(--primary); }
+        .admin-table-sort { cursor:pointer; user-select:none; }
+        .admin-pager { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+        .admin-mini-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+        .admin-mini-tab { border:1px solid var(--border); border-radius:999px; background:transparent; color:var(--muted); padding:6px 10px; cursor:pointer; }
+        .admin-mini-tab.active { border-color:rgba(43,224,125,0.35); color:var(--text); background:var(--primary-dim); }
+        .admin-modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; z-index:2200; padding:16px; }
+        .admin-modal { width:min(860px,100%); max-height:80vh; overflow:auto; border:1px solid var(--border); border-radius:14px; background:var(--card); padding:14px; }
+        .admin-bar-chart { display:grid; gap:6px; }
+        .admin-bar-row { display:grid; grid-template-columns:minmax(0,1fr) 140px; gap:8px; align-items:center; }
+        .admin-bar-track { height:10px; border:1px solid var(--border); border-radius:999px; background:rgba(255,255,255,0.06); overflow:hidden; }
+        .admin-bar-fill { height:100%; background:var(--primary); }
+
+        .admin-sectors-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
+        .admin-sectors-header h3 { margin:0; }
+        .admin-sectors-header p { margin:4px 0 0; color:var(--muted); font-size:0.9rem; }
+        .admin-create-sector-card { border:1px solid var(--border); border-radius:14px; background:var(--card); padding:14px; display:grid; gap:10px; }
+        .admin-file-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+        .admin-file-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+        .admin-file-chip { border:1px dashed var(--border); border-radius:999px; padding:6px 10px; color:var(--muted); font-size:0.82rem; }
+        .admin-sector-list { display:grid; gap:12px; }
+        .admin-sector-card { border:1px solid var(--border); border-radius:14px; background:var(--card); padding:14px; box-shadow:0 8px 20px rgba(63,80,124,0.08); }
+        .admin-sector-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .admin-sector-title { margin:0; font-size:1.05rem; }
+        .admin-sector-status { margin-top:6px; font-size:0.86rem; color:var(--muted); }
+        .admin-sector-status.ok { color:#1ea56f; }
+        .admin-sector-status.warn { color:#e0992d; }
+        .admin-sector-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
+        .btn-danger-soft { min-height:44px; border:1px solid rgba(255,93,133,0.4); background:rgba(255,93,133,0.12); color:#d6476f; border-radius:10px; font-weight:600; }
+        @media (max-width: 700px) { .admin-sector-actions { grid-template-columns:1fr; } }
+
         @media (max-width: 900px) {
             .admin-layout { grid-template-columns:1fr; }
             .admin-sidebar { position:static; grid-template-columns:repeat(2,minmax(0,1fr)); }
             .admin-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .admin-kpi-grid.modern { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .admin-feedback-analytics.compact { grid-template-columns:1fr; }
+            .admin-sector-analytics-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+            .admin-sector-analytics-subgrid { grid-template-columns:1fr; }
+            .admin-sticky-filters { grid-template-columns:1fr; }
         }
 
         /* Overlays */
@@ -717,7 +783,13 @@
         .social-tab.active { border-color: var(--primary); color: var(--primary); }
         .social-panel-section { display:none; }
         .social-panel-section.active { display:block; }
-        .tracker-state-actions { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+        .tracker-state-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:12px; }
+        .tracker-state-option { border:1px solid var(--border); border-radius:12px; background:var(--card); padding:12px; text-align:left; color:var(--text); font-weight:600; min-height:56px; }
+        .tracker-state-option small { display:block; margin-top:4px; color:var(--muted); font-weight:500; }
+        .tracker-state-option.active { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); background: rgba(111,77,255,0.12); }
+        .tracker-stepper { display:flex; align-items:center; gap:10px; }
+        .tracker-step-btn { width:44px; min-width:44px; height:44px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:1.2rem; }
+        .tracker-step-val { flex:1; text-align:center; font-size:1.1rem; font-weight:700; border:1px solid var(--border); border-radius:10px; min-height:44px; display:grid; place-items:center; background:var(--surface-elevated); }
         .tracker-state-pill { padding:8px 12px; border:1px solid var(--border); border-radius:999px; font-size:0.82rem; color:var(--muted); }
         .tracker-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
         .tracker-grid .full { grid-column: 1 / -1; }
@@ -1009,7 +1081,19 @@
         </div>
     </div>
 
-    <div id="view-auth" class="view">
+
+    <div id="delete-sector-modal" class="social-modal" style="display:none;">
+        <div class="social-modal-sheet">
+            <h4 class="following-section-title" style="margin-top:0;" data-i18n="admin.deleteSectorTitle"></h4>
+            <p class="profile-subtitle" data-i18n="admin.deleteSectorConfirmText"></p>
+            <div style="display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap;">
+                <button type="button" class="btn-sec" onclick="window.closeDeleteSectorModal()" data-i18n="admin.cancel"></button>
+                <button type="button" class="btn-danger-soft" id="delete-sector-confirm-btn" data-i18n="admin.deleteForever"></button>
+            </div>
+        </div>
+    </div>
+
+<div id="view-auth" class="view">
         <div class="container">
             <div class="card" style="text-align:center; margin-top:50px; padding: 30px;">
                 <div class="lang-switcher" style="margin-bottom:15px; justify-content:center;">
@@ -1040,7 +1124,7 @@
                         <button type="button" id="lang-it-dash" onclick="window.setLang('it')">IT</button>
                         <button type="button" id="lang-en-dash" onclick="window.setLang('en')">EN</button>
                     </div>
-                    <button class="btn-sec" id="btn-gym-owner-request" onclick="window.openGymOwnerRequest()" style="display:none;">Sono il proprietario di una palestra</button>
+                    <button class="btn-sec" id="btn-gym-owner-request" onclick="window.openGymOwnerRequest()" style="display:none;" data-i18n="ownerRequest.cta"></button>
                     <button class="btn-sec" id="btn-mode-toggle" onclick="window.switchMode()" data-i18n="dash.switchView"></button>
                                         <button class="btn-sec" onclick="window.logout()" data-i18n="dash.logout"></button>
                 </div>
@@ -1049,16 +1133,24 @@
             <div id="admin-panel" style="display:none;">
                 <div class="admin-layout">
                     <aside class="admin-sidebar">
-                        <button type="button" class="active" data-admin-tab="dashboard">1️⃣ Dashboard</button>
-                        <button type="button" data-admin-tab="sectors">2️⃣ Settori & Vie</button>
-                        <button type="button" data-admin-tab="users">3️⃣ Utenti</button>
-                        <button type="button" data-admin-tab="settings">4️⃣ Impostazioni</button>
+                        <button type="button" class="active" data-admin-tab="dashboard" data-i18n="admin.navDashboard"></button>
+                        <button type="button" data-admin-tab="sectors" data-i18n="admin.navSectorsRoutes"></button>
+                        <button type="button" data-admin-tab="users" data-i18n="admin.navUsers"></button>
+                        <button type="button" data-admin-tab="settings" data-i18n="admin.navSettings"></button>
                     </aside>
 
                     <section>
                         <div id="admin-tab-dashboard" class="admin-tab-panel active">
-                            <h3 class="headline-brand">Dashboard</h3>
+                            <h3 class="headline-brand" data-i18n="admin.navDashboardSimple"></h3>
                             <div class="card" style="display:block;">
+                                <div class="admin-sticky-filters">
+                                    <select id="admin-filter-period"><option value="7">7 giorni</option><option value="30" selected>30 giorni</option><option value="90">90 giorni</option><option value="custom">Personalizzato</option></select>
+                                    <select id="admin-filter-sector"><option value="all">Tutti i settori</option></select>
+                                    <select id="admin-filter-grade"><option value="all">Tutti i gradi</option></select>
+                                    <label class="admin-toggle"><input type="checkbox" id="admin-filter-active">Solo vie attive</label>
+                                    <label class="admin-toggle"><input type="checkbox" id="admin-filter-reviewed">Solo vie recensite</label>
+                                    <select id="admin-sector-avg-sort"><option value="avg">Ordina settore: media</option><option value="reviews">Ordina settore: recensioni</option></select>
+                                </div>
                                 <div class="admin-kpi-grid" id="admin-dashboard-kpis"></div>
                                 <div class="admin-coverage-toolbar">
                                     <label for="admin-coverage-period" data-i18n="admin.periodFilter"></label>
@@ -1068,14 +1160,14 @@
                                         <option value="90" data-i18n="admin.last90Days"></option>
                                     </select>
                                 </div>
-                                <h4 class="admin-section-title">📈 Attività ultimi 30 giorni</h4>
+                                <h4 class="admin-section-title" data-i18n="admin.activityLast30"></h4>
                                 <div id="admin-coverage-container"></div>
-                                <h4 class="admin-section-title" style="margin-top:14px;">🧱 Performance settori</h4>
+                                <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.sectorPerformance"></h4>
                                 <div class="admin-coverage-toolbar" style="margin-bottom:8px;">
-                                    <label for="admin-sector-sort">Ordina per</label>
+                                    <label for="admin-sector-sort" data-i18n="admin.sortBy"></label>
                                     <select id="admin-sector-sort">
-                                        <option value="most">Più attivo</option>
-                                        <option value="least">Meno attivo</option>
+                                        <option value="most" data-i18n="admin.sortMost"></option>
+                                        <option value="least" data-i18n="admin.sortLeast"></option>
                                     </select>
                                 </div>
                                 <div id="admin-sector-performance-table" class="admin-sector-table-wrap"></div>
@@ -1083,28 +1175,43 @@
                         </div>
 
                         <div id="admin-tab-sectors" class="admin-tab-panel">
-                            <h3 class="headline-brand">Settori & Vie</h3>
-                            <div class="card" style="border: 2px dashed var(--border); display:block;">
-                                <h4 style="margin:0 0 10px 0;" data-i18n="admin.createSector"></h4>
+                            <div class="admin-sectors-header">
+                                <div>
+                                    <h3 class="headline-brand" data-i18n="admin.sectorsTitle"></h3>
+                                    <p data-i18n="admin.sectorsSubtitle"></p>
+                                </div>
+                                <button class="btn-main" style="width:auto; min-width:220px;" onclick="window.handleUpload(null)" data-i18n="admin.createSectorCta"></button>
+                            </div>
+                            <div class="admin-create-sector-card">
                                 <input type="text" id="new-sector-name" data-i18n-placeholder="admin.sectorNamePlaceholder">
-                                <input type="file" id="file-mesh-new" accept=".glb">
-                                <button class="btn-main" onclick="window.handleUpload(null)" data-i18n="admin.publish"></button>
+                                <div class="admin-file-row">
+                                    <input type="file" id="file-mesh-new" class="admin-file-hidden" accept=".glb">
+                                    <button type="button" class="btn-sec" onclick="document.getElementById('file-mesh-new').click()" data-i18n="admin.select3dModel"></button>
+                                    <span id="file-mesh-new-label" class="admin-file-chip" data-i18n="admin.noModelSelected"></span>
+                                </div>
                             </div>
                             <h4 class="admin-section-title" data-i18n="admin.yourSectors"></h4>
-                            <div id="main-list-admin"></div>
+                            <div id="main-list-admin" class="admin-sector-list"></div>
                         </div>
 
                         <div id="admin-tab-users" class="admin-tab-panel">
-                            <h3 class="headline-brand">Utenti</h3>
-                            <div class="card" style="display:block;">
-                                <div id="admin-users-summary"></div>
-                            </div>
-                            <h4 class="admin-section-title" style="margin-top:14px;">💬 Analytics Feedback Utenti</h4>
+                            <h3 class="headline-brand" data-i18n="admin.navUsersSimple"></h3>
+                            <div id="admin-users-summary"></div>
+                            <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.feedbackAnalyticsUsers"></h4>
                             <div id="admin-feedback-analytics" class="admin-feedback-analytics"></div>
+                            <h4 class="admin-section-title" style="margin-top:14px;">📂 Analisi per Settore</h4>
+                            <div id="admin-sector-analytics" class="admin-sector-analytics"></div>
+                            <div id="admin-feedback-modal-backdrop" class="admin-modal-backdrop">
+                                <div class="admin-modal">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><h4 id="admin-feedback-modal-title" class="admin-section-title" style="margin:0;">Dettaglio</h4><button class="btn-sec" type="button" onclick="window.closeAdminFeedbackModal()">Chiudi</button></div>
+                                    <div id="admin-feedback-modal-list" style="margin-top:8px;"></div>
+                                    <div class="admin-pager"><button class="btn-sec" type="button" onclick="window.adminFeedbackModalPrev()">Precedente</button><button class="btn-sec" type="button" onclick="window.adminFeedbackModalNext()">Successiva</button></div>
+                                </div>
+                            </div>
                         </div>
 
                         <div id="admin-tab-settings" class="admin-tab-panel">
-                            <h3 class="headline-brand">Impostazioni</h3>
+                            <h3 class="headline-brand" data-i18n="admin.navSettingsSimple"></h3>
                             <div class="admin-settings-block">
                                 <h4 class="admin-section-title" data-i18n="admin.gymProfileTitle"></h4>
                                 <div class="card" style="display:block;">
@@ -1185,7 +1292,7 @@
                     <div id="social-main-view">
                         <div class="social-top-tabs">
                             <button type="button" class="social-top-tab active" id="social-top-tab-community">Community</button>
-                            <button type="button" class="social-top-tab" id="social-top-tab-users">Utenti</button>
+                            <button type="button" class="social-top-tab" id="social-top-tab-users" data-i18n="dash.usersTab"></button>
                             <button type="button" class="social-top-tab" id="social-top-tab-my-posts">Le mie pubblicazioni</button>
                         </div>
                         <div id="social-community-panel" class="social-subpanel active">
@@ -1262,7 +1369,7 @@
         <button type="button" id="tab-btn-explore" class="bottom-nav-item active"><span class="nav-ico">🔍</span><span data-i18n="dash.tabExplore"></span></button>
         <button type="button" id="tab-btn-challenges" class="bottom-nav-item"><span class="nav-ico">🏆</span><span data-i18n="dash.tabChallenges"></span></button>
         <button type="button" id="tab-btn-following" class="bottom-nav-item"><span class="nav-ico">💬</span><span data-i18n="dash.tabSocial"></span></button>
-        <button type="button" id="tab-btn-profile" class="bottom-nav-item"><span class="nav-ico">👤</span><span>Profilo</span></button>
+        <button type="button" id="tab-btn-profile" class="bottom-nav-item"><span class="nav-ico">👤</span><span data-i18n="dash.tabProfileShort"></span></button>
     </nav>
 
     <div id="viewer-container">
@@ -1308,32 +1415,11 @@ Pizzica per zoommare.</p>
                     <button type="button" onclick="document.getElementById('social-panel').style.display='none'" style="background:none; border:none; color:var(--text); font-size:28px;">×</button>
                 </div>
                 <div class="social-tabs">
-                    <button type="button" id="social-tab-public" class="social-tab active" data-i18n="viewer.publicFeedback"></button>
-                    <button type="button" id="social-tab-tracker" class="social-tab" data-i18n="viewer.progressTracker"></button>
+                    <button type="button" id="social-tab-tracker" class="social-tab active" data-i18n="viewer.myClimbTab"></button>
+                    <button type="button" id="social-tab-public" class="social-tab" data-i18n="viewer.rateRouteTab"></button>
                 </div>
 
-                <div id="social-public-section" class="social-panel-section active">
-                    <div class="social-form" style="border-top:none; padding-top:0; margin-top:0;">
-                        <div class="social-field">
-                            <label class="social-label" data-i18n="viewer.rating"></label>
-                            <div class="star-rating" id="star-selector">
-                                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
-                            </div>
-                        </div>
-                        <div class="social-field">
-                            <label class="social-label" data-i18n="viewer.comment"></label>
-                            <textarea id="user-comment" data-i18n-placeholder="viewer.commentPlaceholder" class="social-textarea"></textarea>
-                        </div>
-                        <div class="social-field">
-                            <label class="social-label" data-i18n="viewer.proposedGrade"></label>
-                            <input id="public-proposed-grade" type="text" class="social-input" maxlength="12" data-i18n-placeholder="viewer.proposedGradePlaceholder">
-                        </div>
-                        <button class="btn-main" onclick="window.submitReview()" data-i18n="viewer.submitReview"></button>
-                    </div>
-                    <div id="comments-list" style="margin-top:20px;"></div>
-                </div>
-
-                <div id="social-tracker-section" class="social-panel-section">
+                <div id="social-tracker-section" class="social-panel-section active">
                     <div class="social-form" style="border-top:none; padding-top:0; margin-top:0;">
                         <div class="social-field">
                             <label class="social-label" data-i18n="viewer.yourProgressState"></label>
@@ -1342,26 +1428,12 @@ Pizzica per zoommare.</p>
                         <div class="tracker-grid" id="tracker-form-grid" style="display:none;">
                             <div>
                                 <label class="social-label" data-i18n="viewer.tries"></label>
-                                <input type="number" min="1" step="1" id="tracker-attempt-count" class="social-input">
-                            </div>
-                            <div>
-                                <label class="social-label" data-i18n="viewer.firstAttemptDate"></label>
-                                <input type="date" id="tracker-first-attempt" class="social-input">
-                            </div>
-                            <div id="tracker-completion-wrap" style="display:none;">
-                                <label class="social-label" data-i18n="viewer.completionDate"></label>
-                                <input type="date" id="tracker-completion-date" class="social-input">
-                            </div>
-                            <div id="tracker-final-grade-wrap" style="display:none;">
-                                <label class="social-label" data-i18n="viewer.finalGrade"></label>
-                                <select id="tracker-final-grade" class="social-input">
-                                    <option value="" data-i18n="viewer.proposeGradePlaceholder"></option>
-                                    <option value="4a">4a</option><option value="4b">4b</option><option value="4c">4c</option>
-                                    <option value="5a">5a</option><option value="5b">5b</option><option value="5c">5c</option>
-                                    <option value="6a">6a</option><option value="6b">6b</option><option value="6c">6c</option>
-                                    <option value="7a">7a</option><option value="7b">7b</option><option value="7c">7c</option>
-                                    <option value="8a">8a</option><option value="8b">8b</option><option value="8c">8c</option>
-                                </select>
+                                <div class="tracker-stepper">
+                                    <button type="button" class="tracker-step-btn" id="tracker-attempt-dec">−</button>
+                                    <div class="tracker-step-val" id="tracker-attempt-value">1</div>
+                                    <button type="button" class="tracker-step-btn" id="tracker-attempt-inc">+</button>
+                                </div>
+                                <input type="number" min="1" step="1" id="tracker-attempt-count" class="social-input" style="display:none;">
                             </div>
                             <div class="full">
                                 <label class="social-label" data-i18n="viewer.personalNotes"></label>
@@ -1372,8 +1444,29 @@ Pizzica per zoommare.</p>
                                 <label for="tracker-share-feed" data-i18n="viewer.shareOnFeed" style="font-size:0.9rem; color:var(--muted);"></label>
                             </div>
                         </div>
-                        <button class="btn-main" id="tracker-save-btn" style="display:none;"></button>
+                        <button class="btn-main" id="tracker-save-btn" style="display:none;" data-i18n="viewer.saveClimb"></button>
                     </div>
+                </div>
+
+                <div id="social-public-section" class="social-panel-section">
+                    <div class="social-form" style="border-top:none; padding-top:0; margin-top:0;">
+                        <div class="social-field">
+                            <label class="social-label" data-i18n="viewer.rating"></label>
+                            <div class="star-rating" id="star-selector">
+                                <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+                            </div>
+                        </div>
+                        <div class="social-field">
+                            <label class="social-label" data-i18n="viewer.comment"></label>
+                            <textarea id="user-comment" data-i18n-placeholder="viewer.publicCommentPlaceholder" class="social-textarea"></textarea>
+                        </div>
+                        <div class="social-field">
+                            <label class="social-label" data-i18n="viewer.proposedGradeOptional"></label>
+                            <input id="public-proposed-grade" type="text" class="social-input" maxlength="12" data-i18n-placeholder="viewer.proposedGradeShortPlaceholder">
+                        </div>
+                        <button class="btn-main" onclick="window.submitReview()" data-i18n="viewer.publishFeedback"></button>
+                    </div>
+                    <div id="comments-list" style="margin-top:20px;"></div>
                 </div>
             </div>
 </div>
@@ -1383,8 +1476,8 @@ Pizzica per zoommare.</p>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, collectionGroup, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, collectionGroup, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBIXviIPnpaoso-_K-v3uR0m2kUJ9uFZjM",
@@ -1448,7 +1541,11 @@ Pizzica per zoommare.</p>
         let socialTrackerState = null;
         let currentGymCoverage = { totalUsers: 0, activeUsers: 0, coveragePct: 0 };
         let adminCoverageUnsubscribers = [];
-        let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), routeMeta: new Map(), reviewsByRoute: new Map() };
+        let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), routeMeta: new Map(), reviewsByRoute: new Map(), routeUsers: new Map() };
+        let adminDashboardFilters = { days: 30, sectorId: 'all', grade: 'all', onlyActive: false, onlyReviewed: false };
+        let adminUsersState = { page: 1, pageSize: 5, sortBy: 'routes', sortDir: 'desc' };
+        let adminFeedbackState = { tab: 'topRated', modalOpen: false, modalPage: 1, modalType: 'topRated' };
+        let adminSectorSortState = 'avg';
         let gymDetailUnsubscriber = null;
         let currentModelLoadToken = 0;
         let currentModelLoadCleanup = null;
@@ -1487,9 +1584,9 @@ Pizzica per zoommare.</p>
             it: {
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
                 auth: { yourName: "Il tuo Nome", username: "Username pubblico", birthDate: "Data di nascita", city: "Città", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
-                common: { close: "Chiudi" }, ownerRequest: { title: "Richiesta accesso proprietario", hint: "Inserisci i dati per richiedere l'accesso come proprietario palestra.", gymName: "Nome palestra", submit: "Invia richiesta" }, superadmin: { title: "Superadmin Dashboard", subtitle: "KPI globali aggregati (senza confrontare gradi assoluti tra palestre diverse).", performanceTitle: "KPI performance (grading-safe)", performanceHint: "Le metriche di performance sono calcolate internamente a ciascuna palestra e poi aggregate.", behaviorTitle: "KPI comportamentali", cityTitle: "Distribuzione difficoltà per città (percentuali interne)", city: "Città", internalDistribution: "Distribuzione interna", noData: "Nessun dato disponibile.", totalUsers: "Utenti totali", active7d: "Attivi ultimi 7 giorni", active30d: "Attivi ultimi 30 giorni", activeGyms: "Palestre attive", sectorsLoaded: "Settori caricati", routesRegistered: "Vie registrate", avgRoutesPerUser: "Media vie per utente", monthlyGrowth: "Crescita mensile utenti", monthlyRetention: "Retention mensile", activeVsRegistered: "% attivi / registrati", avgProgressUser: "Progressione media utente", improvement3m: "Miglioramento medio (3 mesi)", avgTimeNextLevel: "Tempo medio livello successivo", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Tentativi medi per via", weeklyFrequency: "Frequenza settimanale media", topDays: "Giorni più frequentati", topHours: "Fasce orarie attive", returnRate: "Tasso di ritorno" }, dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
-                admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo." },
-                viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", submitReview: "INVIA VALUTAZIONE", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate", startGuideTitle: "📍 Crea lo start della via", startGuideText: "Tocca nel modello 3D il punto di inizio della via per impostare lo START.", startGuideAcknowledge: "Ho capito", startGuideDontShow: "Non mostrare più" },
+                common: { close: "Chiudi", noData: "Nessun dato disponibile." }, ownerRequest: { cta: "Sono il proprietario di una palestra", enterGymName: "Inserisci il nome della palestra.", sentSuccess: "Richiesta inviata con successo.", title: "Richiesta accesso proprietario", hint: "Inserisci i dati per richiedere l'accesso come proprietario palestra.", gymName: "Nome palestra", submit: "Invia richiesta" }, superadmin: { title: "Superadmin Dashboard", subtitle: "KPI globali aggregati (senza confrontare gradi assoluti tra palestre diverse).", performanceTitle: "KPI performance (grading-safe)", performanceHint: "Le metriche di performance sono calcolate internamente a ciascuna palestra e poi aggregate.", behaviorTitle: "KPI comportamentali", cityTitle: "Distribuzione difficoltà per città (percentuali interne)", city: "Città", internalDistribution: "Distribuzione interna", noData: "Nessun dato disponibile.", totalUsers: "Utenti totali", active7d: "Attivi ultimi 7 giorni", active30d: "Attivi ultimi 30 giorni", activeGyms: "Palestre attive", sectorsLoaded: "Settori caricati", routesRegistered: "Vie registrate", avgRoutesPerUser: "Media vie per utente", monthlyGrowth: "Crescita mensile utenti", monthlyRetention: "Retention mensile", activeVsRegistered: "% attivi / registrati", avgProgressUser: "Progressione media utente", improvement3m: "Miglioramento medio (3 mesi)", avgTimeNextLevel: "Tempo medio livello successivo", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Tentativi medi per via", weeklyFrequency: "Frequenza settimanale media", topDays: "Giorni più frequentati", topHours: "Fasce orarie attive", returnRate: "Tasso di ritorno" }, dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", tabProfileShort: "Profilo", usersTab: "Utenti", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
+                admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo.", navDashboard: "1️⃣ Dashboard", navSectorsRoutes: "2️⃣ Settori & Vie", navUsers: "3️⃣ Utenti", navSettings: "4️⃣ Impostazioni", navDashboardSimple: "Dashboard", navSectorsRoutesSimple: "Settori & Vie", navUsersSimple: "Utenti", navSettingsSimple: "Impostazioni", activityLast30: "📈 Attività ultimi 30 giorni", sectorPerformance: "🧱 Performance settori", sortBy: "Ordina per", sortMost: "Più attivo", sortLeast: "Meno attivo", routesRegistered30d: "Vie registrate 30g", sector: "Settore", activeUsers: "Utenti attivi", routesRegistered: "Vie registrate", coveragePercent: "% Copertura", totalUsers: "Totale utenti", activeLast30: "Attivi ultimi 30 giorni", top10Users: "Top 10 utenti", feedbackAnalyticsUsers: "💬 Analytics Feedback Utenti", loadingFeedback: "Caricamento analytics feedback...", reviewsLast30: "Recensioni ultimi 30 giorni", feedbackLoadError: "Errore nel caricamento analytics feedback.", sectorsTitle: "Settori", sectorsSubtitle: "Gestisci i settori e i modelli 3D della tua palestra", createSectorCta: "➕ Crea nuovo settore", select3dModel: "Seleziona modello 3D", noModelSelected: "Nessun modello selezionato", modelLoaded: "Modello caricato", no3dModel: "Nessun modello 3D", replaceModel3d: "Sostituisci modello 3D", deleteSector: "Elimina settore", deleteSectorTitle: "🗑 Elimina settore", deleteSectorConfirmText: "Sei sicuro di voler eliminare questo settore? Tutte le vie associate verranno rimosse definitivamente.", cancel: "Annulla", deleteForever: "Elimina definitivamente" },
+                viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", publicCommentPlaceholder: "Com'è la beta? È morfologica? Divertente?", submitReview: "INVIA VALUTAZIONE", publishFeedback: "PUBBLICA FEEDBACK", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", proposedGradeOptional: "Grado proposto (opzionale)", proposedGradeShortPlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", myClimbTab: "La mia scalata", rateRouteTab: "Valuta la via", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", projectStateHint: "La sto lavorando", climbedStateHint: "L'ho completata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", saveClimb: "SALVA SCALATA", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate", startGuideTitle: "📍 Crea lo start della via", startGuideText: "Tocca nel modello 3D il punto di inizio della via per impostare lo START.", startGuideAcknowledge: "Ho capito", startGuideDontShow: "Non mostrare più" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
                 loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D...", retry: "Riprova" },
                 errors: { completeData: "Inserisci dati completi", birthDateRequired: "La data di nascita è obbligatoria.", cityRequired: "La città è obbligatoria.", profileLoad: "Errore durante il caricamento del profilo.", adminGymMissing: "Profilo admin senza palestra associata.", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore", authRequired: "Devi accedere per completare questa azione.", permissionDenied: "Permessi insufficienti su Firestore: controlla le regole di sicurezza.", saveFailed: "Salvataggio non riuscito. Riprova." }
@@ -1497,9 +1594,9 @@ Pizzica per zoommare.</p>
             en: {
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
                 auth: { yourName: "Your name", username: "Public username", birthDate: "Birth date", city: "City", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
-                common: { close: "Close" }, ownerRequest: { title: "Gym owner access request", hint: "Enter details to request gym owner access.", gymName: "Gym name", submit: "Submit request" }, superadmin: { title: "Superadmin Dashboard", subtitle: "Global aggregated KPIs (without comparing absolute grades across different gyms).", performanceTitle: "Performance KPIs (grading-safe)", performanceHint: "Performance metrics are computed within each gym and then aggregated.", behaviorTitle: "Behavioral KPIs", cityTitle: "Difficulty distribution by city (internal percentages)", city: "City", internalDistribution: "Internal distribution", noData: "No data available.", totalUsers: "Total users", active7d: "Active last 7 days", active30d: "Active last 30 days", activeGyms: "Active gyms", sectorsLoaded: "Loaded sectors", routesRegistered: "Registered routes", avgRoutesPerUser: "Avg routes per user", monthlyGrowth: "Monthly user growth", monthlyRetention: "Monthly retention", activeVsRegistered: "% active / registered", avgProgressUser: "Avg user progression", improvement3m: "Avg improvement (3 months)", avgTimeNextLevel: "Avg time to next level", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Avg attempts per route", weeklyFrequency: "Avg weekly frequency", topDays: "Most active days", topHours: "Most active time slots", returnRate: "Return rate" }, dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabChallenges: "Challenges", tabSocial: "Social", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
+                common: { close: "Close", noData: "No data available." }, ownerRequest: { cta: "I own a gym", enterGymName: "Enter gym name.", sentSuccess: "Request sent successfully.", title: "Gym owner access request", hint: "Enter details to request gym owner access.", gymName: "Gym name", submit: "Submit request" }, superadmin: { title: "Superadmin Dashboard", subtitle: "Global aggregated KPIs (without comparing absolute grades across different gyms).", performanceTitle: "Performance KPIs (grading-safe)", performanceHint: "Performance metrics are computed within each gym and then aggregated.", behaviorTitle: "Behavioral KPIs", cityTitle: "Difficulty distribution by city (internal percentages)", city: "City", internalDistribution: "Internal distribution", noData: "No data available.", totalUsers: "Total users", active7d: "Active last 7 days", active30d: "Active last 30 days", activeGyms: "Active gyms", sectorsLoaded: "Loaded sectors", routesRegistered: "Registered routes", avgRoutesPerUser: "Avg routes per user", monthlyGrowth: "Monthly user growth", monthlyRetention: "Monthly retention", activeVsRegistered: "% active / registered", avgProgressUser: "Avg user progression", improvement3m: "Avg improvement (3 months)", avgTimeNextLevel: "Avg time to next level", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Avg attempts per route", weeklyFrequency: "Avg weekly frequency", topDays: "Most active days", topHours: "Most active time slots", returnRate: "Return rate" }, dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabChallenges: "Challenges", tabSocial: "Social", tabProfileShort: "Profile", usersTab: "Users", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
                 admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg", gradeSystemTitle: "Gym grade system", gradeSystemHint: "Add one grade per line, from easiest to hardest. A numeric order is stored too.", gradeSystemPlaceholder: "E.g.\nGreen\nBlue\nPurple\nRed", saveGradeSystem: "SAVE GRADE SYSTEM", gradeSetupRequiredTitle: "Set up your gym grades", gradeSetupRequiredHint: "Before using the admin panel, configure your gym grade system from easiest to hardest.", gradeSystemSaved: "Grade system saved successfully." },
-                viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", submitReview: "SUBMIT RATING", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", saveProject: "Update project", saveClimbed: "Update climbed", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed", startGuideTitle: "📍 Set the route start", startGuideText: "Tap the route start point directly on the 3D model to set START.", startGuideAcknowledge: "Got it", startGuideDontShow: "Do not show again" },
+                viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", publicCommentPlaceholder: "How is the beta? Morpho? Fun?", submitReview: "SUBMIT RATING", publishFeedback: "PUBLISH FEEDBACK", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", proposedGradeOptional: "Proposed grade (optional)", proposedGradeShortPlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", myClimbTab: "My climb", rateRouteTab: "Rate the route", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", projectStateHint: "I'm projecting it", climbedStateHint: "I completed it", saveProject: "Update project", saveClimbed: "Update climbed", saveClimb: "SAVE CLIMB", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed", startGuideTitle: "📍 Set the route start", startGuideText: "Tap the route start point directly on the 3D model to set START.", startGuideAcknowledge: "Got it", startGuideDontShow: "Do not show again" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
                 loading: { init: "Loading...", verifying: "Verifying...", updatingMesh: "Updating mesh...", loading3d: "Loading 3D...", retry: "Retry" },
                 errors: { completeData: "Please enter all required fields", selectFile: "Select a file", usernameRequired: "Please enter a username", usernameInvalid: "Invalid username: use 3-20 chars (letters, numbers, _, -, .)", usernameTaken: "Username already in use", modelLoadFailed: "Error loading 3D model", modelLoadTimeout: "Loading took too long. Please retry.", modelMeshMissing: "3D model not available for this sector", authRequired: "You must be signed in to complete this action.", permissionDenied: "Insufficient Firestore permissions: check your security rules.", saveFailed: "Save failed. Please retry." }
@@ -1660,10 +1757,29 @@ Pizzica per zoommare.</p>
             return { ref: legacyRef, id: authUid, data: { authUid } };
         }
 
+        async function ensureUidProfileMirror(authUid, sourceData = {}) {
+            if (!authUid) return;
+            const mirrorRef = doc(db, 'users', authUid);
+            const normalized = { ...(sourceData || {}), authUid };
+            await setDoc(mirrorRef, normalized, { merge: true });
+        }
+
         async function mergeUserProfileByAuthUid(authUid, payload) {
             const profile = await getUserProfileByAuthUid(authUid);
             if (!profile.ref) return;
-            await setDoc(profile.ref, { authUid, ...payload }, { merge: true });
+            const data = { authUid, ...payload };
+            await setDoc(profile.ref, data, { merge: true });
+            if (profile.id !== authUid) {
+                await ensureUidProfileMirror(authUid, { ...(profile.data || {}), ...payload });
+            }
+        }
+
+        const newSectorFileInput = document.getElementById('file-mesh-new');
+        if (newSectorFileInput) {
+            newSectorFileInput.onchange = () => {
+                const lbl = document.getElementById('file-mesh-new-label');
+                if (lbl) lbl.textContent = newSectorFileInput.files?.[0]?.name || t('admin.noModelSelected');
+            };
         }
 
         const usernameInput = document.getElementById('f-name');
@@ -1716,7 +1832,7 @@ Pizzica per zoommare.</p>
                         const existsSnap = await getDocs(qRef);
                         const taken = existsSnap.docs.some(d => (d.data()?.authUid || d.id) !== res.user.uid);
                         if (taken) throw new Error('USERNAME_TAKEN');
-                        await setDoc(doc(db, "users", username), {
+                        const userProfile = {
                             authUid: res.user.uid,
                             role: 'user',
                             gymManaged: null,
@@ -1727,7 +1843,9 @@ Pizzica per zoommare.</p>
                             following: [],
                             favouriteGyms: [],
                             createdAt: serverTimestamp()
-                        });
+                        };
+                        await setDoc(doc(db, "users", username), userProfile);
+                        await ensureUidProfileMirror(res.user.uid, userProfile);
                     } catch (e) {
                         try { await deleteUser(res.user); } catch (_) {}
                         if (e?.message === 'USERNAME_TAKEN') throw new Error(t('errors.usernameTaken'));
@@ -1799,6 +1917,7 @@ Pizzica per zoommare.</p>
                 const profile = await getUserProfileByAuthUid(user.uid);
                 currentUserProfileRef = profile.ref;
                 const data = profile.data || {};
+                await ensureUidProfileMirror(user.uid, data);
                 activeUser = user;
                 currentUserName = data.username || 'Climber';
                 userFollowingIds = data.following || [];
@@ -1837,7 +1956,7 @@ Pizzica per zoommare.</p>
         document.getElementById('gym-owner-request-submit').onclick = async () => {
             if (!activeUser) return alert(t('errors.authRequired'));
             const gymName = (document.getElementById('gym-owner-request-name')?.value || '').trim();
-            if (!gymName) return alert('Inserisci il nome della palestra.');
+            if (!gymName) return alert(t('ownerRequest.enterGymName'));
             try {
                 await addDoc(collection(db, 'gymOwnerRequests'), {
                     userId: activeUser.uid,
@@ -1847,7 +1966,7 @@ Pizzica per zoommare.</p>
                 });
                 document.getElementById('gym-owner-request-name').value = '';
                 window.closeGymOwnerRequest();
-                alert('Richiesta inviata con successo.');
+                alert(t('ownerRequest.sentSuccess'));
             } catch (e) {
                 alert(e.message || String(e));
             }
@@ -1946,19 +2065,32 @@ Pizzica per zoommare.</p>
                 profileEntriesMap = new Map();
                 onSnapshot(collection(db, "gyms", realUserGymId, "Sectors"), (snap) => {
                     adminList.innerHTML = "";
+                    if (snap.empty) {
+                        adminList.innerHTML = `<div class="card" style="display:block;">${t('common.noData')}</div>`;
+                    }
                     snap.forEach(d => {
-                        const card = document.createElement('div'); card.className = 'card';
+                        const sec = d.data() || {};
+                        const hasModel = !!sec.meshUrl;
+                        const card = document.createElement('div'); card.className = 'admin-sector-card';
                         card.innerHTML = `
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <b>${d.data().name}</b>
-                                <button class="btn-sec" onclick="open3D('${realUserGymId}', '${d.id}')">${t('dash.manageRoutes')}</button>
+                            <div class="admin-sector-head">
+                                <h5 class="admin-sector-title">${escapeHtml(sec.name || d.id)}</h5>
                             </div>
-                            <div style="margin-top:10px; border-top: 1px solid var(--border); padding-top:10px; display:flex; gap:10px; align-items:center;">
-                                <input type="file" id="file-update-${d.id}" accept=".glb" style="font-size:11px; margin:0;">
-                                <button class="btn-update" onclick="window.handleUpload('${d.id}')">${t('dash.replace3d')}</button>
+                            <div class="admin-sector-status ${hasModel ? 'ok' : 'warn'}">${hasModel ? `✅ ${t('admin.modelLoaded')}` : `⚠️ ${t('admin.no3dModel')}`}</div>
+                            <div class="admin-sector-actions">
+                                <button class="btn-main" type="button" onclick="open3D('${realUserGymId}', '${d.id}')">${t('dash.manageRoutes')}</button>
+                                <button class="btn-sec" type="button" onclick="document.getElementById('file-update-${d.id}').click()">${t('admin.replaceModel3d')}</button>
+                                <button class="btn-danger-soft" type="button" onclick="window.confirmDeleteSector('${d.id}', '${escapeHtml(sec.name || d.id)}')">🗑 ${t('admin.deleteSector')}</button>
+                            </div>
+                            <input type="file" id="file-update-${d.id}" class="admin-file-hidden" accept=".glb">
+                            <div class="admin-file-row" style="margin-top:8px;">
+                                <span id="file-update-label-${d.id}" class="admin-file-chip">${t('admin.noModelSelected')}</span>
                             </div>
                         `;
                         adminList.appendChild(card);
+                        const fileInput = card.querySelector(`#file-update-${d.id}`);
+                        const fileLabel = card.querySelector(`#file-update-label-${d.id}`);
+                        if (fileInput && fileLabel) fileInput.onchange = () => { fileLabel.textContent = fileInput.files?.[0]?.name || t('admin.noModelSelected'); };
                     });
                 });
                 startAdminCoverageSubscriptions(realUserGymId);
@@ -2404,7 +2536,7 @@ Pizzica per zoommare.</p>
                 { key: 'routes', label: 'Vie chiuse totali', value: climbedEntries.length, available: trackerAll.some(v => Object.prototype.hasOwnProperty.call(v || {}, 'state')) },
                 { key: 'days', label: 'Giorni in palestra', value: daysInGym.size, available: trackerAll.some(v => getDateKeyFromAnyValue(v.eventDate || v.completionDate || v.updatedAt || v.createdAt)) },
                 { key: 'streak', label: 'Giorni consecutivi', value: longestStreak, available: daysInGym.size > 0 },
-                { key: 'sectors', label: 'Settori provati', value: sectors.size, available: trackerAll.some(v => !!(v.sectorId || v.sectorName)) },
+                { key: 'sectors', label: t('challenges.sectorsTried'), value: sectors.size, available: trackerAll.some(v => !!(v.sectorId || v.sectorName)) },
                 { key: 'gyms', label: 'Palestre provate', value: gyms.size, available: trackerAll.some(v => !!(v.gymId || v.gymName)) }
             ];
             return metrics.filter(m => m.available);
@@ -2414,7 +2546,7 @@ Pizzica per zoommare.</p>
             { key: 'routes', category: '🧗 Attività', name: 'Vie chiuse', desc: 'Vie completate nel mese corrente.', levels: [10, 25, 50, 100] },
             { key: 'days', category: '🧗 Attività', name: 'Giorni in palestra', desc: 'Giorni distinti con attività nel mese.', levels: [4, 8, 12, 20] },
             { key: 'streak', category: '🧗 Attività', name: 'Streak mensile', desc: 'Massima sequenza di giorni consecutivi nel mese.', levels: [3, 7, 12, 20] },
-            { key: 'sectors', category: '🌍 Esplorazione', name: 'Settori provati', desc: 'Settori distinti visitati nel mese.', levels: [2, 5, 9, 14] },
+            { key: 'sectors', category: t('challenges.categoryExploration'), name: t('challenges.sectorsTried'), desc: t('challenges.sectorsTriedDesc'), levels: [2, 5, 9, 14] },
             { key: 'gyms', category: '🌍 Esplorazione', name: 'Palestre visitate', desc: 'Palestre diverse visitate nel mese.', levels: [1, 2, 4, 6] }
         ];
         const CHALLENGE_LEVEL_LABELS = ['Bronzo', 'Argento', 'Oro', 'Platino'];
@@ -3720,7 +3852,7 @@ Pizzica per zoommare.</p>
                 const unsub = adminCoverageUnsubscribers.pop();
                 if (typeof unsub === 'function') unsub();
             }
-            adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), routeMeta: new Map(), reviewsByRoute: new Map() };
+            adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), routeMeta: new Map(), reviewsByRoute: new Map(), routeUsers: new Map() };
         }
 
         function setAdminGymProfileForm(data = {}) {
@@ -3806,9 +3938,70 @@ Pizzica per zoommare.</p>
 
 
         function getAdminSelectedPeriodDays() {
-            return parseInt(document.getElementById('admin-coverage-period')?.value || '30', 10);
+            const sel = String(adminDashboardFilters.days || '30');
+            if (sel === 'custom') return 30;
+            const parsed = parseInt(sel, 10);
+            return Number.isFinite(parsed) ? parsed : 30;
         }
 
+
+
+        function routeMatchesAdminFilters(routeKey, reviewsMap) {
+            const meta = adminCoverageSnapshot.routeMeta.get(routeKey) || {};
+            if (!meta) return false;
+            if (adminDashboardFilters.sectorId !== 'all' && meta.sectorId !== adminDashboardFilters.sectorId) return false;
+            if (adminDashboardFilters.grade !== 'all' && String(meta.grade || '').toLowerCase() !== String(adminDashboardFilters.grade).toLowerCase()) return false;
+            if (adminDashboardFilters.onlyActive && meta.isActive === false) return false;
+            if (adminDashboardFilters.onlyReviewed && (!reviewsMap || reviewsMap.size === 0)) return false;
+            return true;
+        }
+
+        function refreshAdminFilterOptions() {
+            const secSel = document.getElementById('admin-filter-sector');
+            const gradeSel = document.getElementById('admin-filter-grade');
+            if (secSel) {
+                const current = adminDashboardFilters.sectorId || 'all';
+                const opts = ['<option value="all">Tutti i settori</option>'];
+                for (const [sid, name] of adminCoverageSnapshot.sectorNames.entries()) opts.push(`<option value="${escapeHtml(sid)}">${escapeHtml(name)}</option>`);
+                secSel.innerHTML = opts.join('');
+                secSel.value = current;
+            }
+            if (gradeSel) {
+                const currentG = adminDashboardFilters.grade || 'all';
+                const grades = new Set();
+                for (const meta of adminCoverageSnapshot.routeMeta.values()) if (meta.grade) grades.add(String(meta.grade));
+                const opts = ['<option value="all">Tutti i gradi</option>', ...Array.from(grades).sort().map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`)];
+                gradeSel.innerHTML = opts.join('');
+                gradeSel.value = currentG;
+            }
+        }
+
+        function bindAdminGlobalFilters() {
+            const period = document.getElementById('admin-filter-period');
+            const sector = document.getElementById('admin-filter-sector');
+            const grade = document.getElementById('admin-filter-grade');
+            const onlyActive = document.getElementById('admin-filter-active');
+            const onlyReviewed = document.getElementById('admin-filter-reviewed');
+            const sectorSort = document.getElementById('admin-sector-avg-sort');
+            if (period) {
+                period.value = String(adminDashboardFilters.days || '30');
+                period.onchange = () => { adminDashboardFilters.days = period.value; renderAdminCoverage(); };
+            }
+            if (sector) sector.onchange = () => { adminDashboardFilters.sectorId = sector.value; renderAdminCoverage(); };
+            if (grade) grade.onchange = () => { adminDashboardFilters.grade = grade.value; renderAdminCoverage(); };
+            if (onlyActive) {
+                onlyActive.checked = !!adminDashboardFilters.onlyActive;
+                onlyActive.onchange = () => { adminDashboardFilters.onlyActive = onlyActive.checked; renderAdminCoverage(); };
+            }
+            if (onlyReviewed) {
+                onlyReviewed.checked = !!adminDashboardFilters.onlyReviewed;
+                onlyReviewed.onchange = () => { adminDashboardFilters.onlyReviewed = onlyReviewed.checked; renderAdminCoverage(); };
+            }
+            if (sectorSort) {
+                sectorSort.value = adminSectorSortState;
+                sectorSort.onchange = () => { adminSectorSortState = sectorSort.value; renderAdminCoverage(); };
+            }
+        }
         function buildCoverageStats(days) {
             const now = new Date();
             const afterDays = new Date(now);
@@ -3831,6 +4024,7 @@ Pizzica per zoommare.</p>
             const afterPrevWindow = new Date(now);
             afterPrevWindow.setDate(afterPrevWindow.getDate() - (days * 2));
             for (const [routeKey, reviewsMap] of adminCoverageSnapshot.reviewsByRoute.entries()) {
+                if (!routeMatchesAdminFilters(routeKey, reviewsMap)) continue;
                 const [sectorId] = routeKey.split('/');
                 if (!sectors.has(sectorId)) {
                     sectors.set(sectorId, {
@@ -3923,6 +4117,7 @@ Pizzica per zoommare.</p>
                 sectors: sectorsData,
                 routesLast30Days,
                 trendDeltaPct,
+                activityTrend: { now: nowWindowCount, prev: prevWindowCount },
                 userActivity,
                 userActiveDays,
                 userMainSector
@@ -4158,11 +4353,14 @@ Pizzica per zoommare.</p>
         function renderAdminDashboardKpis(stats) {
             const kpiWrap = document.getElementById('admin-dashboard-kpis');
             if (!kpiWrap) return;
+            const avgRating = Number(stats.feedback?.globalAvg || 0);
+            const reviewedRoutes = Number(stats.feedback?.reviewedRoutes || 0);
+            const totalReviews = Number(stats.feedback?.totalReviews || 0);
             kpiWrap.innerHTML = `
-                <div class="admin-kpi-card"><i>👥 ${t('admin.totalUsersGym')}</i><b>${stats.totalUsersGym}</b></div>
-                <div class="admin-kpi-card"><i>🔥 ${t('admin.activeUsersLast30Days')}</i><b>${stats.activeUsersLast30Days}</b></div>
+                <div class="admin-kpi-card"><i>⭐ Media voti palestra</i><b>${avgRating.toFixed(2)} ⭐</b></div>
+                <div class="admin-kpi-card"><i>🧗 Vie recensite</i><b>${reviewedRoutes}</b><span style="font-size:0.78rem;color:var(--muted);">${totalReviews} recensioni</span></div>
                 <div class="admin-kpi-card"><i>📊 ${t('admin.selectedCoverage')}</i><b class="admin-highlight">${stats.selectedCoverage}%</b></div>
-                <div class="admin-kpi-card"><i>🛣 Vie registrate 30g</i><b>${stats.routesLast30Days || 0}</b></div>
+                <div class="admin-kpi-card"><i>🛣 ${t('admin.routesRegistered30d')}</i><b>${stats.routesLast30Days || 0}</b></div>
             `;
         }
 
@@ -4179,26 +4377,102 @@ Pizzica per zoommare.</p>
                     <td>${sec.coveragePct}%</td>
                 </tr>`;
             }).join('') || '<tr><td colspan="4">-</td></tr>';
-            tableWrap.innerHTML = `<table><tr><th>Settore</th><th>Utenti attivi</th><th>Vie registrate</th><th>% Copertura</th></tr>${rows}</table>`;
+            tableWrap.innerHTML = `<table><tr><th>${t('admin.sector')}</th><th>${t('admin.activeUsers')}</th><th>${t('admin.routesRegistered')}</th><th>${t('admin.coveragePercent')}</th></tr>${rows}</table>`;
         }
 
         function renderAdminUsersSection(stats) {
             const usersWrap = document.getElementById('admin-users-summary');
             if (!usersWrap) return;
-            const topUsers = [...stats.userActivity.entries()].sort((a,b) => b[1]-a[1]).slice(0,10);
-            const rows = topUsers.map(([uid, count], index) => {
-                const sector = stats.userMainSector.get(uid) || '-';
-                const days = stats.userActiveDays.get(uid) || 0;
-                return `<tr><td>${index + 1}. ${escapeHtml(resolveUsername(uid, 'Climber'))}${badgePillHtml(resolveUserHighestBadge(uid))}</td><td>${count}</td><td>${days}</td><td>${escapeHtml(sector)}</td></tr>`;
-            }).join('') || '<tr><td colspan="4">-</td></tr>';
+            const avgRating = Number(stats.feedback?.globalAvg || 0);
+            const reviewedRoutes = Number(stats.feedback?.reviewedRoutes || 0);
+            const totalReviews = Number(stats.feedback?.totalReviews || 0);
+            const trendNow = Number(stats.activityTrend?.now || 0);
+            const trendPrev = Number(stats.activityTrend?.prev || 0);
+            const trendDelta = trendPrev > 0 ? Math.round(((trendNow - trendPrev) / trendPrev) * 100) : 0;
+            const trendLabel = `${trendDelta >= 0 ? '+' : ''}${trendDelta}%`;
+
+            const usersAll = [...stats.userActivity.entries()].map(([uid, routes]) => ({
+                uid,
+                username: resolveUsername(uid, 'Climber'),
+                routes,
+                activeDays: stats.userActiveDays.get(uid) || 0,
+                sector: stats.userMainSector.get(uid) || '-'
+            }));
+
+            const key = adminUsersState.sortBy;
+            const dir = adminUsersState.sortDir === 'asc' ? 1 : -1;
+            usersAll.sort((a, b) => {
+                const av = key === 'username' ? String(a.username).toLowerCase() : (a[key] || 0);
+                const bv = key === 'username' ? String(b.username).toLowerCase() : (b[key] || 0);
+                if (av < bv) return -1 * dir;
+                if (av > bv) return 1 * dir;
+                return 0;
+            });
+
+            const pageSize = adminUsersState.pageSize || 5;
+            const totalPages = Math.max(1, Math.ceil(usersAll.length / pageSize));
+            if (adminUsersState.page > totalPages) adminUsersState.page = totalPages;
+            const start = (adminUsersState.page - 1) * pageSize;
+            const pageRows = usersAll.slice(start, start + pageSize);
+            const rows = pageRows.map((u, idx) => {
+                const rank = start + idx + 1;
+                const rankCls = rank === 1 ? 'admin-rank top' : 'admin-rank';
+                return `<tr>
+                    <td><span class="${rankCls}">${rank}</span></td>
+                    <td><b>${escapeHtml(u.username)}</b>${badgePillHtml(resolveUserHighestBadge(u.uid))}</td>
+                    <td>${u.routes}</td>
+                    <td>${u.activeDays}</td>
+                    <td>${escapeHtml(u.sector)}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="5">-</td></tr>';
+
             usersWrap.innerHTML = `
-                <div class="admin-kpi-grid" style="margin-bottom:8px;">
-                    <div class="admin-kpi-card"><i>👥 Totale utenti</i><b>${stats.totalUsersGym}</b></div>
-                    <div class="admin-kpi-card"><i>🔥 Attivi ultimi 30 giorni</i><b>${stats.activeUsersLast30Days}</b></div>
+                <div class="admin-users-page">
+                    <div class="admin-block-card">
+                        <h5>🟢 Panoramica</h5>
+                        <div class="admin-kpi-grid modern">
+                            <div class="admin-kpi-card modern"><b>${avgRating.toFixed(2)} ⭐</b><span class="admin-kpi-label">Media voti palestra</span></div>
+                            <div class="admin-kpi-card modern"><b>${reviewedRoutes}</b><span class="admin-kpi-label">Vie recensite</span><span class="admin-kpi-trend">${totalReviews} recensioni</span></div>
+                            <div class="admin-kpi-card modern"><b>${stats.sectors.length}</b><span class="admin-kpi-label">Settori attivi</span></div>
+                            <div class="admin-kpi-card modern"><b>${stats.routesLast30Days || 0}</b><span class="admin-kpi-label">Vie tracciate</span><span class="admin-kpi-trend">${trendLabel}</span></div>
+                        </div>
+                    </div>
+                    <div class="admin-block-card">
+                        <h5>Performance utenti</h5>
+                        <div class="admin-user-table-wrap">
+                            <table>
+                                <tr>
+                                    <th>#</th>
+                                    <th class="admin-table-sort" data-sort="username">Username</th>
+                                    <th class="admin-table-sort" data-sort="routes">Vie scalate</th>
+                                    <th class="admin-table-sort" data-sort="activeDays">Giorni attivi</th>
+                                    <th class="admin-table-sort" data-sort="sector">Settore principale</th>
+                                </tr>
+                                ${rows}
+                            </table>
+                        </div>
+                        <div class="admin-pager">
+                            <button class="btn-sec" type="button" id="admin-users-prev">Precedente</button>
+                            <span style="color:var(--muted);font-size:0.85rem;">Pagina ${adminUsersState.page}/${totalPages}</span>
+                            <button class="btn-sec" type="button" id="admin-users-next">Successiva</button>
+                        </div>
+                    </div>
                 </div>
-                <h4 class="admin-section-title">Top 10 utenti</h4>
-                <div class="admin-sector-table-wrap"><table><tr><th>Username</th><th>Vie scalate</th><th>Giorni attivi</th><th>Settore principale</th></tr>${rows}</table></div>
             `;
+
+            usersWrap.querySelectorAll('.admin-table-sort').forEach(th => {
+                th.onclick = () => {
+                    const sortBy = th.dataset.sort;
+                    if (!sortBy) return;
+                    if (adminUsersState.sortBy === sortBy) adminUsersState.sortDir = adminUsersState.sortDir === 'asc' ? 'desc' : 'asc';
+                    else { adminUsersState.sortBy = sortBy; adminUsersState.sortDir = 'desc'; }
+                    renderAdminCoverage();
+                };
+            });
+            const prev = document.getElementById('admin-users-prev');
+            const next = document.getElementById('admin-users-next');
+            if (prev) prev.onclick = () => { adminUsersState.page = Math.max(1, adminUsersState.page - 1); renderAdminCoverage(); };
+            if (next) next.onclick = () => { adminUsersState.page = Math.min(totalPages, adminUsersState.page + 1); renderAdminCoverage(); };
         }
 
         function renderAdminCoverage() {
@@ -4206,6 +4480,8 @@ Pizzica per zoommare.</p>
             if (!wrap || !realUserGymId) return;
             const days = getAdminSelectedPeriodDays();
             const stats = buildCoverageStats(days);
+            const feedback = buildAdminFeedbackAnalytics();
+            stats.feedback = feedback;
             renderAdminDashboardKpis(stats);
             renderAdminSectorPerformanceTable(stats);
             renderAdminUsersSection(stats);
@@ -4229,9 +4505,9 @@ Pizzica per zoommare.</p>
                             <span>${sec.coveragePct}%</span>
                         </div>
                         <div class="admin-coverage-grid">
-                            <div class="admin-coverage-kpi"><b>${sec.totalUsers}</b><span>${t('admin.totalUsersGym')}</span></div>
-                            <div class="admin-coverage-kpi"><b>${sec.active30}</b><span>${t('admin.activeUsersLast30Days')}</span></div>
-                            <div class="admin-coverage-kpi"><b>${sec.activePeriod}</b><span>${t('admin.last'+days+'Days') || `${days}d`}</span></div>
+                            <div class="admin-coverage-kpi"><b>${sec.routeCount || 0}</b><span>${t('admin.routesRegistered')}</span></div>
+                            <div class="admin-coverage-kpi"><b>${sec.activePeriod}</b><span>${t('admin.activeUsers')}</span></div>
+                            <div class="admin-coverage-kpi"><b>${sec.coveragePct}%</b><span>${t('admin.coveragePercent')}</span></div>
                         </div>
                         <div class="admin-trend">${secTrend}</div>
                         <div style="margin-top:8px; font-size:0.85rem; color:var(--muted);">${t('admin.topUsersSector')}</div>
@@ -4241,8 +4517,8 @@ Pizzica per zoommare.</p>
 
             wrap.innerHTML = `
                 <div class="admin-coverage-grid">
-                    <div class="admin-coverage-kpi"><b>${stats.totalUsersGym}</b><span>${t('admin.totalUsersGym')}</span></div>
-                    <div class="admin-coverage-kpi"><b>${stats.activeUsersLast30Days}</b><span>${t('admin.activeUsersLast30Days')}</span></div>
+                    <div class="admin-coverage-kpi"><b>${stats.routesLast30Days || 0}</b><span>${t('admin.routesRegistered30d')}</span></div>
+                    <div class="admin-coverage-kpi"><b>${stats.sectors.length}</b><span>${t('superadmin.sectorsLoaded')}</span></div>
                     <div class="admin-coverage-kpi" style="display:flex; align-items:center; gap:10px;">
                         <div>
                             <b>${stats.selectedCoverage}%</b><span>${t('admin.selectedCoverage')}</span>
@@ -4267,7 +4543,7 @@ Pizzica per zoommare.</p>
 
 
         function renderAnalyticsBarRows(rows, valueMax, valueFormatter) {
-            if (!rows.length) return `<p class="admin-feedback-empty">Nessun dato disponibile.</p>`;
+            if (!rows.length) return `<p class="admin-feedback-empty">${t('common.noData')}</p>`;
             const max = Math.max(1, valueMax || 1);
             return `<div class="admin-feedback-list">${rows.map(row => {
                 const pct = Math.max(4, Math.round((row.value / max) * 100));
@@ -4284,6 +4560,7 @@ Pizzica per zoommare.</p>
         function buildAdminFeedbackAnalytics() {
             const routeAgg = new Map();
             const sectorAgg = new Map();
+            const sectorDetails = new Map();
             const now = new Date();
             const trend = [];
             for (let i = 29; i >= 0; i--) {
@@ -4295,14 +4572,17 @@ Pizzica per zoommare.</p>
             const trendMap = new Map(trend.map(t => [t.key, t]));
 
             for (const [routeKey, reviewsMap] of adminCoverageSnapshot.reviewsByRoute.entries()) {
+                if (!routeMatchesAdminFilters(routeKey, reviewsMap)) continue;
                 const meta = adminCoverageSnapshot.routeMeta.get(routeKey) || {};
                 const sectorId = meta.sectorId || routeKey.split('/')[0] || 'unknown';
                 const sectorName = adminCoverageSnapshot.sectorNames.get(sectorId) || sectorId;
                 const routeLabel = meta.routeLabel || routeKey;
                 if (!routeAgg.has(routeKey)) routeAgg.set(routeKey, { label: `${sectorName} · ${routeLabel}`, sum: 0, count: 0 });
                 if (!sectorAgg.has(sectorId)) sectorAgg.set(sectorId, { label: sectorName, sum: 0, count: 0 });
+                if (!sectorDetails.has(sectorId)) sectorDetails.set(sectorId, { sectorId, sectorName, routes: new Map(), users: new Set(), starBuckets: new Map([[1,0],[2,0],[3,0],[4,0],[5,0]]) });
                 const r = routeAgg.get(routeKey);
                 const sct = sectorAgg.get(sectorId);
+                const detail = sectorDetails.get(sectorId);
                 for (const rv of reviewsMap.values()) {
                     const rating = Number(rv?.rating);
                     if (Number.isFinite(rating)) {
@@ -4310,7 +4590,10 @@ Pizzica per zoommare.</p>
                         r.count += 1;
                         sct.sum += rating;
                         sct.count += 1;
+                        const rounded = Math.min(5, Math.max(1, Math.round(rating)));
+                        detail.starBuckets.set(rounded, (detail.starBuckets.get(rounded) || 0) + 1);
                     }
+                    if (rv?.uid) detail.users.add(rv.uid);
                     if (rv?.dt instanceof Date) {
                         const k = rv.dt.toISOString().slice(0, 10);
                         const slot = trendMap.get(k);
@@ -4319,42 +4602,167 @@ Pizzica per zoommare.</p>
                 }
             }
 
+
+            for (const [routeKey, routeData] of routeAgg.entries()) {
+                const meta = adminCoverageSnapshot.routeMeta.get(routeKey) || {};
+                const sectorId = meta.sectorId || routeKey.split('/')[0] || 'unknown';
+                const detail = sectorDetails.get(sectorId);
+                if (!detail) continue;
+                detail.routes.set(routeKey, {
+                    routeLabel: meta.routeLabel || routeKey,
+                    reviews: routeData.count,
+                    avg: routeData.count > 0 ? routeData.sum / routeData.count : 0,
+                    climbs: adminCoverageSnapshot.routeUsers.get(routeKey)?.size || 0
+                });
+            }
+
             const routeAverages = Array.from(routeAgg.values()).filter(v => v.count > 0).map(v => ({ label: v.label, value: v.sum / v.count, votes: v.count })).sort((a, b) => b.value - a.value).slice(0, 10);
             const topReviewed = Array.from(routeAgg.values()).filter(v => v.count > 0).map(v => ({ label: v.label, value: v.count, avg: v.sum / v.count })).sort((a, b) => b.value - a.value).slice(0, 5);
             const sectorAverages = Array.from(sectorAgg.values()).filter(v => v.count > 0).map(v => ({ label: v.label, value: v.sum / v.count, votes: v.count })).sort((a, b) => b.value - a.value);
 
-            return { routeAverages, topReviewed, sectorAverages, trend };
+            const reviewedRoutes = Array.from(routeAgg.values()).filter(v => v.count > 0).length;
+            const totalReviews = Array.from(routeAgg.values()).reduce((acc, v) => acc + v.count, 0);
+            const globalAvg = totalReviews > 0 ? (Array.from(routeAgg.values()).reduce((acc, v) => acc + v.sum, 0) / totalReviews) : 0;
+
+            const sectors = Array.from(sectorDetails.values()).map(sec => {
+                const routes = Array.from(sec.routes.values());
+                const reviewed = routes.filter(r => r.reviews > 0);
+                const totalRoutes = routes.length;
+                const reviewedRoutesCount = reviewed.length;
+                const totalSectorReviews = reviewed.reduce((a, r) => a + r.reviews, 0);
+                const avgSector = totalSectorReviews > 0 ? reviewed.reduce((a, r) => a + (r.avg * r.reviews), 0) / totalSectorReviews : 0;
+                const topRated = [...reviewed].sort((a,b) => (b.avg - a.avg) || (b.reviews - a.reviews)).slice(0,3);
+                const topClimbed = [...routes].sort((a,b) => b.climbs - a.climbs).slice(0,3);
+                const lowReviewed = [...routes].sort((a,b) => a.reviews - b.reviews).slice(0,3);
+                return {
+                    sectorId: sec.sectorId,
+                    sectorName: sec.sectorName,
+                    totalRoutes,
+                    reviewedRoutes: reviewedRoutesCount,
+                    avgRating: avgSector,
+                    totalReviews: totalSectorReviews,
+                    activeUsers: sec.users.size,
+                    topRated,
+                    topClimbed,
+                    lowReviewed,
+                    starBuckets: sec.starBuckets
+                };
+            }).sort((a,b) => b.totalReviews - a.totalReviews);
+
+            return { routeAverages, topReviewed, sectorAverages, trend, sectors, reviewedRoutes, totalReviews, globalAvg };
         }
 
         function renderAdminFeedbackAnalytics() {
             const wrap = document.getElementById('admin-feedback-analytics');
-            if (!wrap) return;
+            const sectorWrap = document.getElementById('admin-sector-analytics');
+            if (!wrap || !sectorWrap) return;
+            const backdrop = document.getElementById('admin-feedback-modal-backdrop');
             if (adminCoverageSnapshot.routeMeta.size === 0) {
-                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">Nessun dato disponibile.</p></div>`;
+                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('common.noData')}</p></div>`;
+                sectorWrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('common.noData')}</p></div>`;
+                if (backdrop) backdrop.style.display = 'none';
                 return;
             }
             if (adminCoverageSnapshot.reviewsByRoute.size === 0) {
-                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">Loading feedback analytics...</p></div>`;
+                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('admin.loadingFeedback')}</p></div>`;
+                sectorWrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('admin.loadingFeedback')}</p></div>`;
                 return;
             }
             try {
                 const data = buildAdminFeedbackAnalytics();
-                const avgRows = renderAnalyticsBarRows(data.routeAverages, 5, row => `${row.value.toFixed(2)} ⭐ · ${row.votes} voti`);
-                const topRows = renderAnalyticsBarRows(data.topReviewed, data.topReviewed[0]?.value || 1, row => `${row.value} recensioni · ${row.avg.toFixed(2)} ⭐`);
-                const sectorRows = renderAnalyticsBarRows(data.sectorAverages, 5, row => `${row.value.toFixed(2)} ⭐ · ${row.votes} voti`);
-                const maxTrend = Math.max(1, ...data.trend.map(t => t.count));
-                const trendHtml = data.trend.map(t => {
-                    const h = Math.max(4, Math.round((t.count / maxTrend) * 100));
-                    return `<i style="height:${h}%;" title="${t.key}: ${t.count}"></i>`;
-                }).join('');
+                const topRatedAll = [...data.routeAverages].sort((a,b)=>b.value-a.value);
+                const mostReviewedAll = [...data.topReviewed].sort((a,b)=>b.value-a.value);
+                const leastReviewedAll = [...data.topReviewed].sort((a,b)=>a.value-b.value);
+                const tabMap = { topRated: topRatedAll, mostReviewed: mostReviewedAll, leastReviewed: leastReviewedAll };
+                const activeTab = adminFeedbackState.tab || 'topRated';
+                const activeRows = (tabMap[activeTab] || []).slice(0, 5);
+                const rowHtml = activeRows.map(row => {
+                    if (activeTab === 'topRated') return `<div class="admin-feedback-compact-item"><span title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</span><b>${row.value.toFixed(2)} ⭐ (${row.votes})</b></div>`;
+                    return `<div class="admin-feedback-compact-item"><span title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</span><b>${row.value} recensioni · ${row.avg.toFixed(2)} ⭐</b></div>`;
+                }).join('') || `<p class="admin-feedback-empty">${t('common.noData')}</p>`;
+
+                const sectorRows = data.sectorAverages.map(row => ({...row, reviews: row.votes}));
+                const barMax = Math.max(1, ...sectorRows.map(r => adminSectorSortState === 'reviews' ? r.reviews : r.value));
+                const orderedSectorRows = [...sectorRows].sort((a,b)=> adminSectorSortState === 'reviews' ? (b.reviews-a.reviews) : (b.value-a.value));
+
+                wrap.classList.add('compact');
                 wrap.innerHTML = `
-                    <div class="admin-feedback-card"><h5>Media voti per via</h5>${avgRows}</div>
-                    <div class="admin-feedback-card"><h5>Top 5 vie più votate</h5>${topRows}</div>
-                    <div class="admin-feedback-card"><h5>Media voti per settore</h5>${sectorRows}</div>
-                    <div class="admin-feedback-card"><h5>Recensioni ultimi 30 giorni</h5>${data.trend.some(t => t.count > 0) ? `<div class="admin-feedback-line">${trendHtml}</div>` : `<p class="admin-feedback-empty">Nessun dato disponibile.</p>`}</div>
+                    <div class="admin-feedback-card">
+                        <h5>Feedback & Recensioni</h5>
+                        <div class="admin-mini-tabs">
+                            <button class="admin-mini-tab ${activeTab==='topRated'?'active':''}" data-tab="topRated">Top 5 più votate</button>
+                            <button class="admin-mini-tab ${activeTab==='mostReviewed'?'active':''}" data-tab="mostReviewed">Più recensite</button>
+                            <button class="admin-mini-tab ${activeTab==='leastReviewed'?'active':''}" data-tab="leastReviewed">Meno recensite</button>
+                        </div>
+                        ${rowHtml}
+                        <div class="admin-pager" style="justify-content:flex-start;"><button class="btn-sec" type="button" id="admin-feedback-see-all">Vedi tutte</button></div>
+                    </div>
+                    <div class="admin-feedback-card">
+                        <h5>Media voti per settore</h5>
+                        <div class="admin-bar-chart">
+                            ${orderedSectorRows.map(row => {
+                                const val = adminSectorSortState === 'reviews' ? row.reviews : row.value;
+                                const pct = Math.max(4, Math.round((val / barMax) * 100));
+                                const tooltip = `${row.label} · media ${row.value.toFixed(2)} ⭐ · ${row.reviews} recensioni`;
+                                return `<div class="admin-bar-row" title="${escapeHtml(tooltip)}"><span>${escapeHtml(row.label)}</span><div class="admin-bar-track"><div class="admin-bar-fill" style="width:${pct}%;"></div></div></div>`;
+                            }).join('')}
+                        </div>
+                    </div>
                 `;
+
+                wrap.querySelectorAll('.admin-mini-tab').forEach(btn => {
+                    btn.onclick = () => { adminFeedbackState.tab = btn.dataset.tab || 'topRated'; renderAdminCoverage(); };
+                });
+                const seeAllBtn = document.getElementById('admin-feedback-see-all');
+                if (seeAllBtn) seeAllBtn.onclick = () => {
+                    adminFeedbackState.modalType = adminFeedbackState.tab;
+                    adminFeedbackState.modalPage = 1;
+                    window.openAdminFeedbackModal(tabMap[adminFeedbackState.modalType] || []);
+                };
+
+                window.openAdminFeedbackModal = (rows) => {
+                    const list = document.getElementById('admin-feedback-modal-list');
+                    const title = document.getElementById('admin-feedback-modal-title');
+                    const backdropEl = document.getElementById('admin-feedback-modal-backdrop');
+                    if (!list || !title || !backdropEl) return;
+                    const current = rows || (tabMap[adminFeedbackState.modalType] || []);
+                    const pageSize = 10;
+                    const totalPages = Math.max(1, Math.ceil(current.length / pageSize));
+                    if (adminFeedbackState.modalPage > totalPages) adminFeedbackState.modalPage = totalPages;
+                    const st = (adminFeedbackState.modalPage - 1) * pageSize;
+                    const slice = current.slice(st, st + pageSize);
+                    title.textContent = adminFeedbackState.modalType === 'topRated' ? 'Top vie per media voto' : (adminFeedbackState.modalType === 'mostReviewed' ? 'Vie più recensite' : 'Vie meno recensite');
+                    list.innerHTML = `<div class="admin-feedback-list">${slice.map(row => `<div class="admin-feedback-compact-item"><span>${escapeHtml(row.label)}</span><b>${adminFeedbackState.modalType==='topRated' ? `${row.value.toFixed(2)} ⭐ (${row.votes})` : `${row.value} recensioni · ${row.avg.toFixed(2)} ⭐`}</b></div>`).join('')}</div><div style="margin-top:8px;color:var(--muted);font-size:0.85rem;">Pagina ${adminFeedbackState.modalPage}/${totalPages}</div>`;
+                    adminFeedbackState._modalRows = current;
+                    backdropEl.style.display = 'flex';
+                };
+                window.closeAdminFeedbackModal = () => {
+                    const backdropEl = document.getElementById('admin-feedback-modal-backdrop');
+                    if (backdropEl) backdropEl.style.display = 'none';
+                };
+                window.adminFeedbackModalPrev = () => { adminFeedbackState.modalPage = Math.max(1, adminFeedbackState.modalPage - 1); window.openAdminFeedbackModal(adminFeedbackState._modalRows || []); };
+                window.adminFeedbackModalNext = () => { adminFeedbackState.modalPage += 1; window.openAdminFeedbackModal(adminFeedbackState._modalRows || []); };
+
+                sectorWrap.innerHTML = data.sectors.map(sec => `
+                    <details class="admin-sector-analytics-card">
+                        <summary class="admin-sector-analytics-head"><b>${escapeHtml(sec.sectorName)}</b><span class="admin-pill">${sec.totalReviews} recensioni</span></summary>
+                        <div class="admin-sector-analytics-grid">
+                            <div class="admin-sector-analytics-kpi"><b>${sec.totalRoutes}</b><span>Vie totali</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.reviewedRoutes}</b><span>Vie recensite</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.avgRating.toFixed(2)} ⭐</b><span>Media voto</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.totalReviews}</b><span>Recensioni</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.activeUsers}</b><span>Utenti attivi</span></div>
+                        </div>
+                        <div class="admin-sector-analytics-subgrid">
+                            <div><h5>Top 3 vie</h5>${sec.topRated.slice(0,3).map(r=>`<div class="admin-feedback-compact-item"><span>${escapeHtml(r.routeLabel)}</span><b>${r.avg.toFixed(2)} ⭐</b></div>`).join('') || '<p class="admin-feedback-empty">-</p>'}</div>
+                            <div><h5>Distribuzione voti</h5>${[5,4,3,2,1].map(v=>`<div class="admin-feedback-compact-item"><span>${v} ⭐</span><b>${sec.starBuckets.get(v)||0}</b></div>`).join('')}</div>
+                            <div><h5>Meno valutate</h5>${sec.lowReviewed.slice(0,3).map(r=>`<div class="admin-feedback-compact-item"><span>${escapeHtml(r.routeLabel)}</span><b>${r.reviews}</b></div>`).join('') || '<p class="admin-feedback-empty">-</p>'}</div>
+                        </div>
+                    </details>
+                `).join('') || `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('common.noData')}</p></div>`;
             } catch (_) {
-                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">Errore nel caricamento analytics feedback.</p></div>`;
+                wrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('admin.feedbackLoadError')}</p></div>`;
+                sectorWrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('admin.feedbackLoadError')}</p></div>`;
             }
         }
 
@@ -4370,6 +4778,7 @@ Pizzica per zoommare.</p>
                 routeReviewUnsubs.delete(routeKey);
                 adminCoverageSnapshot.reviewsByRoute.delete(routeKey);
                 adminCoverageSnapshot.routeMeta.delete(routeKey);
+                adminCoverageSnapshot.routeUsers.delete(routeKey);
             }
 
             const sectorsUnsub = onSnapshot(collection(db, `gyms/${gymId}/Sectors`), (sectorsSnap) => {
@@ -4378,6 +4787,7 @@ Pizzica per zoommare.</p>
                     const sectorId = sectorDoc.id;
                     currentSectors.add(sectorId);
                     adminCoverageSnapshot.sectorNames.set(sectorId, sectorDoc.data()?.name || sectorId);
+                    refreshAdminFilterOptions();
                     if (routeUnsubs.has(sectorId)) return;
 
                     const routesUnsub = onSnapshot(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes`), (routesSnap) => {
@@ -4386,16 +4796,21 @@ Pizzica per zoommare.</p>
                             const routeKey = `${sectorId}/${routeDoc.id}`;
                             currentRoutes.add(routeKey);
                             const routeData = routeDoc.data() || {};
-                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id });
+                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id, grade: routeData.grade || '', isActive: routeData.active !== false });
+                            refreshAdminFilterOptions();
                             if (routeReviewUnsubs.has(routeKey)) return;
 
                             const reviewsUnsub = onSnapshot(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes/${routeDoc.id}/reviews`), (reviewsSnap) => {
                                 const m = new Map();
+                                const usersSet = new Set();
                                 reviewsSnap.forEach((rvDoc) => {
                                     const d = rvDoc.data() || {};
-                                    m.set(rvDoc.id, { uid: d.userId || null, rating: Number(d.rating), dt: normalizeDateFromReview(d) });
+                                    const uid = d.userId || null;
+                                    if (uid) usersSet.add(uid);
+                                    m.set(rvDoc.id, { uid, rating: Number(d.rating), dt: normalizeDateFromReview(d) });
                                 });
                                 adminCoverageSnapshot.reviewsByRoute.set(routeKey, m);
+                                adminCoverageSnapshot.routeUsers.set(routeKey, usersSet);
                                 renderAdminCoverage();
                             });
                             routeReviewUnsubs.set(routeKey, reviewsUnsub);
@@ -4430,8 +4845,8 @@ Pizzica per zoommare.</p>
                 for (const unsub of routeReviewUnsubs.values()) if (typeof unsub === 'function') unsub();
             });
 
-            const filter = document.getElementById('admin-coverage-period');
-            if (filter) filter.onchange = () => renderAdminCoverage();
+            bindAdminGlobalFilters();
+            refreshAdminFilterOptions();
         }
         async function loadGymSectorsForUser(gId) {
             activeGymId = gId;
@@ -4456,6 +4871,70 @@ Pizzica per zoommare.</p>
             });
         }
 
+
+        let pendingDeleteSectorId = null;
+
+        async function deleteRefsInBatches(refs = []) {
+            const chunkSize = 400;
+            for (let i = 0; i < refs.length; i += chunkSize) {
+                const batch = writeBatch(db);
+                refs.slice(i, i + chunkSize).forEach(r => batch.delete(r));
+                await batch.commit();
+            }
+        }
+
+        async function deleteSectorCascade(gymId, sectorId) {
+            const sectorRef = doc(db, `gyms/${gymId}/Sectors/${sectorId}`);
+            const routesCol = collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes`);
+            const refsToDelete = [];
+
+            const routesSnap = await getDocs(routesCol);
+            for (const routeDoc of routesSnap.docs) {
+                const reviewsSnap = await getDocs(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes/${routeDoc.id}/reviews`));
+                const feedSnap = await getDocs(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes/${routeDoc.id}/progressFeed`));
+                reviewsSnap.forEach(d => refsToDelete.push(d.ref));
+                feedSnap.forEach(d => refsToDelete.push(d.ref));
+                refsToDelete.push(routeDoc.ref);
+            }
+
+            refsToDelete.push(sectorRef);
+            await deleteRefsInBatches(refsToDelete);
+
+            const gymRef = doc(db, 'gyms', gymId);
+            await setDoc(gymRef, { sectorsCount: increment(-1) }, { merge: true });
+
+            try { await deleteObject(ref(storage, `meshes/${gymId}/${sectorId}.glb`)); } catch (_) {}
+        }
+
+        window.confirmDeleteSector = (sectorId, sectorName) => {
+            pendingDeleteSectorId = sectorId;
+            const modal = document.getElementById('delete-sector-modal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            const txt = modal.querySelector('.profile-subtitle');
+            if (txt) txt.textContent = t('admin.deleteSectorConfirmText');
+            const btn = document.getElementById('delete-sector-confirm-btn');
+            if (btn) btn.onclick = async () => {
+                if (!pendingDeleteSectorId || !realUserGymId) return;
+                showLoading(t('loading.updatingMesh'));
+                try {
+                    await deleteSectorCascade(realUserGymId, pendingDeleteSectorId);
+                    pendingDeleteSectorId = null;
+                    window.closeDeleteSectorModal();
+                } catch (e) {
+                    alertWriteError(e);
+                } finally {
+                    hideLoading();
+                }
+            };
+        };
+
+        window.closeDeleteSectorModal = () => {
+            pendingDeleteSectorId = null;
+            const modal = document.getElementById('delete-sector-modal');
+            if (modal) modal.style.display = 'none';
+        };
+
         // --- LOGICA UPLOAD ---
         window.handleUpload = async (existingSId) => {
             if (!activeUser || !realUserGymId) { alert(t('errors.authRequired')); return; }
@@ -4471,6 +4950,7 @@ Pizzica per zoommare.</p>
                 sId = name.replace(/\s+/g, '-');
             }
             if(!file) return alert(t('errors.selectFile'));
+            if (!existingSId) { const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = file.name; }
 
             showLoading(t('loading.updatingMesh'));
             try {
@@ -4488,6 +4968,7 @@ Pizzica per zoommare.</p>
             } finally {
                 hideLoading();
             }
+            if (!existingSId) { const nameInput = document.getElementById('new-sector-name'); if (nameInput) nameInput.value = ''; const fileInput = document.getElementById('file-mesh-new'); if (fileInput) fileInput.value = ''; const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = t('admin.noModelSelected'); }
             open3D(realUserGymId, sId);
         };
 
@@ -4697,6 +5178,7 @@ Pizzica per zoommare.</p>
                 document.getElementById('social-tracker-section').classList.add('active');
                 document.getElementById('social-public-section').classList.remove('active');
             };
+            document.getElementById('social-tab-tracker').click();
 
             if (typeof currentRouteProgressUnsubscriber === 'function') currentRouteProgressUnsubscriber();
             const progressRef = doc(db, 'users', activeUser.uid, 'routeProgress', `${activeGymId}__${activeSectorId}__${id}`);
@@ -4735,13 +5217,11 @@ Pizzica per zoommare.</p>
             const effectiveState = state || 'project';
             const effectiveIsClimbed = effectiveState === 'climbed';
             actions.innerHTML = `
-                ${state ? `<span class="tracker-state-pill">${isClimbed ? t('viewer.climbed') : t('viewer.project')}</span>` : ''}
-                <button type="button" class="btn-sec" id="tracker-add-project">${t('viewer.addToProject')}</button>
-                <button type="button" class="btn-sec" id="tracker-add-climbed">${t('viewer.markAsClimbed')}</button>
+                <button type="button" class="tracker-state-option ${effectiveState === 'project' ? 'active' : ''}" id="tracker-add-project">${t('viewer.addToProject')}<small>${t('viewer.projectStateHint')}</small></button>
+                <button type="button" class="tracker-state-option ${effectiveState === 'climbed' ? 'active' : ''}" id="tracker-add-climbed">${t('viewer.markAsClimbed')}<small>${t('viewer.climbedStateHint')}</small></button>
             `;
             form.style.display = 'grid';
             saveBtn.style.display = 'block';
-            document.getElementById('tracker-final-grade-wrap').style.display = effectiveIsClimbed ? 'block' : 'none';
             document.getElementById('tracker-completion-wrap').style.display = effectiveIsClimbed ? 'block' : 'none';
             const addProjectBtn = document.getElementById('tracker-add-project');
             const addClimbedBtn = document.getElementById('tracker-add-climbed');
@@ -4749,12 +5229,18 @@ Pizzica per zoommare.</p>
             if (addClimbedBtn) addClimbedBtn.onclick = () => upsertRouteProgress('climbed', !state);
 
             document.getElementById('tracker-attempt-count').value = socialTrackerState?.attemptCount || 1;
-            document.getElementById('tracker-final-grade').value = socialTrackerState?.finalGrade || '';
-            document.getElementById('tracker-first-attempt').value = socialTrackerState?.firstAttemptDate || toYYYYMMDD(new Date());
-            document.getElementById('tracker-completion-date').value = socialTrackerState?.completionDate || toYYYYMMDD(new Date());
+            const attemptInput = document.getElementById('tracker-attempt-count');
+            const attemptValue = document.getElementById('tracker-attempt-value');
+            const syncAttempt = () => { const v = Math.max(1, parseInt(attemptInput?.value || '1', 10) || 1); if (attemptInput) attemptInput.value = String(v); if (attemptValue) attemptValue.textContent = String(v); };
+            if (attemptInput) attemptInput.value = String(socialTrackerState?.attemptCount || 1);
+            syncAttempt();
+            const decBtn = document.getElementById('tracker-attempt-dec');
+            const incBtn = document.getElementById('tracker-attempt-inc');
+            if (decBtn) decBtn.onclick = () => { if (attemptInput) attemptInput.value = String(Math.max(1, (parseInt(attemptInput.value || '1', 10) || 1) - 1)); syncAttempt(); };
+            if (incBtn) incBtn.onclick = () => { if (attemptInput) attemptInput.value = String((parseInt(attemptInput.value || '1', 10) || 1) + 1); syncAttempt(); };
             document.getElementById('tracker-notes').value = socialTrackerState?.notes || '';
             document.getElementById('tracker-share-feed').checked = !!socialTrackerState?.shareOnFeed;
-            saveBtn.textContent = effectiveIsClimbed ? t('viewer.saveClimbed') : t('viewer.saveProject');
+            saveBtn.textContent = t('viewer.saveClimb');
             saveBtn.onclick = () => upsertRouteProgress(effectiveState, !state);
         }
 
@@ -4765,9 +5251,9 @@ Pizzica per zoommare.</p>
             const prev = socialTrackerState || {};
             const nextState = targetState;
             const attempt = parseInt(document.getElementById('tracker-attempt-count')?.value || (prev.attemptCount || 1), 10) || 1;
-            const finalGrade = nextState === 'climbed' ? (document.getElementById('tracker-final-grade')?.value || prev.finalGrade || null) : null;
-            const firstAttemptDate = document.getElementById('tracker-first-attempt')?.value || prev.firstAttemptDate || nowDate;
-            const completionDate = nextState === 'climbed' ? (document.getElementById('tracker-completion-date')?.value || prev.completionDate || nowDate) : null;
+            const finalGrade = nextState === 'climbed' ? (prev.finalGrade || socialRouteContext.routeGrade || null) : null;
+            const firstAttemptDate = prev.firstAttemptDate || nowDate;
+            const completionDate = nextState === 'climbed' ? (prev.completionDate || nowDate) : null;
             const notes = document.getElementById('tracker-notes')?.value || prev.notes || '';
             const shareOnFeed = !!document.getElementById('tracker-share-feed')?.checked;
             const gradeMap = gymLevelOrderMap.get(socialRouteContext.gymId) || new Map();
