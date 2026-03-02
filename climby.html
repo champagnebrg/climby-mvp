@@ -208,9 +208,13 @@
         .admin-sector-analytics-kpi span { color:var(--muted); font-size:0.78rem; }
         .admin-sector-analytics-subgrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
         .admin-pill { border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:0.75rem; color:var(--muted); }
-        .admin-sticky-filters { position:sticky; top:8px; z-index:20; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--card) 90%, #ffffff 10%); backdrop-filter: blur(6px); padding:10px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:10px; box-shadow:0 8px 18px rgba(23,31,56,0.14); }
-        .admin-sticky-filters select { min-height:46px; margin:0; padding:10px 12px; font-size:0.82rem; font-weight:600; line-height:1.2; color:var(--text); background:var(--surface-elevated); border:1px solid color-mix(in srgb, var(--border) 70%, var(--primary) 30%); border-radius:10px; }
-        .admin-toggle { display:flex; align-items:center; gap:8px; min-height:46px; font-size:0.8rem; font-weight:600; color:var(--text); border:1px solid color-mix(in srgb, var(--border) 70%, var(--primary) 30%); border-radius:10px; padding:8px 10px; background:var(--surface-elevated); }
+        .admin-filters-shell { position:sticky; top:8px; z-index:20; margin-bottom:10px; }
+        .admin-filters-toggle { width:100%; min-height:44px; border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--card) 92%, #ffffff 8%); color:var(--text); font-weight:700; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; padding:10px 12px; box-shadow:0 8px 18px rgba(23,31,56,0.14); }
+        .admin-filter-badge { font-size:0.78rem; color:var(--muted); margin-left:6px; }
+        .admin-sticky-filters { border:1px solid var(--border); border-radius:12px; background:color-mix(in srgb, var(--card) 90%, #ffffff 10%); backdrop-filter: blur(6px); padding:10px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; box-shadow:0 8px 18px rgba(23,31,56,0.14); overflow:hidden; max-height:0; opacity:0; transform:translateY(-4px); pointer-events:none; transition:max-height .25s ease, opacity .2s ease, transform .2s ease; }
+        .admin-sticky-filters.open { max-height:420px; opacity:1; transform:translateY(0); pointer-events:auto; margin-top:8px; }
+        .admin-sticky-filters select { min-height:46px; margin:0; padding:10px 12px; font-size:0.8rem; font-weight:600; line-height:1.2; color:var(--text); background:var(--surface-elevated); border:1px solid color-mix(in srgb, var(--border) 70%, var(--primary) 30%); border-radius:10px; }
+        .admin-toggle { display:flex; align-items:center; gap:8px; min-height:46px; font-size:0.78rem; font-weight:600; color:var(--text); border:1px solid color-mix(in srgb, var(--border) 70%, var(--primary) 30%); border-radius:10px; padding:8px 10px; background:var(--surface-elevated); }
         .admin-toggle input { width:auto; min-height:unset; margin:0; accent-color: var(--primary); }
         .admin-table-sort { cursor:pointer; user-select:none; }
         .admin-pager { display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
@@ -251,6 +255,7 @@
             .admin-sector-analytics-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
             .admin-sector-analytics-subgrid { grid-template-columns:1fr; }
             .admin-sticky-filters { grid-template-columns:1fr; }
+            .admin-sticky-filters.open { max-height:560px; }
         }
 
         /* Overlays */
@@ -1143,13 +1148,16 @@
                         <div id="admin-tab-dashboard" class="admin-tab-panel active">
                             <h3 class="headline-brand" data-i18n="admin.navDashboardSimple"></h3>
                             <div class="card" style="display:block;">
-                                <div class="admin-sticky-filters">
-                                    <select id="admin-filter-period"><option value="7">7 giorni</option><option value="30" selected>30 giorni</option><option value="90">90 giorni</option><option value="custom">Personalizzato</option></select>
-                                    <select id="admin-filter-sector"><option value="all">Tutti i settori</option></select>
-                                    <select id="admin-filter-grade"><option value="all">Tutti i gradi</option></select>
-                                    <label class="admin-toggle"><input type="checkbox" id="admin-filter-active">Solo vie attive</label>
-                                    <label class="admin-toggle"><input type="checkbox" id="admin-filter-reviewed">Solo vie recensite</label>
-                                    <select id="admin-sector-avg-sort"><option value="avg">Ordina settore: media</option><option value="reviews">Ordina settore: recensioni</option></select>
+                                <div class="admin-filters-shell">
+                                    <button type="button" id="admin-filters-toggle" class="admin-filters-toggle">🔎 Filtri <span><span id="admin-filters-active-count" class="admin-filter-badge"></span><span id="admin-filters-caret">▼</span></span></button>
+                                    <div id="admin-filters-panel" class="admin-sticky-filters">
+                                        <select id="admin-filter-period"><option value="7">7 giorni</option><option value="30" selected>30 giorni</option><option value="90">90 giorni</option><option value="custom">Personalizzato</option></select>
+                                        <select id="admin-filter-sector"><option value="all">Tutti i settori</option></select>
+                                        <select id="admin-filter-grade"><option value="all">Tutti i gradi</option></select>
+                                        <label class="admin-toggle"><input type="checkbox" id="admin-filter-active">Solo vie attive</label>
+                                        <label class="admin-toggle"><input type="checkbox" id="admin-filter-reviewed">Solo vie recensite</label>
+                                        <select id="admin-sector-avg-sort"><option value="avg">Ordina settore: media</option><option value="reviews">Ordina settore: recensioni</option></select>
+                                    </div>
                                 </div>
                                 <div class="admin-kpi-grid" id="admin-dashboard-kpis"></div>
                                 <div class="admin-coverage-toolbar">
@@ -1546,6 +1554,7 @@ Pizzica per zoommare.</p>
         let adminUsersState = { page: 1, pageSize: 5, sortBy: 'routes', sortDir: 'desc' };
         let adminFeedbackState = { tab: 'topRated', modalOpen: false, modalPage: 1, modalType: 'topRated' };
         let adminSectorSortState = 'avg';
+        let adminFiltersOpen = false;
         let gymDetailUnsubscriber = null;
         let currentModelLoadToken = 0;
         let currentModelLoadCleanup = null;
@@ -1602,6 +1611,21 @@ Pizzica per zoommare.</p>
                 errors: { completeData: "Please enter all required fields", selectFile: "Select a file", usernameRequired: "Please enter a username", usernameInvalid: "Invalid username: use 3-20 chars (letters, numbers, _, -, .)", usernameTaken: "Username already in use", modelLoadFailed: "Error loading 3D model", modelLoadTimeout: "Loading took too long. Please retry.", modelMeshMissing: "3D model not available for this sector", authRequired: "You must be signed in to complete this action.", permissionDenied: "Insufficient Firestore permissions: check your security rules.", saveFailed: "Save failed. Please retry." }
             }
         };
+        const challengeLabelFallbacks = {
+            sectorsTried: { it: 'Settori provati', en: 'Sectors tried' },
+            routesCompleted: { it: 'Vie completate', en: 'Routes completed' },
+            activeDays: { it: 'Giorni attivi', en: 'Active days' },
+            totalPoints: { it: 'Punti totali', en: 'Total points' },
+            rank: { it: 'Posizione', en: 'Rank' },
+            progress: { it: 'Progresso', en: 'Progress' }
+        };
+        for (const lang of ['it', 'en']) {
+            translations[lang] = translations[lang] || {};
+            translations[lang].challenges = translations[lang].challenges || {};
+            for (const [k, values] of Object.entries(challengeLabelFallbacks)) {
+                if (!translations[lang].challenges[k]) translations[lang].challenges[k] = values[lang];
+            }
+        }
         let currentLang = localStorage.getItem(LANG_KEY) || 'it';
         const t = (key) => { const parts = key.split('.'); let v = translations[currentLang]; for (const p of parts) v = v?.[p]; return v != null ? v : key; };
         function applyLang() {
@@ -3976,6 +4000,31 @@ Pizzica per zoommare.</p>
             }
         }
 
+        function countActiveAdminFilters() {
+            let c = 0;
+            if (String(adminDashboardFilters.days) !== '30') c += 1;
+            if (String(adminDashboardFilters.sectorId || 'all') !== 'all') c += 1;
+            if (String(adminDashboardFilters.grade || 'all') !== 'all') c += 1;
+            if (adminDashboardFilters.onlyActive) c += 1;
+            if (adminDashboardFilters.onlyReviewed) c += 1;
+            return c;
+        }
+
+        function updateAdminFiltersHeader() {
+            const badge = document.getElementById('admin-filters-active-count');
+            const caret = document.getElementById('admin-filters-caret');
+            const active = countActiveAdminFilters();
+            if (badge) badge.textContent = active > 0 ? `(${active})` : '';
+            if (caret) caret.textContent = adminFiltersOpen ? '▲' : '▼';
+        }
+
+        function setAdminFiltersOpen(open) {
+            adminFiltersOpen = !!open;
+            const panel = document.getElementById('admin-filters-panel');
+            if (panel) panel.classList.toggle('open', adminFiltersOpen);
+            updateAdminFiltersHeader();
+        }
+
         function bindAdminGlobalFilters() {
             const period = document.getElementById('admin-filter-period');
             const sector = document.getElementById('admin-filter-sector');
@@ -3983,24 +4032,27 @@ Pizzica per zoommare.</p>
             const onlyActive = document.getElementById('admin-filter-active');
             const onlyReviewed = document.getElementById('admin-filter-reviewed');
             const sectorSort = document.getElementById('admin-sector-avg-sort');
+            const toggleBtn = document.getElementById('admin-filters-toggle');
             if (period) {
                 period.value = String(adminDashboardFilters.days || '30');
-                period.onchange = () => { adminDashboardFilters.days = period.value; renderAdminCoverage(); };
+                period.onchange = () => { adminDashboardFilters.days = period.value; renderAdminCoverage(); setAdminFiltersOpen(false); };
             }
-            if (sector) sector.onchange = () => { adminDashboardFilters.sectorId = sector.value; renderAdminCoverage(); };
-            if (grade) grade.onchange = () => { adminDashboardFilters.grade = grade.value; renderAdminCoverage(); };
+            if (sector) sector.onchange = () => { adminDashboardFilters.sectorId = sector.value; renderAdminCoverage(); setAdminFiltersOpen(false); };
+            if (grade) grade.onchange = () => { adminDashboardFilters.grade = grade.value; renderAdminCoverage(); setAdminFiltersOpen(false); };
             if (onlyActive) {
                 onlyActive.checked = !!adminDashboardFilters.onlyActive;
-                onlyActive.onchange = () => { adminDashboardFilters.onlyActive = onlyActive.checked; renderAdminCoverage(); };
+                onlyActive.onchange = () => { adminDashboardFilters.onlyActive = onlyActive.checked; renderAdminCoverage(); setAdminFiltersOpen(false); };
             }
             if (onlyReviewed) {
                 onlyReviewed.checked = !!adminDashboardFilters.onlyReviewed;
-                onlyReviewed.onchange = () => { adminDashboardFilters.onlyReviewed = onlyReviewed.checked; renderAdminCoverage(); };
+                onlyReviewed.onchange = () => { adminDashboardFilters.onlyReviewed = onlyReviewed.checked; renderAdminCoverage(); setAdminFiltersOpen(false); };
             }
             if (sectorSort) {
                 sectorSort.value = adminSectorSortState;
-                sectorSort.onchange = () => { adminSectorSortState = sectorSort.value; renderAdminCoverage(); };
+                sectorSort.onchange = () => { adminSectorSortState = sectorSort.value; renderAdminCoverage(); setAdminFiltersOpen(false); };
             }
+            if (toggleBtn) toggleBtn.onclick = () => setAdminFiltersOpen(!adminFiltersOpen);
+            setAdminFiltersOpen(false);
         }
         function buildCoverageStats(days) {
             const now = new Date();
