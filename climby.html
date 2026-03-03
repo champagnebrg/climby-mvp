@@ -1149,14 +1149,14 @@
                             <h3 class="headline-brand" data-i18n="admin.navDashboardSimple"></h3>
                             <div class="card" style="display:block;">
                                 <div class="admin-filters-shell">
-                                    <button type="button" id="admin-filters-toggle" class="admin-filters-toggle">🔎 Filtri <span><span id="admin-filters-active-count" class="admin-filter-badge"></span><span id="admin-filters-caret">▼</span></span></button>
+                                    <button type="button" id="admin-filters-toggle" class="admin-filters-toggle"><span data-i18n="admin.filters"></span> <span><span id="admin-filters-active-count" class="admin-filter-badge"></span><span id="admin-filters-caret">▼</span></span></button>
                                     <div id="admin-filters-panel" class="admin-sticky-filters">
-                                        <select id="admin-filter-period"><option value="7">7 giorni</option><option value="30" selected>30 giorni</option><option value="90">90 giorni</option><option value="custom">Personalizzato</option></select>
-                                        <select id="admin-filter-sector"><option value="all">Tutti i settori</option></select>
-                                        <select id="admin-filter-grade"><option value="all">Tutti i gradi</option></select>
-                                        <label class="admin-toggle"><input type="checkbox" id="admin-filter-active">Solo vie attive</label>
-                                        <label class="admin-toggle"><input type="checkbox" id="admin-filter-reviewed">Solo vie recensite</label>
-                                        <select id="admin-sector-avg-sort"><option value="avg">Ordina settore: media</option><option value="reviews">Ordina settore: recensioni</option></select>
+                                        <select id="admin-filter-period"><option value="7" data-i18n="admin.last7Days"></option><option value="30" selected data-i18n="admin.last30Days"></option><option value="90" data-i18n="admin.last90Days"></option><option value="custom" data-i18n="admin.customPeriod"></option></select>
+                                        <select id="admin-filter-sector"><option value="all" data-i18n="admin.allSectors"></option></select>
+                                        <select id="admin-filter-grade"><option value="all" data-i18n="admin.allGrades"></option></select>
+                                        <label class="admin-toggle"><input type="checkbox" id="admin-filter-active"><span data-i18n="admin.onlyActiveRoutes"></span></label>
+                                        <label class="admin-toggle"><input type="checkbox" id="admin-filter-reviewed"><span data-i18n="admin.onlyReviewedRoutes"></span></label>
+                                        <select id="admin-sector-avg-sort"><option value="avg" data-i18n="admin.sortSectorAvg"></option><option value="reviews" data-i18n="admin.sortSectorReviews"></option></select>
                                     </div>
                                 </div>
                                 <div class="admin-kpi-grid" id="admin-dashboard-kpis"></div>
@@ -1207,13 +1207,13 @@
                             <div id="admin-users-summary"></div>
                             <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.feedbackAnalyticsUsers"></h4>
                             <div id="admin-feedback-analytics" class="admin-feedback-analytics"></div>
-                            <h4 class="admin-section-title" style="margin-top:14px;">📂 Analisi per Settore</h4>
+                            <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.sectorAnalysis"></h4>
                             <div id="admin-sector-analytics" class="admin-sector-analytics"></div>
                             <div id="admin-feedback-modal-backdrop" class="admin-modal-backdrop">
                                 <div class="admin-modal">
                                     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><h4 id="admin-feedback-modal-title" class="admin-section-title" style="margin:0;">Dettaglio</h4><button class="btn-sec" type="button" onclick="window.closeAdminFeedbackModal()">Chiudi</button></div>
                                     <div id="admin-feedback-modal-list" style="margin-top:8px;"></div>
-                                    <div class="admin-pager"><button class="btn-sec" type="button" onclick="window.adminFeedbackModalPrev()">Precedente</button><button class="btn-sec" type="button" onclick="window.adminFeedbackModalNext()">Successiva</button></div>
+                                    <div class="admin-pager"><button class="btn-sec" type="button" onclick="window.adminFeedbackModalPrev()">${t('ui.previous')}</button><button class="btn-sec" type="button" onclick="window.adminFeedbackModalNext()">${t('ui.next')}</button></div>
                                 </div>
                             </div>
                         </div>
@@ -1301,7 +1301,7 @@
                         <div class="social-top-tabs">
                             <button type="button" class="social-top-tab active" id="social-top-tab-community">Community</button>
                             <button type="button" class="social-top-tab" id="social-top-tab-users" data-i18n="dash.usersTab"></button>
-                            <button type="button" class="social-top-tab" id="social-top-tab-my-posts">Le mie pubblicazioni</button>
+                            <button type="button" class="social-top-tab" id="social-top-tab-my-posts" data-i18n="ui.myPublications"></button>
                         </div>
                         <div id="social-community-panel" class="social-subpanel active">
                             <div class="card" style="display:block;">
@@ -1311,7 +1311,7 @@
                         </div>
                         <div id="social-my-posts-panel" class="social-subpanel">
                             <div class="card" style="display:block;">
-                                <h4 class="following-section-title">Le mie pubblicazioni</h4>
+                                <h4 class="following-section-title" data-i18n="ui.myPublications"></h4>
                                 <div id="social-my-posts-list"></div>
                             </div>
                         </div>
@@ -1383,11 +1383,9 @@
     <div id="viewer-container">
         <button type="button" class="btn-sec viewer-close" onclick="window.closeViewer()" data-i18n="viewer.close"></button>
         <div id="viewer-move-guide" class="viewer-move-guide" style="display:none;" aria-live="polite">
-            <h5>Muovi la parete</h5>
-            <p>Trascina con un dito per ruotare.
-Usa due dita per spostare la vista.
-Pizzica per zoommare.</p>
-            <button type="button" class="btn-sec" id="viewer-move-guide-close">Ho capito</button>
+            <h5 data-i18n="viewer.moveGuideHeader"></h5>
+            <p data-i18n="viewer.moveGuideText"></p>
+            <button type="button" class="btn-sec" id="viewer-move-guide-close" data-i18n="viewer.moveGuideClose"></button>
         </div>
         <model-viewer id="main-viewer" camera-controls shadow-intensity="1">
             <button id="ghost" class="hotspot" slot="hotspot-ghost" style="display:none; border:2px dashed var(--primary); background:var(--primary-dim)"></button>
@@ -1594,8 +1592,8 @@ Pizzica per zoommare.</p>
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
                 auth: { yourName: "Il tuo Nome", username: "Username pubblico", birthDate: "Data di nascita", city: "Città", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
                 common: { close: "Chiudi", noData: "Nessun dato disponibile." }, ownerRequest: { cta: "Sono il proprietario di una palestra", enterGymName: "Inserisci il nome della palestra.", sentSuccess: "Richiesta inviata con successo.", title: "Richiesta accesso proprietario", hint: "Inserisci i dati per richiedere l'accesso come proprietario palestra.", gymName: "Nome palestra", submit: "Invia richiesta" }, superadmin: { title: "Superadmin Dashboard", subtitle: "KPI globali aggregati (senza confrontare gradi assoluti tra palestre diverse).", performanceTitle: "KPI performance (grading-safe)", performanceHint: "Le metriche di performance sono calcolate internamente a ciascuna palestra e poi aggregate.", behaviorTitle: "KPI comportamentali", cityTitle: "Distribuzione difficoltà per città (percentuali interne)", city: "Città", internalDistribution: "Distribuzione interna", noData: "Nessun dato disponibile.", totalUsers: "Utenti totali", active7d: "Attivi ultimi 7 giorni", active30d: "Attivi ultimi 30 giorni", activeGyms: "Palestre attive", sectorsLoaded: "Settori caricati", routesRegistered: "Vie registrate", avgRoutesPerUser: "Media vie per utente", monthlyGrowth: "Crescita mensile utenti", monthlyRetention: "Retention mensile", activeVsRegistered: "% attivi / registrati", avgProgressUser: "Progressione media utente", improvement3m: "Miglioramento medio (3 mesi)", avgTimeNextLevel: "Tempo medio livello successivo", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Tentativi medi per via", weeklyFrequency: "Frequenza settimanale media", topDays: "Giorni più frequentati", topHours: "Fasce orarie attive", returnRate: "Tasso di ritorno" }, dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", tabProfileShort: "Profilo", usersTab: "Utenti", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
-                admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo.", navDashboard: "1️⃣ Dashboard", navSectorsRoutes: "2️⃣ Settori & Vie", navUsers: "3️⃣ Utenti", navSettings: "4️⃣ Impostazioni", navDashboardSimple: "Dashboard", navSectorsRoutesSimple: "Settori & Vie", navUsersSimple: "Utenti", navSettingsSimple: "Impostazioni", activityLast30: "📈 Attività ultimi 30 giorni", sectorPerformance: "🧱 Performance settori", sortBy: "Ordina per", sortMost: "Più attivo", sortLeast: "Meno attivo", routesRegistered30d: "Vie registrate 30g", sector: "Settore", activeUsers: "Utenti attivi", routesRegistered: "Vie registrate", coveragePercent: "% Copertura", totalUsers: "Totale utenti", activeLast30: "Attivi ultimi 30 giorni", top10Users: "Top 10 utenti", feedbackAnalyticsUsers: "💬 Analytics Feedback Utenti", loadingFeedback: "Caricamento analytics feedback...", reviewsLast30: "Recensioni ultimi 30 giorni", feedbackLoadError: "Errore nel caricamento analytics feedback.", sectorsTitle: "Settori", sectorsSubtitle: "Gestisci i settori e i modelli 3D della tua palestra", createSectorCta: "➕ Crea nuovo settore", select3dModel: "Seleziona modello 3D", noModelSelected: "Nessun modello selezionato", modelLoaded: "Modello caricato", no3dModel: "Nessun modello 3D", replaceModel3d: "Sostituisci modello 3D", deleteSector: "Elimina settore", deleteSectorTitle: "🗑 Elimina settore", deleteSectorConfirmText: "Sei sicuro di voler eliminare questo settore? Tutte le vie associate verranno rimosse definitivamente.", cancel: "Annulla", deleteForever: "Elimina definitivamente" },
-                viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", publicCommentPlaceholder: "Com'è la beta? È morfologica? Divertente?", submitReview: "INVIA VALUTAZIONE", publishFeedback: "PUBBLICA FEEDBACK", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", proposedGradeOptional: "Grado proposto (opzionale)", proposedGradeShortPlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", myClimbTab: "La mia scalata", rateRouteTab: "Valuta la via", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", projectStateHint: "La sto lavorando", climbedStateHint: "L'ho completata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", saveClimb: "SALVA SCALATA", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate", startGuideTitle: "📍 Crea lo start della via", startGuideText: "Tocca nel modello 3D il punto di inizio della via per impostare lo START.", startGuideAcknowledge: "Ho capito", startGuideDontShow: "Non mostrare più" },
+                admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", filters: "🔎 Filtri", customPeriod: "Personalizzato", allSectors: "Tutti i settori", allGrades: "Tutti i gradi", onlyActiveRoutes: "Solo vie attive", onlyReviewedRoutes: "Solo vie recensite", sortSectorAvg: "Ordina settore: media", sortSectorReviews: "Ordina settore: recensioni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo.", navDashboard: "1️⃣ Dashboard", navSectorsRoutes: "2️⃣ Settori & Vie", navUsers: "3️⃣ Utenti", navSettings: "4️⃣ Impostazioni", navDashboardSimple: "Dashboard", navSectorsRoutesSimple: "Settori & Vie", navUsersSimple: "Utenti", navSettingsSimple: "Impostazioni", activityLast30: "📈 Attività ultimi 30 giorni", sectorPerformance: "🧱 Performance settori", sortBy: "Ordina per", sortMost: "Più attivo", sortLeast: "Meno attivo", routesRegistered30d: "Vie registrate 30g", sector: "Settore", activeUsers: "Utenti attivi", routesRegistered: "Vie registrate", coveragePercent: "% Copertura", totalUsers: "Totale utenti", activeLast30: "Attivi ultimi 30 giorni", top10Users: "Top 10 utenti", feedbackAnalyticsUsers: "💬 Analytics Feedback Utenti", loadingFeedback: "Caricamento analytics feedback...", reviewsLast30: "Recensioni ultimi 30 giorni", feedbackLoadError: "Errore nel caricamento analytics feedback.", sectorsTitle: "Settori", sectorsSubtitle: "Gestisci i settori e i modelli 3D della tua palestra", createSectorCta: "➕ Crea nuovo settore", select3dModel: "Seleziona modello 3D", noModelSelected: "Nessun modello selezionato", modelLoaded: "Modello caricato", no3dModel: "Nessun modello 3D", replaceModel3d: "Sostituisci modello 3D", deleteSector: "Elimina settore", deleteSectorTitle: "🗑 Elimina settore", deleteSectorConfirmText: "Sei sicuro di voler eliminare questo settore? Tutte le vie associate verranno rimosse definitivamente.", cancel: "Annulla", deleteForever: "Elimina definitivamente" },
+                viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", publicCommentPlaceholder: "Com'è la beta? È morfologica? Divertente?", submitReview: "INVIA VALUTAZIONE", publishFeedback: "PUBBLICA FEEDBACK", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", proposedGradeOptional: "Grado proposto (opzionale)", proposedGradeShortPlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", myClimbTab: "La mia scalata", rateRouteTab: "Valuta la via", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", projectStateHint: "La sto lavorando", climbedStateHint: "L'ho completata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", saveClimb: "SALVA SCALATA", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate", startGuideTitle: "📍 Crea lo start della via", startGuideText: "Tocca nel modello 3D il punto di inizio della via per impostare lo START.", startGuideAcknowledge: "Ho capito", startGuideDontShow: "Non mostrare più", moveGuideTitle: "🎯 Suggerimento navigazione", moveGuideHeader: "Muovi la parete", moveGuideText: "Trascina con un dito per ruotare.\nUsa due dita per spostare la vista.\nPizzica per zoommare.", moveGuideClose: "Ho capito" },
                 gym: { tabInfo: "Informazioni", tabSectors: "Settori", aboutGym: "Sulla palestra", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Scegli un settore da esplorare in 3D o apri la vista completa." },
                 loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D...", retry: "Riprova" },
                 errors: { completeData: "Inserisci dati completi", birthDateRequired: "La data di nascita è obbligatoria.", cityRequired: "La città è obbligatoria.", profileLoad: "Errore durante il caricamento del profilo.", adminGymMissing: "Profilo admin senza palestra associata.", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore", authRequired: "Devi accedere per completare questa azione.", permissionDenied: "Permessi insufficienti su Firestore: controlla le regole di sicurezza.", saveFailed: "Salvataggio non riuscito. Riprova." }
@@ -1604,8 +1602,8 @@ Pizzica per zoommare.</p>
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
                 auth: { yourName: "Your name", username: "Public username", birthDate: "Birth date", city: "City", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
                 common: { close: "Close", noData: "No data available." }, ownerRequest: { cta: "I own a gym", enterGymName: "Enter gym name.", sentSuccess: "Request sent successfully.", title: "Gym owner access request", hint: "Enter details to request gym owner access.", gymName: "Gym name", submit: "Submit request" }, superadmin: { title: "Superadmin Dashboard", subtitle: "Global aggregated KPIs (without comparing absolute grades across different gyms).", performanceTitle: "Performance KPIs (grading-safe)", performanceHint: "Performance metrics are computed within each gym and then aggregated.", behaviorTitle: "Behavioral KPIs", cityTitle: "Difficulty distribution by city (internal percentages)", city: "City", internalDistribution: "Internal distribution", noData: "No data available.", totalUsers: "Total users", active7d: "Active last 7 days", active30d: "Active last 30 days", activeGyms: "Active gyms", sectorsLoaded: "Loaded sectors", routesRegistered: "Registered routes", avgRoutesPerUser: "Avg routes per user", monthlyGrowth: "Monthly user growth", monthlyRetention: "Monthly retention", activeVsRegistered: "% active / registered", avgProgressUser: "Avg user progression", improvement3m: "Avg improvement (3 months)", avgTimeNextLevel: "Avg time to next level", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Avg attempts per route", weeklyFrequency: "Avg weekly frequency", topDays: "Most active days", topHours: "Most active time slots", returnRate: "Return rate" }, dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabChallenges: "Challenges", tabSocial: "Social", tabProfileShort: "Profile", usersTab: "Users", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
-                admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg", gradeSystemTitle: "Gym grade system", gradeSystemHint: "Add one grade per line, from easiest to hardest. A numeric order is stored too.", gradeSystemPlaceholder: "E.g.\nGreen\nBlue\nPurple\nRed", saveGradeSystem: "SAVE GRADE SYSTEM", gradeSetupRequiredTitle: "Set up your gym grades", gradeSetupRequiredHint: "Before using the admin panel, configure your gym grade system from easiest to hardest.", gradeSystemSaved: "Grade system saved successfully." },
-                viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", publicCommentPlaceholder: "How is the beta? Morpho? Fun?", submitReview: "SUBMIT RATING", publishFeedback: "PUBLISH FEEDBACK", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", proposedGradeOptional: "Proposed grade (optional)", proposedGradeShortPlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", myClimbTab: "My climb", rateRouteTab: "Rate the route", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", projectStateHint: "I'm projecting it", climbedStateHint: "I completed it", saveProject: "Update project", saveClimbed: "Update climbed", saveClimb: "SAVE CLIMB", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed", startGuideTitle: "📍 Set the route start", startGuideText: "Tap the route start point directly on the 3D model to set START.", startGuideAcknowledge: "Got it", startGuideDontShow: "Do not show again" },
+                admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", filters: "🔎 Filters", customPeriod: "Custom", allSectors: "All sectors", allGrades: "All grades", onlyActiveRoutes: "Only active routes", onlyReviewedRoutes: "Only reviewed routes", sortSectorAvg: "Sort sector: average", sortSectorReviews: "Sort sector: reviews", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg", gradeSystemTitle: "Gym grade system", gradeSystemHint: "Add one grade per line, from easiest to hardest. A numeric order is stored too.", gradeSystemPlaceholder: "E.g.\nGreen\nBlue\nPurple\nRed", saveGradeSystem: "SAVE GRADE SYSTEM", gradeSetupRequiredTitle: "Set up your gym grades", gradeSetupRequiredHint: "Before using the admin panel, configure your gym grade system from easiest to hardest.", gradeSystemSaved: "Grade system saved successfully.", navDashboard: "1️⃣ Dashboard", navSectorsRoutes: "2️⃣ Sectors & Routes", navUsers: "3️⃣ Users", navSettings: "4️⃣ Settings", navDashboardSimple: "Dashboard", navSectorsRoutesSimple: "Sectors & Routes", navUsersSimple: "Users", navSettingsSimple: "Settings", activityLast30: "📈 Last 30 days activity", sectorPerformance: "🧱 Sector performance", sortBy: "Sort by", sortMost: "Most active", sortLeast: "Least active", routesRegistered30d: "Routes logged (30d)", activeUsers: "Active users", routesRegistered: "Registered routes", coveragePercent: "% coverage", totalUsers: "Total users", activeLast30: "Active last 30 days", top10Users: "Top 10 users", feedbackAnalyticsUsers: "💬 User feedback analytics", loadingFeedback: "Loading feedback analytics...", reviewsLast30: "Reviews last 30 days", feedbackLoadError: "Error loading feedback analytics.", sectorsTitle: "Sectors", sectorsSubtitle: "Manage your gym sectors and 3D models", createSectorCta: "➕ Create new sector", select3dModel: "Select 3D model", noModelSelected: "No model selected", modelLoaded: "Model uploaded", no3dModel: "No 3D model", replaceModel3d: "Replace 3D model", deleteSector: "Delete sector", deleteSectorTitle: "🗑 Delete sector", deleteSectorConfirmText: "Are you sure you want to delete this sector? All linked routes will be permanently removed.", cancel: "Cancel", deleteForever: "Delete permanently", sectorAnalysis: "📂 Sector analysis" },
+                viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", publicCommentPlaceholder: "How is the beta? Morpho? Fun?", submitReview: "SUBMIT RATING", publishFeedback: "PUBLISH FEEDBACK", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", proposedGradeOptional: "Proposed grade (optional)", proposedGradeShortPlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", myClimbTab: "My climb", rateRouteTab: "Rate the route", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", projectStateHint: "I'm projecting it", climbedStateHint: "I completed it", saveProject: "Update project", saveClimbed: "Update climbed", saveClimb: "SAVE CLIMB", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed", startGuideTitle: "📍 Set the route start", startGuideText: "Tap the route start point directly on the 3D model to set START.", startGuideAcknowledge: "Got it", startGuideDontShow: "Do not show again", moveGuideTitle: "🎯 Navigation tip", moveGuideHeader: "Move the wall", moveGuideText: "Drag with one finger to rotate.\nUse two fingers to move the view.\nPinch to zoom.", moveGuideClose: "Got it" },
                 gym: { tabInfo: "Information", tabSectors: "Sectors", aboutGym: "About the gym", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Choose a sector to inspect in 3D or open the full sectors view." },
                 loading: { init: "Loading...", verifying: "Verifying...", updatingMesh: "Updating mesh...", loading3d: "Loading 3D...", retry: "Retry" },
                 errors: { completeData: "Please enter all required fields", selectFile: "Select a file", usernameRequired: "Please enter a username", usernameInvalid: "Invalid username: use 3-20 chars (letters, numbers, _, -, .)", usernameTaken: "Username already in use", modelLoadFailed: "Error loading 3D model", modelLoadTimeout: "Loading took too long. Please retry.", modelMeshMissing: "3D model not available for this sector", authRequired: "You must be signed in to complete this action.", permissionDenied: "Insufficient Firestore permissions: check your security rules.", saveFailed: "Save failed. Please retry." }
@@ -1613,17 +1611,122 @@ Pizzica per zoommare.</p>
         };
         const challengeLabelFallbacks = {
             sectorsTried: { it: 'Settori provati', en: 'Sectors tried' },
+            sectorsTriedDesc: { it: 'Settori diversi provati nel mese.', en: 'Different sectors tried in the month.' },
+            categoryExploration: { it: '🌍 Esplorazione', en: '🌍 Exploration' },
             routesCompleted: { it: 'Vie completate', en: 'Routes completed' },
             activeDays: { it: 'Giorni attivi', en: 'Active days' },
             totalPoints: { it: 'Punti totali', en: 'Total points' },
             rank: { it: 'Posizione', en: 'Rank' },
-            progress: { it: 'Progresso', en: 'Progress' }
+            progress: { it: 'Progresso', en: 'Progress' },
+            levelBronze: { it: 'Bronzo', en: 'Bronze' },
+            levelSilver: { it: 'Argento', en: 'Silver' },
+            levelGold: { it: 'Oro', en: 'Gold' },
+            levelPlatinum: { it: 'Platino', en: 'Platinum' },
+            levelUnlocked: { it: 'Livello sbloccato', en: 'Level unlocked' }
         };
         for (const lang of ['it', 'en']) {
             translations[lang] = translations[lang] || {};
             translations[lang].challenges = translations[lang].challenges || {};
             for (const [k, values] of Object.entries(challengeLabelFallbacks)) {
                 if (!translations[lang].challenges[k]) translations[lang].challenges[k] = values[lang];
+            }
+        }
+
+        const uiLabelFallbacks = {
+            totalClosedRoutes: { it: 'Vie chiuse totali', en: 'Total routes climbed' },
+            gymDays: { it: 'Giorni in palestra', en: 'Gym days' },
+            consecutiveDays: { it: 'Giorni consecutivi', en: 'Consecutive days' },
+            gymsTried: { it: 'Palestre provate', en: 'Gyms tried' },
+            challengeCategoryActivity: { it: '🧗 Attività', en: '🧗 Activity' },
+            challengeRoutesClosed: { it: 'Vie chiuse', en: 'Routes climbed' },
+            challengeRoutesClosedDesc: { it: 'Vie completate nel mese corrente.', en: 'Routes completed in the current month.' },
+            challengeGymDays: { it: 'Giorni in palestra', en: 'Gym days' },
+            challengeGymDaysDesc: { it: 'Giorni distinti con attività nel mese.', en: 'Distinct days with activity in the month.' },
+            challengeMonthlyStreak: { it: 'Streak mensile', en: 'Monthly streak' },
+            challengeMonthlyStreakDesc: { it: 'Massima sequenza di giorni consecutivi nel mese.', en: 'Longest consecutive-day streak in the month.' },
+            challengeCategoryExploration: { it: '🌍 Esplorazione', en: '🌍 Exploration' },
+            challengeGymsVisited: { it: 'Palestre visitate', en: 'Gyms visited' },
+            challengeGymsVisitedDesc: { it: 'Palestre diverse visitate nel mese.', en: 'Different gyms visited in the month.' },
+            noMonthlyBadge: { it: 'Nessun badge mensile', en: 'No monthly badge yet' },
+            topMonthlyBadge: { it: 'Badge mensile principale', en: 'Top monthly badge' },
+            profileBestResults: { it: 'I tuoi migliori risultati', en: 'Your best results' },
+            profileActivitySnapshot: { it: 'Snapshot attività', en: 'Activity snapshot' },
+            profileHeatmap30d: { it: 'Heatmap ultimi 30 giorni', en: 'Last 30 days heatmap' },
+            profileGradeProgression: { it: 'Progressione grado', en: 'Grade progression' },
+            editProfile: { it: 'Modifica profilo', en: 'Edit profile' },
+            settings: { it: 'Impostazioni', en: 'Settings' },
+            avgGymRating: { it: 'Media voti palestra', en: 'Average gym rating' },
+            reviewedRoutes: { it: 'Vie recensite', en: 'Reviewed routes' },
+            reviewsCount: { it: 'recensioni', en: 'reviews' },
+            activeSectors: { it: 'Settori attivi', en: 'Active sectors' },
+            trackedRoutes: { it: 'Vie tracciate', en: 'Tracked routes' },
+            overview: { it: '🟢 Panoramica', en: '🟢 Overview' },
+            userPerformance: { it: 'Performance utenti', en: 'User performance' },
+            routesClimbed: { it: 'Vie scalate', en: 'Routes climbed' },
+            mainSector: { it: 'Settore principale', en: 'Main sector' },
+            previous: { it: 'Precedente', en: 'Previous' },
+            next: { it: 'Successiva', en: 'Next' },
+            page: { it: 'Pagina', en: 'Page' },
+            feedbackReviews: { it: 'Feedback & Recensioni', en: 'Feedback & Reviews' },
+            top5TopRated: { it: 'Top 5 più votate', en: 'Top 5 highest rated' },
+            mostReviewed: { it: 'Più recensite', en: 'Most reviewed' },
+            leastReviewed: { it: 'Meno recensite', en: 'Least reviewed' },
+            seeAll: { it: 'Vedi tutte', en: 'See all' },
+            avgRatingBySector: { it: 'Media voti per settore', en: 'Average rating by sector' },
+            avgWord: { it: 'media', en: 'avg' },
+            topRoutesByAvg: { it: 'Top vie per media voto', en: 'Top routes by average rating' },
+            mostReviewedRoutes: { it: 'Vie più recensite', en: 'Most reviewed routes' },
+            leastReviewedRoutes: { it: 'Vie meno recensite', en: 'Least reviewed routes' },
+            none: { it: 'Nessuno', en: 'None' },
+            completed: { it: 'Completata', en: 'Completed' },
+            totalReviewsLabel: { it: 'Recensioni', en: 'Reviews' },
+            totalRoutesLabel: { it: 'Vie totali', en: 'Total routes' },
+            avgVoteLabel: { it: 'Media voto', en: 'Average rating' },
+            activeUsersLabel: { it: 'Utenti attivi', en: 'Active users' },
+            top3Routes: { it: 'Top 3 vie', en: 'Top 3 routes' },
+            voteDistribution: { it: 'Distribuzione voti', en: 'Vote distribution' },
+            leastRated: { it: 'Meno valutate', en: 'Least rated' },
+            socialNewMaxTitle: { it: '🔥 Nuovo massimo personale!', en: '🔥 New personal best!' },
+            socialStreakAt: { it: 'è a', en: 'is at' },
+            socialConsecutiveDays: { it: 'giorni consecutivi', en: 'consecutive days' },
+            socialClimbedAt: { it: 'ha scalato', en: 'climbed' },
+            socialAt: { it: 'a', en: 'at' },
+            attempts: { it: 'Tentativi', en: 'Attempts' },
+            deleteComment: { it: 'Elimina commento', en: 'Delete comment' },
+            reply: { it: 'Rispondi', en: 'Reply' },
+            noComments: { it: 'Nessun commento.', en: 'No comments.' },
+            new: { it: 'Nuovo', en: 'New' },
+            newMax: { it: '🔥 Nuovo massimo', en: '🔥 New max' },
+            myClimbedAt: { it: 'Hai scalato', en: 'You climbed' },
+            applauseCountLabel: { it: 'applausi', en: 'applause' },
+            commentsCountLabel: { it: 'commenti', en: 'comments' },
+            hideComments: { it: 'Nascondi commenti', en: 'Hide comments' },
+            showComments: { it: 'Mostra commenti', en: 'Show comments' },
+            deletePost: { it: 'Elimina post', en: 'Delete post' },
+            showAllComments: { it: 'Mostra tutti i commenti', en: 'Show all comments' },
+            loginToSeePosts: { it: 'Accedi per vedere le tue pubblicazioni.', en: 'Log in to see your posts.' },
+            loadingPosts: { it: 'Caricamento pubblicazioni...', en: 'Loading posts...' },
+            loadPostsError: { it: 'Impossibile caricare le tue pubblicazioni.', en: 'Unable to load your posts.' },
+            climbToAppearFeed: { it: 'Scala una via per comparire nel feed', en: 'Climb a route to appear in the feed' },
+            limitedFeedPermissions: { it: 'Permessi feed limitati: mostra attività condivise degli amici.', en: 'Limited feed permissions: showing shared activities from friends.' },
+            mainGym: { it: 'Palestra principale', en: 'Main gym' },
+            maxGradeByGym: { it: 'Max grade per palestra', en: 'Max grade by gym' },
+            currentStreak: { it: 'Streak attuale', en: 'Current streak' },
+            streak: { it: 'Streak', en: 'Streak' },
+            daysShort: { it: 'giorni', en: 'days' },
+            confirmDeletePost: { it: 'Eliminare questa pubblicazione?', en: 'Delete this post?' },
+            delete: { it: 'Elimina', en: 'Delete' },
+            loadCommentsError: { it: 'Impossibile caricare i commenti.', en: 'Unable to load comments.' },
+            myPublications: { it: 'Le mie pubblicazioni', en: 'My posts' },
+            yourChallenges: { it: 'Le tue Sfide', en: 'Your Challenges' },
+            monthlyChallengesNote: { it: 'Sfide mensili: progressi azzerati a inizio mese. I badge restano nello storico.', en: 'Monthly challenges: progress resets at the beginning of each month. Badges stay in your history.' },
+            maxLevelReachedLabel: { it: 'Livello massimo raggiunto', en: 'Highest level reached' }
+        };
+        for (const lang of ['it', 'en']) {
+            translations[lang] = translations[lang] || {};
+            translations[lang].ui = translations[lang].ui || {};
+            for (const [k, values] of Object.entries(uiLabelFallbacks)) {
+                if (!translations[lang].ui[k]) translations[lang].ui[k] = values[lang];
             }
         }
         let currentLang = localStorage.getItem(LANG_KEY) || 'it';
@@ -2557,23 +2660,23 @@ Pizzica per zoommare.</p>
             });
 
             const metrics = [
-                { key: 'routes', label: 'Vie chiuse totali', value: climbedEntries.length, available: trackerAll.some(v => Object.prototype.hasOwnProperty.call(v || {}, 'state')) },
-                { key: 'days', label: 'Giorni in palestra', value: daysInGym.size, available: trackerAll.some(v => getDateKeyFromAnyValue(v.eventDate || v.completionDate || v.updatedAt || v.createdAt)) },
-                { key: 'streak', label: 'Giorni consecutivi', value: longestStreak, available: daysInGym.size > 0 },
+                { key: 'routes', label: t('ui.totalClosedRoutes'), value: climbedEntries.length, available: trackerAll.some(v => Object.prototype.hasOwnProperty.call(v || {}, 'state')) },
+                { key: 'days', label: t('ui.gymDays'), value: daysInGym.size, available: trackerAll.some(v => getDateKeyFromAnyValue(v.eventDate || v.completionDate || v.updatedAt || v.createdAt)) },
+                { key: 'streak', label: t('ui.consecutiveDays'), value: longestStreak, available: daysInGym.size > 0 },
                 { key: 'sectors', label: t('challenges.sectorsTried'), value: sectors.size, available: trackerAll.some(v => !!(v.sectorId || v.sectorName)) },
-                { key: 'gyms', label: 'Palestre provate', value: gyms.size, available: trackerAll.some(v => !!(v.gymId || v.gymName)) }
+                { key: 'gyms', label: t('ui.gymsTried'), value: gyms.size, available: trackerAll.some(v => !!(v.gymId || v.gymName)) }
             ];
             return metrics.filter(m => m.available);
         }
 
         const CHALLENGE_MONTHLY_DEFS = [
-            { key: 'routes', category: '🧗 Attività', name: 'Vie chiuse', desc: 'Vie completate nel mese corrente.', levels: [10, 25, 50, 100] },
-            { key: 'days', category: '🧗 Attività', name: 'Giorni in palestra', desc: 'Giorni distinti con attività nel mese.', levels: [4, 8, 12, 20] },
-            { key: 'streak', category: '🧗 Attività', name: 'Streak mensile', desc: 'Massima sequenza di giorni consecutivi nel mese.', levels: [3, 7, 12, 20] },
+            { key: 'routes', category: t('ui.challengeCategoryActivity'), name: t('ui.challengeRoutesClosed'), desc: t('ui.challengeRoutesClosedDesc'), levels: [10, 25, 50, 100] },
+            { key: 'days', category: t('ui.challengeCategoryActivity'), name: t('ui.challengeGymDays'), desc: t('ui.challengeGymDaysDesc'), levels: [4, 8, 12, 20] },
+            { key: 'streak', category: t('ui.challengeCategoryActivity'), name: t('ui.challengeMonthlyStreak'), desc: t('ui.challengeMonthlyStreakDesc'), levels: [3, 7, 12, 20] },
             { key: 'sectors', category: t('challenges.categoryExploration'), name: t('challenges.sectorsTried'), desc: t('challenges.sectorsTriedDesc'), levels: [2, 5, 9, 14] },
-            { key: 'gyms', category: '🌍 Esplorazione', name: 'Palestre visitate', desc: 'Palestre diverse visitate nel mese.', levels: [1, 2, 4, 6] }
+            { key: 'gyms', category: t('ui.challengeCategoryExploration'), name: t('ui.challengeGymsVisited'), desc: t('ui.challengeGymsVisitedDesc'), levels: [1, 2, 4, 6] }
         ];
-        const CHALLENGE_LEVEL_LABELS = ['Bronzo', 'Argento', 'Oro', 'Platino'];
+        const CHALLENGE_LEVEL_LABELS = [t('challenges.levelBronze'), t('challenges.levelSilver'), t('challenges.levelGold'), t('challenges.levelPlatinum')];
 
         function nowMonthKey(date = new Date()) {
             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -2629,7 +2732,7 @@ Pizzica per zoommare.</p>
                 const nextThr = lvlIdx < def.levels.length - 1 ? def.levels[lvlIdx + 1] : def.levels[def.levels.length - 1];
                 const currentThr = lvlIdx >= 0 ? def.levels[lvlIdx] : 0;
                 const pct = Math.max(0, Math.min(100, Math.round((value / Math.max(1, nextThr)) * 100)));
-                return { ...def, value, levelIndex: lvlIdx, level: lvlIdx >= 0 ? CHALLENGE_LEVEL_LABELS[lvlIdx] : 'Nessuno', nextLevel: lvlIdx < CHALLENGE_LEVEL_LABELS.length - 1 ? CHALLENGE_LEVEL_LABELS[lvlIdx + 1] : 'Completata', currentThr, nextThr, pct };
+                return { ...def, value, levelIndex: lvlIdx, level: lvlIdx >= 0 ? CHALLENGE_LEVEL_LABELS[lvlIdx] : t('ui.none'), nextLevel: lvlIdx < CHALLENGE_LEVEL_LABELS.length - 1 ? CHALLENGE_LEVEL_LABELS[lvlIdx + 1] : t('ui.completed'), currentThr, nextThr, pct };
             });
             const ranked = metrics.filter(m => m.levelIndex >= 0).sort((a,b) => b.levelIndex - a.levelIndex || b.value - a.value);
             const highest = ranked[0] ? { month: mk, challenge: ranked[0].name, level: ranked[0].level, icon: ['🥉','🥈','🥇','🏆'][ranked[0].levelIndex] || '🏅' } : null;
@@ -2708,13 +2811,13 @@ Pizzica per zoommare.</p>
                     </div>
                 </div>
             `).join('');
-            const badge = monthly.highest ? `${monthly.highest.icon} ${monthly.highest.level} · ${monthly.highest.challenge}` : 'Nessun badge mensile';
+            const badge = monthly.highest ? `${monthly.highest.icon} ${monthly.highest.level} · ${monthly.highest.challenge}` : t('ui.noMonthlyBadge');
             wrap.innerHTML = `
                 <div class="profile-shell">
                     <div class="profile-section-card">
-                        <b>Le tue Sfide</b>
-                        <p class="challenge-month-note">Sfide mensili: progressi azzerati a inizio mese. I badge restano nello storico.</p>
-                        <div class="profile-log" style="margin-top:10px;">Badge mensile principale: <b>${escapeHtml(badge)}</b></div>
+                        <b>${t('ui.yourChallenges')}</b>
+                        <p class="challenge-month-note">${t('ui.monthlyChallengesNote')}</p>
+                        <div class="profile-log" style="margin-top:10px;">${t('ui.topMonthlyBadge')}: <b>${escapeHtml(badge)}</b></div>
                     </div>
                     ${sections}
                 </div>
@@ -2734,7 +2837,7 @@ Pizzica per zoommare.</p>
                 <div class="profile-best-card">
                     <b>${escapeHtml(g.gymName)}</b>
                     <div class="profile-best-grade">${escapeHtml(g.localMax)}</div>
-                    <div class="profile-best-label">Livello massimo raggiunto</div>
+                    <div class="profile-best-label">${t('ui.maxLevelReachedLabel')}</div>
                 </div>`).join('');
 
             const snapshot = [
@@ -2777,29 +2880,29 @@ Pizzica per zoommare.</p>
                                 <p class="profile-subcopy">${t('dash.profileSubtitle')}</p>
                             </div>
                             <div class="profile-header-actions">
-                                <button type="button" class="profile-icon-btn" aria-label="Modifica profilo">✎</button>
-                                <button type="button" class="profile-icon-btn" aria-label="Impostazioni">⚙</button>
+                                <button type="button" class="profile-icon-btn" aria-label="${t('ui.editProfile')}">✎</button>
+                                <button type="button" class="profile-icon-btn" aria-label="${t('ui.settings')}">⚙</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="profile-section-card">
-                        <b>I tuoi migliori risultati</b>
+                        <b>${t('ui.profileBestResults')}</b>
                         <div class="profile-best-grid" style="margin-top:10px;">${bestByGymCards || `<p class="profile-empty">${t('dash.noMilestones')}</p>`}</div>
                     </div>
 
                     <div class="profile-section-card">
-                        <b>Snapshot attività</b>
+                        <b>${t('ui.profileActivitySnapshot')}</b>
                         <div class="profile-snapshot-grid" style="margin-top:10px;">${snapshot}</div>
                     </div>
 
                     <div class="profile-section-card">
-                        <b>Heatmap ultimi 30 giorni</b>
+                        <b>${t('ui.profileHeatmap30d')}</b>
                         <div class="profile-heatmap" style="margin-top:10px;">${heatCells.join('')}</div>
                     </div>
 
                     <div class="profile-progress-tech">
-                        <b>Progressione grado</b>
+                        <b>${t('ui.profileGradeProgression')}</b>
                         ${spark}
                         <div class="profile-subcopy" style="margin-top:8px;">${mineData.globalMaxNormPct}% · ${mineData.atMaxCount}/${mineData.targetAtMax}</div>
                     </div>
@@ -3103,12 +3206,12 @@ Pizzica per zoommare.</p>
             const isApplauded = !!socialApplauseByActivity.get(e.id);
             const actionButtons = `<div class="social-feed-actions"><button class="social-action-btn ${isApplauded ? 'active' : ''}" data-action="applause" data-id="${e.id}">🔥 ${applauseCount}</button><button class="social-action-btn" data-action="comment" data-id="${e.id}">💬 ${commentCount}</button></div>`;
             if (e.activity_type === 'new_max') {
-                return `<div class="social-feed-card ${recent24 ? 'highlight' : ''}"><div class="social-feed-head"><div class="social-feed-title">🔥 Nuovo massimo personale!</div><small>${ts}</small></div><div class="social-feed-grade">${escapeHtml(e.grade || '-')}</div><div class="social-feed-meta">${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} · ${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
+                return `<div class="social-feed-card ${recent24 ? 'highlight' : ''}"><div class="social-feed-head"><div class="social-feed-title">${t('ui.socialNewMaxTitle')}</div><small>${ts}</small></div><div class="social-feed-grade">${escapeHtml(e.grade || '-')}</div><div class="social-feed-meta">${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} · ${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
             }
             if (e.activity_type === 'streak') {
-                return `<div class="social-feed-card highlight"><div class="social-feed-head"><div class="social-feed-title">🔁 ${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} è a ${e.streak_days || 1} giorni consecutivi</div><small>${ts}</small></div><div class="social-feed-meta">${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
+                return `<div class="social-feed-card highlight"><div class="social-feed-head"><div class="social-feed-title">🔁 ${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} ${t('ui.socialStreakAt')} ${e.streak_days || 1} ${t('ui.socialConsecutiveDays')}</div><small>${ts}</small></div><div class="social-feed-meta">${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
             }
-            return `<div class="social-feed-card"><div class="social-feed-head"><div class="social-feed-title">${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} ha scalato ${escapeHtml(e.grade || '-')} a ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><small>${ts}</small></div><div class="social-feed-meta">Tentativi: ${e.attempts || 1}</div>${actionButtons}</div>`;
+            return `<div class="social-feed-card"><div class="social-feed-head"><div class="social-feed-title">${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} ${t('ui.socialClimbedAt')} ${escapeHtml(e.grade || '-')} ${t('ui.socialAt')} ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><small>${ts}</small></div><div class="social-feed-meta">${t('ui.attempts')}: ${e.attempts || 1}</div>${actionButtons}</div>`;
         }
 
         function bindSocialFeedActions(root) {
@@ -3160,7 +3263,7 @@ Pizzica per zoommare.</p>
             if (!activityId || !activeUser?.uid) return;
             const row = socialMyPostsActivities.find(a => a.id === activityId);
             if (!row || (row.user_id || row.userId) !== activeUser.uid) return;
-            if (!confirm('Eliminare questa pubblicazione?')) return;
+            if (!confirm(t('ui.confirmDeletePost'))) return;
             await deleteDoc(doc(db, 'socialActivities', activityId));
             socialMyPostsActivities = socialMyPostsActivities.filter(a => a.id !== activityId);
             socialMyPostsInteractionMeta.delete(activityId);
@@ -3195,32 +3298,32 @@ Pizzica per zoommare.</p>
             const latestComments = Array.isArray(meta.latestComments) ? meta.latestComments : [];
             const previewRows = latestComments.slice(0, 2).map(c => {
                 const canDelete = ((e.user_id || e.userId || null) === activeUser?.uid);
-                return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}${badgePillHtml(resolveUserHighestBadge(c.user_id))}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="delete-comment" data-activity-id="${e.id}" data-comment-id="${c.id}">Elimina commento</button> <button type="button" class="btn-sec" data-action="reply-comment" data-activity-id="${e.id}" data-username="${escapeHtml(c.user_name || 'Climber')}">Rispondi</button></div>` : ''}</div>`;
-            }).join('') || '<p class="profile-empty">Nessun commento.</p>';
-            const newBadge = hasNew ? '<span class="social-chip new">Nuovo</span>' : '';
-            const maxBadge = e.is_new_max ? '<span class="social-chip">🔥 Nuovo massimo</span>' : '';
-            return `<div class="social-feed-card ${totalInteractions > 5 ? 'engaged' : ''}" data-my-post-id="${e.id}"><div class="social-feed-head"><div class="social-feed-title">Hai scalato ${escapeHtml(e.grade || '-')} a ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><div style="display:flex;gap:6px;align-items:center;">${newBadge}${maxBadge}<small>${ts}</small></div></div><div class="social-feed-meta">Tentativi: ${e.attempts || 1}</div><div class="social-feed-actions"><button class="social-action-btn ${socialApplauseByActivity.get(e.id) ? 'active' : ''}" data-action="applause" data-id="${e.id}">🔥 ${applauseCount} applausi</button><button class="social-action-btn" data-action="comment" data-id="${e.id}">💬 ${commentCount} commenti</button><button class="social-action-btn" data-action="toggle-comments" data-id="${e.id}">${expanded ? 'Nascondi commenti' : 'Mostra commenti'}</button><button class="social-action-btn" data-action="delete-post" data-id="${e.id}">Elimina post</button></div><div class="social-my-comments-preview" style="display:${expanded ? 'block' : 'none'};">${previewRows}<button type="button" class="btn-sec" data-action="open-all-comments" data-id="${e.id}">Mostra tutti i commenti</button></div></div>`;
+                return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}${badgePillHtml(resolveUserHighestBadge(c.user_id))}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="delete-comment" data-activity-id="${e.id}" data-comment-id="${c.id}">${t('ui.deleteComment')}</button> <button type="button" class="btn-sec" data-action="reply-comment" data-activity-id="${e.id}" data-username="${escapeHtml(c.user_name || 'Climber')}">${t('ui.reply')}</button></div>` : ''}</div>`;
+            }).join('') || `<p class="profile-empty">${t('ui.noComments')}</p>`;
+            const newBadge = hasNew ? `<span class="social-chip new">${t('ui.new')}</span>` : '';
+            const maxBadge = e.is_new_max ? `<span class="social-chip">${t('ui.newMax')}</span>` : '';
+            return `<div class="social-feed-card ${totalInteractions > 5 ? 'engaged' : ''}" data-my-post-id="${e.id}"><div class="social-feed-head"><div class="social-feed-title">${t('ui.myClimbedAt')} ${escapeHtml(e.grade || '-')} ${t('ui.socialAt')} ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><div style="display:flex;gap:6px;align-items:center;">${newBadge}${maxBadge}<small>${ts}</small></div></div><div class="social-feed-meta">${t('ui.attempts')}: ${e.attempts || 1}</div><div class="social-feed-actions"><button class="social-action-btn ${socialApplauseByActivity.get(e.id) ? 'active' : ''}" data-action="applause" data-id="${e.id}">🔥 ${applauseCount} ${t('ui.applauseCountLabel')}</button><button class="social-action-btn" data-action="comment" data-id="${e.id}">💬 ${commentCount} ${t('ui.commentsCountLabel')}</button><button class="social-action-btn" data-action="toggle-comments" data-id="${e.id}">${expanded ? t('ui.hideComments') : t('ui.showComments')}</button><button class="social-action-btn" data-action="delete-post" data-id="${e.id}">${t('ui.deletePost')}</button></div><div class="social-my-comments-preview" style="display:${expanded ? 'block' : 'none'};">${previewRows}<button type="button" class="btn-sec" data-action="open-all-comments" data-id="${e.id}">${t('ui.showAllComments')}</button></div></div>`;
         }
 
         function renderMyPublicationsFeed() {
             const myList = document.getElementById('social-my-posts-list');
             if (!myList) return;
             if (!activeUser?.uid) {
-                myList.innerHTML = '<p class="profile-empty">Accedi per vedere le tue pubblicazioni.</p>';
+                myList.innerHTML = `<p class="profile-empty">${t('ui.loginToSeePosts')}</p>`;
                 return;
             }
             if (socialMyPostsLoading) {
-                myList.innerHTML = '<p class="profile-empty">Caricamento pubblicazioni...</p>';
+                myList.innerHTML = `<p class="profile-empty">${t('ui.loadingPosts')}</p>`;
                 return;
             }
             const feed = socialMyPostsActivities
                 .filter(a => (a.user_id || a.userId || null) === activeUser.uid)
                 .sort((a,b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
             if (socialMyPostsError && !feed.length) {
-                myList.innerHTML = '<p class="profile-empty">Impossibile caricare le tue pubblicazioni.</p>';
+                myList.innerHTML = `<p class="profile-empty">${t('ui.loadPostsError')}</p>`;
                 return;
             }
-            myList.innerHTML = feed.map(renderSocialFeedCard).join('') || '<p class="profile-empty">Scala una via per comparire nel feed</p>';
+            myList.innerHTML = feed.map(renderSocialFeedCard).join('') || `<p class="profile-empty">${t('ui.climbToAppearFeed')}</p>`;
             bindSocialFeedActions(myList);
         }
 
@@ -3233,7 +3336,7 @@ Pizzica per zoommare.</p>
             }
             const feed = buildFollowingFeedItems();
             socialFeedById = new Map(feed.map(e => [e.id, e]));
-            const rulesWarn = socialFeedError && isPermissionDeniedError(socialFeedError) ? `<div class="profile-log" style="margin-bottom:10px;">Permessi feed limitati: mostra attività condivise degli amici.</div>` : '';
+            const rulesWarn = socialFeedError && isPermissionDeniedError(socialFeedError) ? `<div class="profile-log" style="margin-bottom:10px;">${t('ui.limitedFeedPermissions')}</div>` : '';
             progList.innerHTML = rulesWarn + (feed.slice(0, 60).map(renderSocialFeedCard).join('') || `<p class="profile-empty">${t('dash.noFollowingProgress')}</p>`);
             bindSocialFeedActions(progList);
         }
@@ -3350,7 +3453,7 @@ Pizzica per zoommare.</p>
 
             const actsSnap = await safeGetDocs(query(collection(db, 'socialActivities'), where('user_id', '==', uid), limit(20)));
             const acts = actsSnap ? actsSnap.docs.map(d => d.data() || {}).sort((a,b)=> new Date(b.timestamp||0)-new Date(a.timestamp||0)) : [];
-            const latestRows = acts.slice(0,8).map(a => `<div class="profile-log"><div><b>${escapeHtml(a.grade || (a.activity_type==='streak' ? `🔁 ${a.streak_days || 1} giorni` : '-'))}</b> · ${escapeHtml(a.gym_name || a.gym_id || '-')}</div><small>${escapeHtml(formatProfileDate(a.timestamp || ''))} · ${escapeHtml(a.activity_type || 'route')}</small></div>`).join('');
+            const latestRows = acts.slice(0,8).map(a => `<div class="profile-log"><div><b>${escapeHtml(a.grade || (a.activity_type==='streak' ? `🔁 ${a.streak_days || 1} ${t('ui.daysShort')}` : '-'))}</b> · ${escapeHtml(a.gym_name || a.gym_id || '-')}</div><small>${escapeHtml(formatProfileDate(a.timestamp || ''))} · ${escapeHtml(a.activity_type || 'route')}</small></div>`).join('');
 
             wrap.style.display = 'block';
             wrap.innerHTML = `
@@ -3365,17 +3468,17 @@ Pizzica per zoommare.</p>
                 <div class="social-public-stats">
                     <button type="button" class="social-stat-btn" data-action="open-follow-list" data-kind="followers" data-uid="${uid}"><b>${counts.followers}</b><span>${t('dash.followers')}</span></button>
                     <button type="button" class="social-stat-btn" data-action="open-follow-list" data-kind="following" data-uid="${uid}"><b>${counts.following}</b><span>${t('dash.followingCount')}</span></button>
-                    <div class="social-stat-btn" style="display:grid; place-items:center;"><b>${streakNow}</b><span>Streak</span></div>
+                    <div class="social-stat-btn" style="display:grid; place-items:center;"><b>${streakNow}</b><span>${t('ui.streak')}</span></div>
                 </div>
                 <div class="profile-list social-public-list">
-                    <b>Palestra principale</b>
+                    <b>${t('ui.mainGym')}</b>
                     <div class="profile-log">${escapeHtml(mainGym)}</div>
-                    <b>Max grade per palestra</b>
+                    <b>${t('ui.maxGradeByGym')}</b>
                     <div class="profile-timeline">${maxByGym || `<p class="profile-empty">-</p>`}</div>
                     <div class="profile-kpis" style="margin-top:10px;">
                         <div class="profile-kpi"><b>${totalRoutes}</b><span>${t('dash.totalSends')}</span></div>
                         <div class="profile-kpi"><b>${activeDays}</b><span>${t('dash.activeDays')}</span></div>
-                        <div class="profile-kpi"><b>${streakNow}</b><span>Streak attuale</span></div>
+                        <div class="profile-kpi"><b>${streakNow}</b><span>${t('ui.currentStreak')}</span></div>
                     </div>
                     <b style="margin-top:8px; display:block;">${t('dash.latestActivities')}</b>
                     ${latestRows || `<p class="profile-empty">${t('dash.noPublicContent')}</p>`}
@@ -3419,9 +3522,9 @@ Pizzica per zoommare.</p>
                     updateLocalInteractionState(activityId, { comment_count: commentCount });
                     list.innerHTML = rows.map(c => {
                         const canDelete = !!owner && owner === activeUser.uid;
-                        const actions = canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="modal-delete-comment" data-activity-id="${activityId}" data-comment-id="${c.id}">Elimina</button> <button type="button" class="btn-sec" data-action="modal-reply-comment" data-username="${escapeHtml(c.user_name || 'Climber')}">Rispondi</button></div>` : '';
+                        const actions = canDelete ? `<div style="margin-top:6px;"><button type="button" class="btn-sec" data-action="modal-delete-comment" data-activity-id="${activityId}" data-comment-id="${c.id}">${t('ui.delete')}</button> <button type="button" class="btn-sec" data-action="modal-reply-comment" data-username="${escapeHtml(c.user_name || 'Climber')}">${t('ui.reply')}</button></div>` : '';
                         return `<div class="profile-log"><div><b>${escapeHtml(c.user_name || resolveUsername(c.user_id, 'Climber') || 'Climber')}${badgePillHtml(resolveUserHighestBadge(c.user_id))}</b></div><div>${escapeHtml(c.text || '')}</div><small>${escapeHtml(formatProfileDate(c.timestamp || ''))}</small>${actions}</div>`;
-                    }).join('') || '<p class="profile-empty">Nessun commento.</p>';
+                    }).join('') || `<p class="profile-empty">${t('ui.noComments')}</p>`;
                     list.querySelectorAll('[data-action="modal-delete-comment"]').forEach(btn => btn.onclick = () => deleteActivityComment(btn.dataset.activityId, btn.dataset.commentId).catch(alertWriteError));
                     list.querySelectorAll('[data-action="modal-reply-comment"]').forEach(btn => btn.onclick = () => { input.value = `@${btn.dataset.username} `; input.focus(); });
                     renderFollowingFeed();
@@ -3429,7 +3532,7 @@ Pizzica per zoommare.</p>
                     list.scrollTop = list.scrollHeight;
                 },
                 () => {
-                    list.innerHTML = '<p class="profile-empty">Impossibile caricare i commenti.</p>';
+                    list.innerHTML = `<p class="profile-empty">${t('ui.loadCommentsError')}</p>`;
                 }
             );
             sendBtn.onclick = async () => {
@@ -3985,7 +4088,7 @@ Pizzica per zoommare.</p>
             const gradeSel = document.getElementById('admin-filter-grade');
             if (secSel) {
                 const current = adminDashboardFilters.sectorId || 'all';
-                const opts = ['<option value="all">Tutti i settori</option>'];
+                const opts = [`<option value="all">${t('admin.allSectors')}</option>`];
                 for (const [sid, name] of adminCoverageSnapshot.sectorNames.entries()) opts.push(`<option value="${escapeHtml(sid)}">${escapeHtml(name)}</option>`);
                 secSel.innerHTML = opts.join('');
                 secSel.value = current;
@@ -3994,7 +4097,7 @@ Pizzica per zoommare.</p>
                 const currentG = adminDashboardFilters.grade || 'all';
                 const grades = new Set();
                 for (const meta of adminCoverageSnapshot.routeMeta.values()) if (meta.grade) grades.add(String(meta.grade));
-                const opts = ['<option value="all">Tutti i gradi</option>', ...Array.from(grades).sort().map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`)];
+                const opts = [`<option value="all">${t('admin.allGrades')}</option>`, ...Array.from(grades).sort().map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`)];
                 gradeSel.innerHTML = opts.join('');
                 gradeSel.value = currentG;
             }
@@ -4409,8 +4512,8 @@ Pizzica per zoommare.</p>
             const reviewedRoutes = Number(stats.feedback?.reviewedRoutes || 0);
             const totalReviews = Number(stats.feedback?.totalReviews || 0);
             kpiWrap.innerHTML = `
-                <div class="admin-kpi-card"><i>⭐ Media voti palestra</i><b>${avgRating.toFixed(2)} ⭐</b></div>
-                <div class="admin-kpi-card"><i>🧗 Vie recensite</i><b>${reviewedRoutes}</b><span style="font-size:0.78rem;color:var(--muted);">${totalReviews} recensioni</span></div>
+                <div class="admin-kpi-card"><i>⭐ ${t('ui.avgGymRating')}</i><b>${avgRating.toFixed(2)} ⭐</b></div>
+                <div class="admin-kpi-card"><i>🧗 ${t('ui.reviewedRoutes')}</i><b>${reviewedRoutes}</b><span style="font-size:0.78rem;color:var(--muted);">${totalReviews} ${t('ui.reviewsCount')}</span></div>
                 <div class="admin-kpi-card"><i>📊 ${t('admin.selectedCoverage')}</i><b class="admin-highlight">${stats.selectedCoverage}%</b></div>
                 <div class="admin-kpi-card"><i>🛣 ${t('admin.routesRegistered30d')}</i><b>${stats.routesLast30Days || 0}</b></div>
             `;
@@ -4481,32 +4584,32 @@ Pizzica per zoommare.</p>
             usersWrap.innerHTML = `
                 <div class="admin-users-page">
                     <div class="admin-block-card">
-                        <h5>🟢 Panoramica</h5>
+                        <h5>${t('ui.overview')}</h5>
                         <div class="admin-kpi-grid modern">
-                            <div class="admin-kpi-card modern"><b>${avgRating.toFixed(2)} ⭐</b><span class="admin-kpi-label">Media voti palestra</span></div>
-                            <div class="admin-kpi-card modern"><b>${reviewedRoutes}</b><span class="admin-kpi-label">Vie recensite</span><span class="admin-kpi-trend">${totalReviews} recensioni</span></div>
-                            <div class="admin-kpi-card modern"><b>${stats.sectors.length}</b><span class="admin-kpi-label">Settori attivi</span></div>
-                            <div class="admin-kpi-card modern"><b>${stats.routesLast30Days || 0}</b><span class="admin-kpi-label">Vie tracciate</span><span class="admin-kpi-trend">${trendLabel}</span></div>
+                            <div class="admin-kpi-card modern"><b>${avgRating.toFixed(2)} ⭐</b><span class="admin-kpi-label">${t('ui.avgGymRating')}</span></div>
+                            <div class="admin-kpi-card modern"><b>${reviewedRoutes}</b><span class="admin-kpi-label">${t('ui.reviewedRoutes')}</span><span class="admin-kpi-trend">${totalReviews} ${t('ui.reviewsCount')}</span></div>
+                            <div class="admin-kpi-card modern"><b>${stats.sectors.length}</b><span class="admin-kpi-label">${t('ui.activeSectors')}</span></div>
+                            <div class="admin-kpi-card modern"><b>${stats.routesLast30Days || 0}</b><span class="admin-kpi-label">${t('ui.trackedRoutes')}</span><span class="admin-kpi-trend">${trendLabel}</span></div>
                         </div>
                     </div>
                     <div class="admin-block-card">
-                        <h5>Performance utenti</h5>
+                        <h5>${t('ui.userPerformance')}</h5>
                         <div class="admin-user-table-wrap">
                             <table>
                                 <tr>
                                     <th>#</th>
                                     <th class="admin-table-sort" data-sort="username">Username</th>
-                                    <th class="admin-table-sort" data-sort="routes">Vie scalate</th>
-                                    <th class="admin-table-sort" data-sort="activeDays">Giorni attivi</th>
-                                    <th class="admin-table-sort" data-sort="sector">Settore principale</th>
+                                    <th class="admin-table-sort" data-sort="routes">${t('ui.routesClimbed')}</th>
+                                    <th class="admin-table-sort" data-sort="activeDays">${t('dash.activeDays')}</th>
+                                    <th class="admin-table-sort" data-sort="sector">${t('ui.mainSector')}</th>
                                 </tr>
                                 ${rows}
                             </table>
                         </div>
                         <div class="admin-pager">
-                            <button class="btn-sec" type="button" id="admin-users-prev">Precedente</button>
-                            <span style="color:var(--muted);font-size:0.85rem;">Pagina ${adminUsersState.page}/${totalPages}</span>
-                            <button class="btn-sec" type="button" id="admin-users-next">Successiva</button>
+                            <button class="btn-sec" type="button" id="admin-users-prev">${t('ui.previous')}</button>
+                            <span style="color:var(--muted);font-size:0.85rem;">${t('ui.page')} ${adminUsersState.page}/${totalPages}</span>
+                            <button class="btn-sec" type="button" id="admin-users-next">${t('ui.next')}</button>
                         </div>
                     </div>
                 </div>
@@ -4730,7 +4833,7 @@ Pizzica per zoommare.</p>
                 const activeRows = (tabMap[activeTab] || []).slice(0, 5);
                 const rowHtml = activeRows.map(row => {
                     if (activeTab === 'topRated') return `<div class="admin-feedback-compact-item"><span title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</span><b>${row.value.toFixed(2)} ⭐ (${row.votes})</b></div>`;
-                    return `<div class="admin-feedback-compact-item"><span title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</span><b>${row.value} recensioni · ${row.avg.toFixed(2)} ⭐</b></div>`;
+                    return `<div class="admin-feedback-compact-item"><span title="${escapeHtml(row.label)}">${escapeHtml(row.label)}</span><b>${row.value} ${t('ui.reviewsCount')} · ${row.avg.toFixed(2)} ⭐</b></div>`;
                 }).join('') || `<p class="admin-feedback-empty">${t('common.noData')}</p>`;
 
                 const sectorRows = data.sectorAverages.map(row => ({...row, reviews: row.votes}));
@@ -4740,22 +4843,22 @@ Pizzica per zoommare.</p>
                 wrap.classList.add('compact');
                 wrap.innerHTML = `
                     <div class="admin-feedback-card">
-                        <h5>Feedback & Recensioni</h5>
+                        <h5>${t('ui.feedbackReviews')}</h5>
                         <div class="admin-mini-tabs">
-                            <button class="admin-mini-tab ${activeTab==='topRated'?'active':''}" data-tab="topRated">Top 5 più votate</button>
-                            <button class="admin-mini-tab ${activeTab==='mostReviewed'?'active':''}" data-tab="mostReviewed">Più recensite</button>
-                            <button class="admin-mini-tab ${activeTab==='leastReviewed'?'active':''}" data-tab="leastReviewed">Meno recensite</button>
+                            <button class="admin-mini-tab ${activeTab==='topRated'?'active':''}" data-tab="topRated">${t('ui.top5TopRated')}</button>
+                            <button class="admin-mini-tab ${activeTab==='mostReviewed'?'active':''}" data-tab="mostReviewed">${t('ui.mostReviewed')}</button>
+                            <button class="admin-mini-tab ${activeTab==='leastReviewed'?'active':''}" data-tab="leastReviewed">${t('ui.leastReviewed')}</button>
                         </div>
                         ${rowHtml}
-                        <div class="admin-pager" style="justify-content:flex-start;"><button class="btn-sec" type="button" id="admin-feedback-see-all">Vedi tutte</button></div>
+                        <div class="admin-pager" style="justify-content:flex-start;"><button class="btn-sec" type="button" id="admin-feedback-see-all">${t('ui.seeAll')}</button></div>
                     </div>
                     <div class="admin-feedback-card">
-                        <h5>Media voti per settore</h5>
+                        <h5>${t('ui.avgRatingBySector')}</h5>
                         <div class="admin-bar-chart">
                             ${orderedSectorRows.map(row => {
                                 const val = adminSectorSortState === 'reviews' ? row.reviews : row.value;
                                 const pct = Math.max(4, Math.round((val / barMax) * 100));
-                                const tooltip = `${row.label} · media ${row.value.toFixed(2)} ⭐ · ${row.reviews} recensioni`;
+                                const tooltip = `${row.label} · ${t('ui.avgWord')} ${row.value.toFixed(2)} ⭐ · ${row.reviews} ${t('ui.reviewsCount')}`;
                                 return `<div class="admin-bar-row" title="${escapeHtml(tooltip)}"><span>${escapeHtml(row.label)}</span><div class="admin-bar-track"><div class="admin-bar-fill" style="width:${pct}%;"></div></div></div>`;
                             }).join('')}
                         </div>
@@ -4783,8 +4886,8 @@ Pizzica per zoommare.</p>
                     if (adminFeedbackState.modalPage > totalPages) adminFeedbackState.modalPage = totalPages;
                     const st = (adminFeedbackState.modalPage - 1) * pageSize;
                     const slice = current.slice(st, st + pageSize);
-                    title.textContent = adminFeedbackState.modalType === 'topRated' ? 'Top vie per media voto' : (adminFeedbackState.modalType === 'mostReviewed' ? 'Vie più recensite' : 'Vie meno recensite');
-                    list.innerHTML = `<div class="admin-feedback-list">${slice.map(row => `<div class="admin-feedback-compact-item"><span>${escapeHtml(row.label)}</span><b>${adminFeedbackState.modalType==='topRated' ? `${row.value.toFixed(2)} ⭐ (${row.votes})` : `${row.value} recensioni · ${row.avg.toFixed(2)} ⭐`}</b></div>`).join('')}</div><div style="margin-top:8px;color:var(--muted);font-size:0.85rem;">Pagina ${adminFeedbackState.modalPage}/${totalPages}</div>`;
+                    title.textContent = adminFeedbackState.modalType === 'topRated' ? t('ui.topRoutesByAvg') : (adminFeedbackState.modalType === 'mostReviewed' ? t('ui.mostReviewedRoutes') : t('ui.leastReviewedRoutes'));
+                    list.innerHTML = `<div class="admin-feedback-list">${slice.map(row => `<div class="admin-feedback-compact-item"><span>${escapeHtml(row.label)}</span><b>${adminFeedbackState.modalType==='topRated' ? `${row.value.toFixed(2)} ⭐ (${row.votes})` : `${row.value} ${t('ui.reviewsCount')} · ${row.avg.toFixed(2)} ⭐`}</b></div>`).join('')}</div><div style="margin-top:8px;color:var(--muted);font-size:0.85rem;">${t('ui.page')} ${adminFeedbackState.modalPage}/${totalPages}</div>`;
                     adminFeedbackState._modalRows = current;
                     backdropEl.style.display = 'flex';
                 };
@@ -4797,18 +4900,18 @@ Pizzica per zoommare.</p>
 
                 sectorWrap.innerHTML = data.sectors.map(sec => `
                     <details class="admin-sector-analytics-card">
-                        <summary class="admin-sector-analytics-head"><b>${escapeHtml(sec.sectorName)}</b><span class="admin-pill">${sec.totalReviews} recensioni</span></summary>
+                        <summary class="admin-sector-analytics-head"><b>${escapeHtml(sec.sectorName)}</b><span class="admin-pill">${sec.totalReviews} ${t('ui.reviewsCount')}</span></summary>
                         <div class="admin-sector-analytics-grid">
-                            <div class="admin-sector-analytics-kpi"><b>${sec.totalRoutes}</b><span>Vie totali</span></div>
-                            <div class="admin-sector-analytics-kpi"><b>${sec.reviewedRoutes}</b><span>Vie recensite</span></div>
-                            <div class="admin-sector-analytics-kpi"><b>${sec.avgRating.toFixed(2)} ⭐</b><span>Media voto</span></div>
-                            <div class="admin-sector-analytics-kpi"><b>${sec.totalReviews}</b><span>Recensioni</span></div>
-                            <div class="admin-sector-analytics-kpi"><b>${sec.activeUsers}</b><span>Utenti attivi</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.totalRoutes}</b><span>${t('ui.totalRoutesLabel')}</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.reviewedRoutes}</b><span>${t('ui.reviewedRoutes')}</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.avgRating.toFixed(2)} ⭐</b><span>${t('ui.avgVoteLabel')}</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.totalReviews}</b><span>${t('ui.totalReviewsLabel')}</span></div>
+                            <div class="admin-sector-analytics-kpi"><b>${sec.activeUsers}</b><span>${t('ui.activeUsersLabel')}</span></div>
                         </div>
                         <div class="admin-sector-analytics-subgrid">
-                            <div><h5>Top 3 vie</h5>${sec.topRated.slice(0,3).map(r=>`<div class="admin-feedback-compact-item"><span>${escapeHtml(r.routeLabel)}</span><b>${r.avg.toFixed(2)} ⭐</b></div>`).join('') || '<p class="admin-feedback-empty">-</p>'}</div>
-                            <div><h5>Distribuzione voti</h5>${[5,4,3,2,1].map(v=>`<div class="admin-feedback-compact-item"><span>${v} ⭐</span><b>${sec.starBuckets.get(v)||0}</b></div>`).join('')}</div>
-                            <div><h5>Meno valutate</h5>${sec.lowReviewed.slice(0,3).map(r=>`<div class="admin-feedback-compact-item"><span>${escapeHtml(r.routeLabel)}</span><b>${r.reviews}</b></div>`).join('') || '<p class="admin-feedback-empty">-</p>'}</div>
+                            <div><h5>${t('ui.top3Routes')}</h5>${sec.topRated.slice(0,3).map(r=>`<div class="admin-feedback-compact-item"><span>${escapeHtml(r.routeLabel)}</span><b>${r.avg.toFixed(2)} ⭐</b></div>`).join('') || '<p class="admin-feedback-empty">-</p>'}</div>
+                            <div><h5>${t('ui.voteDistribution')}</h5>${[5,4,3,2,1].map(v=>`<div class="admin-feedback-compact-item"><span>${v} ⭐</span><b>${sec.starBuckets.get(v)||0}</b></div>`).join('')}</div>
+                            <div><h5>${t('ui.leastRated')}</h5>${sec.lowReviewed.slice(0,3).map(r=>`<div class="admin-feedback-compact-item"><span>${escapeHtml(r.routeLabel)}</span><b>${r.reviews}</b></div>`).join('') || '<p class="admin-feedback-empty">-</p>'}</div>
                         </div>
                     </details>
                 `).join('') || `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('common.noData')}</p></div>`;
