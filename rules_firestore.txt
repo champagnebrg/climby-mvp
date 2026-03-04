@@ -102,6 +102,20 @@ service cloud.firestore {
         allow read: if signedIn() || isSuperadmin();
         allow write: if canManageGym(gymId);
       }
+
+
+      match /members/{uid} {
+        allow read: if isSuperadmin() || canManageGym(gymId) || (signedIn() && request.auth.uid == uid);
+        allow create, update: if signedIn()
+          && request.auth.uid == uid
+          && request.resource.data.uid == uid
+          && request.resource.data.keys().hasOnly([
+            "uid", "username", "firstName", "lastName", "city", "birthDate", "createdAt", "totalClimbsInGym", "lastActivityInGym", "status"
+          ])
+          && request.resource.data.status in ["active", "inactive"];
+        allow delete: if false;
+      }
+
     }
 
     match /socialActivities/{activityId} {
