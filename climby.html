@@ -1493,7 +1493,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, serverTimestamp, collectionGroup, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, startAfter, serverTimestamp, collectionGroup, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -1517,6 +1517,8 @@
         let lastUserGymsSnap = null;
         let profileUnsubscribers = [];
         let profileEntriesMap = new Map();
+        let profileActivitiesState = { raw: [], grouped: [], cursor: null, hasMore: true, visibleCount: 5, loading: false };
+        let profileProgressDetailState = { items: [], cursor: null, hasMore: true, loading: false, open: false, filters: { gymId: 'all', sectorId: 'all', grade: 'all', dateFrom: '' } };
         let openGymProgress = new Set();
         let userFollowingIds = [];
         let followsUnsubscriber = null;
@@ -2940,6 +2942,142 @@
             persistMonthlyBadgeState(monthly).catch(() => {});
         }
 
+        function groupProfileActivities(raw = []) {
+            const ordered = raw.slice().sort((a,b) => new Date(b.timestamp || b.createdAt || 0) - new Date(a.timestamp || a.createdAt || 0));
+            const grouped = [];
+            const map = new Map();
+            ordered.forEach((e) => {
+                const day = getDateKeyFromAnyValue(e.timestamp || e.eventDate || e.createdAt || e.updatedAt || '') || '';
+                const key = `${e.routeId || e.routeLabel || e.grade || '-'}__${day}__${e.outcome || e.type || 'climbed'}`;
+                if (!map.has(key)) {
+                    const row = { ...e, day, count: 1 };
+                    map.set(key, row);
+                    grouped.push(row);
+                } else {
+                    map.get(key).count += 1;
+                }
+            });
+            return grouped;
+        }
+
+        async function fetchProfileActivitiesPage(reset = false) {
+            if (!activeUser || profileActivitiesState.loading) return;
+            if (reset) profileActivitiesState = { raw: [], grouped: [], cursor: null, hasMore: true, visibleCount: 5, loading: false };
+            if (!profileActivitiesState.hasMore) return;
+            profileActivitiesState.loading = true;
+            try {
+                const colRef = collection(db, 'users', activeUser.uid, 'progressHistory');
+                const constraints = [orderBy('timestamp', 'desc'), limit(25)];
+                if (profileActivitiesState.cursor) constraints.push(startAfter(profileActivitiesState.cursor));
+                const snap = await getDocs(query(colRef, ...constraints));
+                const incoming = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                profileActivitiesState.raw = profileActivitiesState.raw.concat(incoming);
+                profileActivitiesState.grouped = groupProfileActivities(profileActivitiesState.raw);
+                profileActivitiesState.cursor = snap.docs.length ? snap.docs[snap.docs.length - 1] : profileActivitiesState.cursor;
+                profileActivitiesState.hasMore = snap.size === 25;
+            } catch (_) {
+                profileActivitiesState.hasMore = false;
+            } finally {
+                profileActivitiesState.loading = false;
+            }
+        }
+
+        function computeTrackerSummary(trackerAll = []) {
+            const climbed = trackerAll.filter(v => v.state === 'climbed');
+            const total = climbed.length;
+            const grades = climbed.filter(v => v.finalGrade).map(v => ({ label: v.finalGrade, order: Number.isFinite(v.finalGradeOrder) ? v.finalGradeOrder : -1 }));
+            const max = grades.length ? grades.slice().sort((a,b)=>b.order-a.order)[0] : null;
+            const avgOrder = grades.length ? (grades.reduce((a,g)=>a+Math.max(0,g.order),0) / grades.length) : 0;
+            const dist = new Map();
+            grades.forEach(g => dist.set(g.label, (dist.get(g.label) || 0) + 1));
+            const topHard = climbed.slice().sort((a,b) => (Number(b.finalGradeOrder||-1)-Number(a.finalGradeOrder||-1))).slice(0,5);
+            return { total, maxLabel: max?.label || '-', avgOrder: Math.round(avgOrder*10)/10, distribution: Array.from(dist.entries()).sort((a,b)=>b[1]-a[1]), topHard };
+        }
+
+        function openProfileProgressModal() {
+            profileProgressDetailState.open = true;
+            const modal = document.getElementById('profile-progress-modal');
+            if (modal) modal.style.display = 'flex';
+            renderProfileProgressModal().catch(() => {});
+        }
+
+        async function renderProfileProgressModal(reset = true) {
+            if (!activeUser) return;
+            const modal = document.getElementById('profile-progress-modal');
+            if (!modal) return;
+            if (reset) profileProgressDetailState = { ...profileProgressDetailState, items: [], cursor: null, hasMore: true };
+            const gymSel = document.getElementById('profile-progress-filter-gym');
+            const secSel = document.getElementById('profile-progress-filter-sector');
+            const gradeSel = document.getElementById('profile-progress-filter-grade');
+            const dateInp = document.getElementById('profile-progress-filter-date');
+            const base = Array.from(routeProgressMap.values());
+            const gyms = Array.from(new Set(base.map(v => v.gymId).filter(Boolean))).sort();
+            const sectors = Array.from(new Set(base.map(v => v.sectorId).filter(Boolean))).sort();
+            const grades = Array.from(new Set(base.map(v => v.finalGrade).filter(Boolean))).sort();
+            if (gymSel) gymSel.innerHTML = `<option value="all">Tutte le palestre</option>${gyms.map(g=>`<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('')}`;
+            if (secSel) secSel.innerHTML = `<option value="all">Tutti i settori</option>${sectors.map(g=>`<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('')}`;
+            if (gradeSel) gradeSel.innerHTML = `<option value="all">Tutti i gradi</option>${grades.map(g=>`<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('')}`;
+            if (gymSel) gymSel.value = profileProgressDetailState.filters.gymId;
+            if (secSel) secSel.value = profileProgressDetailState.filters.sectorId;
+            if (gradeSel) gradeSel.value = profileProgressDetailState.filters.grade;
+            if (dateInp) dateInp.value = profileProgressDetailState.filters.dateFrom || '';
+            await loadMoreProfileProgressDetail();
+            bindProfileProgressModalActions();
+        }
+
+        async function loadMoreProfileProgressDetail() {
+            if (!activeUser || profileProgressDetailState.loading || !profileProgressDetailState.hasMore) return;
+            profileProgressDetailState.loading = true;
+            try {
+                const f = profileProgressDetailState.filters;
+                const constraints = [];
+                if (f.gymId && f.gymId !== 'all') constraints.push(where('gymId', '==', f.gymId));
+                if (f.sectorId && f.sectorId !== 'all') constraints.push(where('sectorId', '==', f.sectorId));
+                if (f.grade && f.grade !== 'all') constraints.push(where('finalGrade', '==', f.grade));
+                if (f.dateFrom) constraints.push(where('updatedAt', '>=', `${f.dateFrom}T00:00:00.000Z`));
+                constraints.push(orderBy('updatedAt', 'desc'));
+                constraints.push(limit(20));
+                if (profileProgressDetailState.cursor) constraints.push(startAfter(profileProgressDetailState.cursor));
+                const snap = await getDocs(query(collection(db, 'users', activeUser.uid, 'routeProgress'), ...constraints));
+                const rows = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                profileProgressDetailState.items = profileProgressDetailState.items.concat(rows);
+                profileProgressDetailState.cursor = snap.docs.length ? snap.docs[snap.docs.length - 1] : profileProgressDetailState.cursor;
+                profileProgressDetailState.hasMore = snap.size === 20;
+            } catch (_) {
+                profileProgressDetailState.hasMore = false;
+            } finally { profileProgressDetailState.loading = false; }
+            const list = document.getElementById('profile-progress-list');
+            if (list) {
+                list.innerHTML = profileProgressDetailState.items.map(v => `<div class="profile-log"><b>${escapeHtml(v.routeLabel || v.routeId || '-')}</b><div>${escapeHtml(v.gymName || v.gymId || '-')} / ${escapeHtml(v.sectorName || v.sectorId || '-')}</div><small>${escapeHtml(formatProfileDate(v.updatedAt || v.completionDate || ''))}</small></div>`).join('') || `<p class="profile-empty">${t('common.noData')}</p>`;
+            }
+            const more = document.getElementById('profile-progress-more');
+            if (more) more.style.display = profileProgressDetailState.hasMore ? 'inline-flex' : 'none';
+        }
+
+        function bindProfileProgressModalActions() {
+            const closeBtn = document.getElementById('profile-progress-close');
+            const applyBtn = document.getElementById('profile-progress-apply');
+            const moreBtn = document.getElementById('profile-progress-more');
+            if (closeBtn) closeBtn.onclick = () => {
+                const modal = document.getElementById('profile-progress-modal');
+                if (modal) modal.style.display = 'none';
+                profileProgressDetailState.open = false;
+            };
+            if (applyBtn) applyBtn.onclick = async () => {
+                profileProgressDetailState.filters = {
+                    gymId: document.getElementById('profile-progress-filter-gym')?.value || 'all',
+                    sectorId: document.getElementById('profile-progress-filter-sector')?.value || 'all',
+                    grade: document.getElementById('profile-progress-filter-grade')?.value || 'all',
+                    dateFrom: document.getElementById('profile-progress-filter-date')?.value || ''
+                };
+                profileProgressDetailState.items = [];
+                profileProgressDetailState.cursor = null;
+                profileProgressDetailState.hasMore = true;
+                await loadMoreProfileProgressDetail();
+            };
+            if (moreBtn) moreBtn.onclick = () => loadMoreProfileProgressDetail();
+        }
+
         function renderProfileDashboard() {
             const box = document.getElementById('profile-dashboard');
             if (!box || !activeUser) return;
@@ -2978,13 +3116,16 @@
             }).join(' ');
             const spark = points ? `<svg class="profile-sparkline" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline fill="none" stroke="var(--primary)" stroke-width="3" points="${points}" /></svg>` : `<p class="profile-empty">${t('dash.noMilestones')}</p>`;
 
-            const latest = mineData.sorted.slice(0, 6).map(e => {
+            const groupedLatest = profileActivitiesState.grouped.slice(0, profileActivitiesState.visibleCount);
+            const latest = groupedLatest.map(e => {
                 const state = e.outcome === 'project' ? t('viewer.project') : t('viewer.climbed');
-                return `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(e.grade || '-')}</div><span class="profile-activity-state">${escapeHtml(state)}</span></div><div class="profile-activity-meta">${escapeHtml(e.gymName || '-')} / ${escapeHtml(e.sectorName || '-')}</div><div class="profile-activity-meta">${escapeHtml(formatProfileDate(e.sendDate))}${e.tries ? ` · ${e.tries} ${t('viewer.tries').toLowerCase()}` : ''}</div></div>`;
+                const countLabel = e.count > 1 ? ` · ${e.count} volte` : '';
+                return `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(e.grade || '-')}</div><span class="profile-activity-state">${escapeHtml(state)}${countLabel}</span></div><div class="profile-activity-meta">${escapeHtml(e.gymName || '-')} / ${escapeHtml(e.sectorName || '-')}</div><div class="profile-activity-meta">${escapeHtml(formatProfileDate(e.day || e.timestamp || e.sendDate || ''))}</div></div>`;
             }).join('');
 
-            const trackerDone = trackerAll.filter(v => v.state === 'climbed').slice(0, 8).map(v => `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(v.routeLabel || v.routeGrade || '-')}</div><span class="profile-activity-state">${t('viewer.climbed')}</span></div><div class="profile-activity-meta">${escapeHtml(v.gymName || '-')} · ${t('viewer.tries')}: ${v.attemptCount || 1}</div></div>`).join('');
-            const trackerProject = trackerAll.filter(v => v.state === 'project').slice(0, 8).map(v => `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(v.routeLabel || v.routeGrade || '-')}</div><span class="profile-activity-state">${t('viewer.project')}</span></div><div class="profile-activity-meta">${escapeHtml(v.gymName || '-')} · ${t('viewer.tries')}: ${v.attemptCount || 1}</div></div>`).join('');
+            const trackerSummary = computeTrackerSummary(trackerAll);
+            const distHtml = trackerSummary.distribution.slice(0,6).map(([label, count]) => `<div class="admin-feedback-compact-item"><span>${escapeHtml(label)}</span><b>${count}</b></div>`).join('') || `<p class="profile-empty">-</p>`;
+            const topHardHtml = trackerSummary.topHard.map(v => `<div class="profile-log"><b>${escapeHtml(v.routeLabel || v.routeId || '-')}</b><small>${escapeHtml(v.finalGrade || '-')} · ${escapeHtml(v.gymName || v.gymId || '-')}</small></div>`).join('') || `<p class="profile-empty">-</p>`;
 
             box.innerHTML = `
                 <div class="profile-shell">
@@ -3025,17 +3166,35 @@
                     <div class="profile-section-card">
                         <b>${t('dash.latestActivities')}</b>
                         <div class="profile-activity-list" style="margin-top:10px;">${latest || `<p class="profile-empty">${t('dash.noProgress')}</p>`}</div>
+                        <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-activities-more">Carica altre</button></div>
                     </div>
 
                     <div class="profile-section-card">
                         <b>${t('viewer.progressTracker')}</b>
-                        <div class="profile-tracker-grid" style="margin-top:10px;">
-                            <div class="profile-tracker-col"><h5>✅ ${t('viewer.climbed')}</h5>${trackerDone || `<p class="profile-empty">${t('viewer.trackerNone')}</p>`}</div>
-                            <div class="profile-tracker-col"><h5>🧩 ${t('viewer.project')}</h5>${trackerProject || `<p class="profile-empty">${t('viewer.trackerNone')}</p>`}</div>
+                        <div class="admin-coverage-grid" style="margin-top:10px;">
+                            <div class="admin-coverage-kpi"><b>${trackerSummary.total}</b><span>Totale scalate</span></div>
+                            <div class="admin-coverage-kpi"><b>${escapeHtml(trackerSummary.maxLabel)}</b><span>Grado massimo</span></div>
+                            <div class="admin-coverage-kpi"><b>${trackerSummary.avgOrder}</b><span>Media grado (ordine)</span></div>
                         </div>
+                        <div class="profile-tracker-grid" style="margin-top:10px;">
+                            <div class="profile-tracker-col"><h5>📊 Distribuzione gradi</h5>${distHtml}</div>
+                            <div class="profile-tracker-col"><h5>🏔 Top 5 vie più difficili</h5>${topHardHtml}</div>
+                        </div>
+                        <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-progress-open">Vedi tutte le scalate</button></div>
                     </div>
                 </div>
             `;
+            const moreBtn = document.getElementById('profile-activities-more');
+            if (moreBtn) {
+                moreBtn.style.display = (profileActivitiesState.hasMore || profileActivitiesState.grouped.length > profileActivitiesState.visibleCount) ? 'inline-flex' : 'none';
+                moreBtn.onclick = async () => {
+                    profileActivitiesState.visibleCount += 5;
+                    if (profileActivitiesState.grouped.length < profileActivitiesState.visibleCount && profileActivitiesState.hasMore) await fetchProfileActivitiesPage(false);
+                    renderProfileDashboard();
+                };
+            }
+            const openProgressBtn = document.getElementById('profile-progress-open');
+            if (openProgressBtn) openProgressBtn.onclick = () => openProfileProgressModal();
         }
         function followDocId(followerId, followingId) { return `${followerId}__${followingId}`; }
 
@@ -3840,7 +3999,7 @@
                     profileUnsubscribers.push(unsub);
                 });
             }
-            renderProfileDashboard();
+            fetchProfileActivitiesPage(true).then(() => renderProfileDashboard());
         }
 
         function stopGymCoverageListeners() {
@@ -6079,5 +6238,24 @@
         window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; };
         function showView(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); const nav = document.getElementById('app-bottom-nav'); if (nav && id !== 'view-dash') nav.classList.remove('active'); }
     </script>
+
+    <div id="profile-progress-modal" class="admin-modal-backdrop" style="display:none;">
+        <div class="admin-modal">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                <h4 style="margin:0;">Dettaglio progress tracker</h4>
+                <button type="button" class="btn-sec" id="profile-progress-close">Chiudi</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px;">
+                <select id="profile-progress-filter-gym"><option value="all">Tutte le palestre</option></select>
+                <select id="profile-progress-filter-sector"><option value="all">Tutti i settori</option></select>
+                <select id="profile-progress-filter-grade"><option value="all">Tutti i gradi</option></select>
+                <input type="date" id="profile-progress-filter-date" />
+            </div>
+            <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-progress-apply">Applica filtri</button></div>
+            <div id="profile-progress-list" style="margin-top:10px;"></div>
+            <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-progress-more">Vedi altre scalate</button></div>
+        </div>
+    </div>
+
 </body>
 </html>
