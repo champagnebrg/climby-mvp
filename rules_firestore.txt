@@ -1,0 +1,145 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isSuperadmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc().data.role == 'superadmin';
+    }
+
+    function isGymAdminRole() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (userDoc().data.role == 'gym_admin' || userDoc().data.role == 'admin');
+    }
+
+    function managesGym(gymId) {
+      return isGymAdminRole() && userDoc().data.gymManaged == gymId;
+    }
+
+    function canManageGym(gymId) {
+      return isSuperadmin() || isGymOwner(gymId) || managesGym(gymId);
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isSelfByAuthUid(data) {
+      return signedIn() && data.authUid == request.auth.uid;
+    }
+
+    function isGymOwner(gymId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/gyms/$(gymId))
+        && get(/databases/$(database)/documents/gyms/$(gymId)).data.owner == request.auth.uid;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() || isSuperadmin();
+      allow create: if isSuperadmin() || isSelf(uid) || isSelfByAuthUid(request.resource.data);
+      allow update, delete: if isSuperadmin() || isSelf(uid) || isSelfByAuthUid(resource.data);
+
+      match /routeProgress/{progressId} {
+        allow read: if signedIn() || isSuperadmin();
+        allow create, update: if isSuperadmin() || isSelf(uid);
+        allow delete: if isSuperadmin() || isSelf(uid) || canManageGym(resource.data.gymId);
+      }
+
+      match /gymStats/{gymId} {
+        allow read: if signedIn() || isSuperadmin();
+        allow write: if isSuperadmin() || isSelf(uid);
+      }
+    }
+
+    match /follows/{followId} {
+      allow read: if signedIn() || isSuperadmin();
+      allow create: if isSuperadmin() || (signedIn() && request.resource.data.followerId == request.auth.uid);
+      allow update, delete: if isSuperadmin() || (signedIn() && resource.data.followerId == request.auth.uid);
+    }
+
+    match /gyms/{gymId} {
+      allow read: if signedIn() || isSuperadmin();
+      allow create: if isSuperadmin() || (signedIn() && request.resource.data.owner == request.auth.uid);
+      allow update, delete: if canManageGym(gymId);
+
+      match /Sectors/{sectorId} {
+        allow read: if signedIn() || isSuperadmin();
+        allow write: if canManageGym(gymId);
+
+        match /routes/{routeId} {
+          allow read: if signedIn() || isSuperadmin();
+          allow write: if canManageGym(gymId);
+
+          match /reviews/{reviewId} {
+            allow read: if signedIn() || isSuperadmin();
+            allow create, update, delete: if canManageGym(gymId) || (signedIn() && request.auth.uid == reviewId);
+          }
+
+          match /progressFeed/{entryId} {
+            allow read: if signedIn() || isSuperadmin();
+            allow write: if canManageGym(gymId) || (signedIn() && request.auth.uid == entryId);
+          }
+        }
+      }
+    }
+
+    match /socialActivities/{activityId} {
+      // Social V1: authenticated users can view and interact with all activities.
+      allow read: if signedIn() || isSuperadmin();
+      allow create: if isSuperadmin() || signedIn();
+      allow update: if isSuperadmin() || signedIn();
+      allow delete: if isSuperadmin() || canManageGym(resource.data.gymId) || (signedIn() && resource.data.user_id == request.auth.uid);
+
+      match /applause/{applauseUid} {
+        allow read: if signedIn() || isSuperadmin();
+        allow write: if isSuperadmin() || signedIn();
+      }
+
+      match /comments/{commentId} {
+        allow read: if signedIn() || isSuperadmin();
+        allow create: if isSuperadmin() || signedIn();
+        allow update, delete: if isSuperadmin() || canManageGym(get(/databases/$(database)/documents/socialActivities/$(activityId)).data.gymId) || signedIn();
+      }
+    }
+
+    match /gymOwnerRequests/{requestId} {
+      allow create: if isSuperadmin() || (
+        signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "pending"
+        && request.resource.data.gymName is string
+        && request.resource.data.gymName.size() > 0
+        && request.resource.data.keys().hasOnly(["userId", "gymName", "status", "createdAt"])
+      );
+
+      allow read: if isSuperadmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isSuperadmin();
+    }
+
+    // KPI globali: accessibili solo al superadmin, write bloccata lato client.
+    match /analytics/superadmin_kpis {
+      allow read: if isSuperadmin();
+      allow write: if false;
+    }
+
+    match /analytics/{docId} {
+      allow read: if isSuperadmin();
+      allow write: if false;
+    }
+
+    // Accesso completo in lettura al superadmin su documenti non coperti sopra.
+    match /{document=**} {
+      allow read: if isSuperadmin();
+      allow write: if false;
+    }
+  }
+}

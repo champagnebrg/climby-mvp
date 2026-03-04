@@ -1,0 +1,62 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    // Nota: assume documento users/{uid} allineato con auth.uid.
+    function userDoc() {
+      return firestore.get(/databases/(default)/documents/users/$(myUid()));
+    }
+
+    function role() {
+      return signedIn() && firestore.exists(/databases/(default)/documents/users/$(myUid()))
+        ? userDoc().data.role
+        : null;
+    }
+
+    function isSuperadmin() {
+      return role() == 'superadmin';
+    }
+
+    function isGymAdminUser() {
+      return role() == 'gym_admin' || role() == 'admin';
+    }
+
+    function isGymOwner(gymId) {
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/gyms/$(gymId))
+        && firestore.get(/databases/(default)/documents/gyms/$(gymId)).data.owner == myUid();
+    }
+
+    function managesGym(gymId) {
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/users/$(myUid()))
+        && isGymAdminUser()
+        && userDoc().data.gymManaged == gymId;
+    }
+
+    function canManageGym(gymId) {
+      return isSuperadmin() || isGymOwner(gymId) || managesGym(gymId);
+    }
+
+    // 3D meshes uploaded by gym managers/admins.
+    // Path used by app: meshes/{gymId}/{sectorId}.glb
+    match /meshes/{gymId}/{fileName} {
+      allow read: if signedIn() || isSuperadmin();
+
+      allow write: if fileName.matches('.*\\.glb$')
+        && canManageGym(gymId);
+    }
+
+    // Deny everything else by default.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
