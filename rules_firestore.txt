@@ -58,6 +58,13 @@ service cloud.firestore {
         allow read: if signedIn() || isSuperadmin();
         allow write: if isSuperadmin() || isSelf(uid);
       }
+
+      match /progressHistory/{recordId} {
+        allow read: if isSuperadmin() || isSelf(uid);
+        allow create, update: if isSuperadmin() || isSelf(uid);
+        allow delete: if isSuperadmin() || isSelf(uid);
+      }
+
     }
 
     match /follows/{followId} {
@@ -89,6 +96,11 @@ service cloud.firestore {
             allow write: if canManageGym(gymId) || (signedIn() && request.auth.uid == entryId);
           }
         }
+      }
+
+      match /models/{modelVersionId} {
+        allow read: if signedIn() || isSuperadmin();
+        allow write: if canManageGym(gymId);
       }
     }
 
