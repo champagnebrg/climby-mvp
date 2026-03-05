@@ -674,6 +674,15 @@
         .social-feed-meta { margin-top:6px; font-size:13px; color:var(--muted); }
         .social-feed-grade { font-size:22px; font-weight:600; color:var(--primary); }
         .social-feed-actions { display:flex; gap:8px; margin-top:10px; }
+        .social-feed-card-compact { padding:10px 12px; }
+        .social-feed-activity-list { margin:8px 0 0; padding-left:18px; color:var(--text); font-size:0.9rem; }
+        .social-feed-activity-list li { margin:3px 0; }
+
+        .color-dot { display:inline-block; width:10px; height:10px; border-radius:999px; border:1px solid rgba(0,0,0,0.2); vertical-align:middle; margin-right:6px; }
+        .admin-route-color-preview { display:inline-flex; align-items:center; gap:8px; margin-top:8px; font-size:0.85rem; color:var(--muted); }
+        .admin-route-color-swatch { width:14px; height:14px; border-radius:999px; border:1px solid var(--border); }
+        .admin-sector-routes-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:0.86rem; }
+        .admin-sector-routes-table th, .admin-sector-routes-table td { padding:8px 6px; border-bottom:1px dashed var(--border); text-align:left; }
         .social-action-btn { min-height:36px; padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface-elevated); color:var(--muted); font-size:13px; }
         .social-action-btn.active { border-color: var(--primary); color: var(--primary); }
         .social-feed-card.engaged { border-color: rgba(255, 107, 107, 0.45); background: rgba(255, 107, 107, 0.06); }
@@ -805,9 +814,9 @@
         .tracker-state-option { border:1px solid var(--border); border-radius:12px; background:var(--card); padding:12px; text-align:left; color:var(--text); font-weight:600; min-height:56px; }
         .tracker-state-option small { display:block; margin-top:4px; color:var(--muted); font-weight:500; }
         .tracker-state-option.active { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); background: rgba(111,77,255,0.12); }
-        .tracker-stepper { display:flex; align-items:center; gap:10px; }
-        .tracker-step-btn { width:44px; min-width:44px; height:44px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:1.2rem; }
-        .tracker-step-val { flex:1; text-align:center; font-size:1.1rem; font-weight:700; border:1px solid var(--border); border-radius:10px; min-height:44px; display:grid; place-items:center; background:var(--surface-elevated); }
+        .tracker-attempt-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+        .tracker-attempt-option { min-height:44px; border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--text); font-weight:600; }
+        .tracker-attempt-option.active { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); background: rgba(111,77,255,0.12); }
         .tracker-state-pill { padding:8px 12px; border:1px solid var(--border); border-radius:999px; font-size:0.82rem; color:var(--muted); }
         .tracker-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
         .tracker-grid .full { grid-column: 1 / -1; }
@@ -910,9 +919,12 @@
             min-height: 48px;
             min-width: 48px;
             padding: 12px 18px;
-            background: rgba(0,0,0,0.7);
-            color: var(--text);
+            background: rgba(255,255,255,0.95);
+            color: var(--primary);
+            border: 1px solid color-mix(in srgb, var(--primary) 55%, white 45%);
+            box-shadow: 0 8px 18px rgba(15, 23, 32, 0.28);
             border-radius: var(--radius-sm);
+            font-weight: 700;
         }
         .auth-toggle { cursor: pointer; color: var(--muted); margin-top: 22px; font-size: 1rem; min-height: 44px; display: inline-flex; align-items: center; }
         .auth-toggle:active { color: var(--primary); }
@@ -1185,15 +1197,9 @@
                                 </div>
                                 <h4 class="admin-section-title" data-i18n="admin.activityLast30"></h4>
                                 <div id="admin-coverage-container"></div>
-                                <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.sectorPerformance"></h4>
-                                <div class="admin-coverage-toolbar" style="margin-bottom:8px;">
-                                    <label for="admin-sector-sort" data-i18n="admin.sortBy"></label>
-                                    <select id="admin-sector-sort">
-                                        <option value="most" data-i18n="admin.sortMost"></option>
-                                        <option value="least" data-i18n="admin.sortLeast"></option>
-                                    </select>
-                                </div>
-                                <div id="admin-sector-performance-table" class="admin-sector-table-wrap"></div>
+                                <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="ui.overview"></h4>
+                                <div id="admin-users-summary"></div>
+
                             </div>
                         </div>
 
@@ -1219,7 +1225,7 @@
 
                         <div id="admin-tab-users" class="admin-tab-panel">
                             <h3 class="headline-brand" data-i18n="admin.navUsersSimple"></h3>
-                            <div id="admin-users-summary"></div>
+                            <div id="admin-users-table"></div>
                             <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.feedbackAnalyticsUsers"></h4>
                             <div id="admin-feedback-analytics" class="admin-feedback-analytics"></div>
                             <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.sectorAnalysis"></h4>
@@ -1426,6 +1432,7 @@
                 </div>
                 <input id="route-grade" type="text" required autocomplete="off" spellcheck="false" data-i18n-placeholder="viewer.routeGradePlaceholder">
                 <select id="route-color" required></select>
+                <div class="admin-route-color-preview"><span class="admin-route-color-swatch" id="admin-route-color-swatch"></span><span id="admin-route-color-name">-</span></div>
                 <button class="btn-main" onclick="window.saveRoute()" data-i18n="viewer.save"></button>
                 <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()" data-i18n="viewer.delete"></button>
             </div>
@@ -1449,12 +1456,12 @@
                         <div class="tracker-grid" id="tracker-form-grid" style="display:none;">
                             <div>
                                 <label class="social-label" data-i18n="viewer.tries"></label>
-                                <div class="tracker-stepper">
-                                    <button type="button" class="tracker-step-btn" id="tracker-attempt-dec">−</button>
-                                    <div class="tracker-step-val" id="tracker-attempt-value">1</div>
-                                    <button type="button" class="tracker-step-btn" id="tracker-attempt-inc">+</button>
+                                <div class="tracker-attempt-options" id="tracker-attempt-options">
+                                    <button type="button" class="tracker-attempt-option" data-attempt="1">1</button>
+                                    <button type="button" class="tracker-attempt-option" data-attempt="2">2</button>
+                                    <button type="button" class="tracker-attempt-option" data-attempt="3">3+</button>
                                 </div>
-                                <input type="number" min="1" step="1" id="tracker-attempt-count" class="social-input" style="display:none;">
+                                <input type="hidden" id="tracker-attempt-count" value="1">
                             </div>
                             <div class="full">
                                 <label class="social-label" data-i18n="viewer.personalNotes"></label>
@@ -1583,21 +1590,18 @@
 
         const GRADE_SCALE = ["4a","4b","4c","5a","5b","5c","6a","6b","6c","7a","7b","7c","8a","8b","8c","9a","9b","9c"];
         const AVAILABLE_COLORS = [
-            { value: '#2BE07D', labels: { it: 'Blu elettrico', en: 'Electric blue' } },
-            { value: '#2BE07D', labels: { it: 'Turchese', en: 'Turquoise' } },
-            { value: '#FFD166', labels: { it: 'Giallo', en: 'Yellow' } },
-            { value: '#FF5C5C', labels: { it: 'Rosso', en: 'Red' } },
-            { value: '#20C96B', labels: { it: 'Blu', en: 'Blue' } },
-            { value: '#22C55E', labels: { it: 'Verde', en: 'Green' } },
-            { value: '#8B5CF6', labels: { it: 'Viola', en: 'Purple' } },
-            { value: '#EC4899', labels: { it: 'Rosa', en: 'Pink' } },
-            { value: '#D946EF', labels: { it: 'Fucsia', en: 'Fuchsia' } },
-            { value: '#84CC16', labels: { it: 'Lime', en: 'Lime' } },
-            { value: '#111827', labels: { it: 'Nero', en: 'Black' } },
-            { value: '#FFFFFF', labels: { it: 'Bianco', en: 'White' } },
-            { value: '#6B7280', labels: { it: 'Grigio', en: 'Gray' } },
-            { value: '#92400E', labels: { it: 'Marrone', en: 'Brown' } },
-            { value: '#C026D3', labels: { it: 'Magenta', en: 'Magenta' } }
+            { value: '#3B82F6', icon: '🔵', labels: { it: 'Blu', en: 'Blue' } },
+            { value: '#22C55E', icon: '🟢', labels: { it: 'Verde', en: 'Green' } },
+            { value: '#EF4444', icon: '🔴', labels: { it: 'Rosso', en: 'Red' } },
+            { value: '#F59E0B', icon: '🟠', labels: { it: 'Arancione', en: 'Orange' } },
+            { value: '#EAB308', icon: '🟡', labels: { it: 'Giallo', en: 'Yellow' } },
+            { value: '#8B5CF6', icon: '🟣', labels: { it: 'Viola', en: 'Purple' } },
+            { value: '#EC4899', icon: '🩷', labels: { it: 'Rosa', en: 'Pink' } },
+            { value: '#14B8A6', icon: '🟢', labels: { it: 'Turchese', en: 'Teal' } },
+            { value: '#111827', icon: '⚫', labels: { it: 'Nero', en: 'Black' } },
+            { value: '#FFFFFF', icon: '⚪', labels: { it: 'Bianco', en: 'White' } },
+            { value: '#6B7280', icon: '⚫', labels: { it: 'Grigio', en: 'Gray' } },
+            { value: '#92400E', icon: '🟤', labels: { it: 'Marrone', en: 'Brown' } }
         ];
 
         const LANG_KEY = 'climby_lang';
@@ -1710,6 +1714,12 @@
             reply: { it: 'Rispondi', en: 'Reply' },
             noComments: { it: 'Nessun commento.', en: 'No comments.' },
             new: { it: 'Nuovo', en: 'New' },
+            dailyActivityTitle: { it: 'Attività del giorno', en: 'Daily activity' },
+            dailyActivity: { it: 'attività giornaliera', en: 'daily activity' },
+            newPersonalBest: { it: 'Nuovo massimo personale!', en: 'New personal best!' },
+            loadMore: { it: 'Carica altre', en: 'Load more' },
+            seeAllClimbs: { it: 'Vedi tutte le scalate', en: 'See all climbs' },
+            color: { it: 'Colore', en: 'Color' },
             newMax: { it: '🔥 Nuovo massimo', en: '🔥 New max' },
             myClimbedAt: { it: 'Hai scalato', en: 'You climbed' },
             applauseCountLabel: { it: 'applausi', en: 'applause' },
@@ -1818,8 +1828,10 @@
             const prevValue = colorSelect.value;
             colorSelect.innerHTML = AVAILABLE_COLORS.map(c => {
                 const label = c.labels?.[currentLang] || c.labels?.it || c.value;
-                return `<option value="${c.value}">● ${label}</option>`;
+                return `<option value="${c.value}">${c.icon || '●'} ${label}</option>`;
             }).join('');
+            updateAdminRouteColorPreview();
+            colorSelect.onchange = updateAdminRouteColorPreview;
             if (prevValue) {
                 ensureRouteColorOption(prevValue);
                 colorSelect.value = prevValue;
@@ -1833,8 +1845,49 @@
             if (exists) return;
             const legacy = document.createElement('option');
             legacy.value = colorValue;
-            legacy.textContent = `● ${colorValue.toUpperCase()}`;
+            legacy.textContent = `${currentLang === 'it' ? '⚪ Colore personalizzato' : '⚪ Custom color'}`;
             colorSelect.appendChild(legacy);
+            updateAdminRouteColorPreview();
+        }
+
+        function updateAdminRouteColorPreview() {
+            const colorSelect = document.getElementById('route-color');
+            const sw = document.getElementById('admin-route-color-swatch');
+            const nameEl = document.getElementById('admin-route-color-name');
+            if (!colorSelect || !sw || !nameEl) return;
+            const color = colorSelect.value || '#9CA3BC';
+            sw.style.background = color;
+            const meta = AVAILABLE_COLORS.find(c => c.value.toLowerCase() === color.toLowerCase());
+            nameEl.textContent = meta?.labels?.[currentLang] || meta?.labels?.it || t('ui.customColor');
+        }
+
+
+        function resolveRouteColorFromStores(item = {}) {
+            const direct = item.routeColor || item.route_color || item.color || null;
+            if (direct) return direct;
+            const g = item.gymId || item.gym_id || null;
+            const sct = item.sectorId || item.sector_id || null;
+            const r = item.routeId || item.route_id || null;
+            if (g && sct && r) {
+                const key = `${g}__${sct}__${r}`;
+                const rp = routeProgressMap.get(key) || {};
+                if (rp.color) return rp.color;
+            }
+            return '#9CA3BC';
+        }
+
+        function formatSectorGymLine(sectorName, gymName) {
+            const sec = String(sectorName || '').trim();
+            const gym = String(gymName || '').trim();
+            if (sec && gym && sec.toLowerCase() === gym.toLowerCase()) return sec;
+            if (sec && gym) return `${sec} · ${gym}`;
+            return sec || gym || '-';
+        }
+        function getColorLabel(colorValue) {
+            const color = String(colorValue || '').trim();
+            if (!color) return '-';
+            const meta = AVAILABLE_COLORS.find(c => c.value.toLowerCase() === color.toLowerCase());
+            return meta?.labels?.[currentLang] || meta?.labels?.it || t('ui.customColor');
         }
         function formatPersonName(value) {
             const raw = String(value || '').trim().replace(/\s+/g, ' ');
@@ -1894,26 +1947,33 @@
 
         async function getUserProfileByAuthUid(authUid) {
             if (!authUid) return { ref: null, id: null, data: {} };
+            const canonicalRef = doc(db, 'users', authUid);
+            const canonicalSnap = await getDoc(canonicalRef);
+            let canonicalData = canonicalSnap.exists() ? (canonicalSnap.data() || {}) : null;
+
+            let legacyDoc = null;
             try {
-                const qSnap = await getDocs(query(collection(db, 'users'), where('authUid', '==', authUid), limit(1)));
-                if (!qSnap.empty) {
-                    const d = qSnap.docs[0];
-                    return { ref: doc(db, 'users', d.id), id: d.id, data: d.data() || {} };
-                }
+                const qSnap = await getDocs(query(collection(db, 'users'), where('authUid', '==', authUid), limit(5)));
+                legacyDoc = qSnap.docs.find(d => d.id !== authUid) || null;
             } catch (_) {}
-            const legacyRef = doc(db, 'users', authUid);
-            const legacySnap = await getDoc(legacyRef);
-            if (legacySnap.exists()) {
-                const legacyData = legacySnap.data() || {};
-                const usernameId = normalizeUsername(legacyData.username || '');
-                if (usernameId && usernameId !== authUid) {
-                    const targetRef = doc(db, 'users', usernameId);
-                    await setDoc(targetRef, { authUid, ...legacyData }, { merge: true });
-                    return { ref: targetRef, id: usernameId, data: { authUid, ...legacyData } };
+
+            if (legacyDoc) {
+                const legacyData = legacyDoc.data() || {};
+                if (canonicalData) {
+                    const mergedData = { ...legacyData, ...canonicalData, authUid };
+                    await setDoc(canonicalRef, mergedData, { merge: true });
+                    canonicalData = mergedData;
+                } else {
+                    canonicalData = { ...legacyData, authUid };
+                    await setDoc(canonicalRef, canonicalData, { merge: true });
                 }
-                return { ref: legacyRef, id: authUid, data: { authUid, ...legacyData } };
             }
-            return { ref: legacyRef, id: authUid, data: { authUid } };
+
+            if (canonicalData) {
+                return { ref: canonicalRef, id: authUid, data: { ...canonicalData, authUid } };
+            }
+
+            return { ref: canonicalRef, id: authUid, data: { authUid } };
         }
 
         async function ensureUidProfileMirror(authUid, sourceData = {}) {
@@ -2028,26 +2088,30 @@
                     const lower = usernameLower(username);
                     const res = await createUserWithEmailAndPassword(auth, email, pass);
                     try {
+                        const authUid = res.user.uid;
                         const qRef = query(collection(db, 'users'), where('usernameLower', '==', lower), limit(1));
                         const existsSnap = await getDocs(qRef);
-                        const taken = existsSnap.docs.some(d => (d.data()?.authUid || d.id) !== res.user.uid);
+                        const taken = existsSnap.docs.some(d => (d.data()?.authUid || d.id) !== authUid);
                         if (taken) throw new Error('USERNAME_TAKEN');
+                        const userRef = doc(db, "users", authUid);
+                        const userSnap = await getDoc(userRef);
+                        const existingData = userSnap.exists() ? (userSnap.data() || {}) : {};
                         const userProfile = {
-                            authUid: res.user.uid,
-                            role: 'user',
-                            gymManaged: null,
+                            authUid,
+                            role: existingData.role || 'user',
+                            gymManaged: existingData.gymManaged || null,
                             username,
                             usernameLower: lower,
                             firstName,
                             lastName,
+                            email: res.user.email || email || existingData.email || null,
                             birthDate,
                             city,
-                            following: [],
-                            favouriteGyms: [],
-                            createdAt: serverTimestamp()
+                            following: Array.isArray(existingData.following) ? existingData.following : [],
+                            favouriteGyms: Array.isArray(existingData.favouriteGyms) ? existingData.favouriteGyms : [],
+                            createdAt: existingData.createdAt || serverTimestamp()
                         };
-                        await setDoc(doc(db, "users", username), userProfile);
-                        await ensureUidProfileMirror(res.user.uid, userProfile);
+                        await setDoc(userRef, userProfile, { merge: true });
                     } catch (e) {
                         try { await deleteUser(res.user); } catch (_) {}
                         if (e?.message === 'USERNAME_TAKEN') throw new Error(t('errors.usernameTaken'));
@@ -2470,6 +2534,68 @@
             return d.toLocaleDateString(currentLang === 'it' ? 'it-IT' : 'en-US');
         }
 
+        function socialDateKeyFromValue(v) {
+            if (!v) return toYYYYMMDD(new Date());
+            if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+            const d = new Date(v);
+            if (Number.isNaN(d.getTime())) return toYYYYMMDD(new Date());
+            return toYYYYMMDD(d);
+        }
+
+        function normalizeSocialActivity(activity = {}) {
+            const row = activity || {};
+            const userUid = row.userAuthUid || row.user_id || row.userId || null;
+            const gymId = row.gymId || row.gym_id || null;
+            const gymName = row.gym_name || row.gymName || gymId || '-';
+            const activityDate = row.activityDate || socialDateKeyFromValue(row.timestamp || row.lastUpdatedAt || row.sendDate || row.date);
+            const rawList = Array.isArray(row.activityList) ? row.activityList : [];
+            const fallbackType = row.activity_type || 'route';
+            const fallbackItem = {
+                type: fallbackType,
+                grade: row.grade || null,
+                attempts: Number(row.attempts || 1),
+                gymId,
+                gymName,
+                timestamp: row.timestamp || new Date().toISOString(),
+                isNewMax: !!row.is_new_max,
+                streakDays: row.streak_days || null
+            };
+            const activityList = (rawList.length ? rawList : [fallbackItem]).map((item) => ({
+                type: item.type || item.activity_type || 'route',
+                grade: item.grade || null,
+                attempts: Number(item.attempts || 1),
+                gymId: item.gymId || item.gym_id || gymId,
+                gymName: item.gymName || item.gym_name || gymName,
+                timestamp: item.timestamp || row.timestamp || new Date().toISOString(),
+                isNewMax: !!(item.isNewMax || item.is_new_max),
+                streakDays: item.streakDays || item.streak_days || null,
+                routeColor: item.routeColor || item.route_color || item.color || null,
+                sectorId: item.sectorId || item.sector_id || row.sectorId || row.sector_id || null,
+                routeId: item.routeId || item.route_id || row.routeId || row.route_id || null
+            }));
+            const hasNewMax = activityList.some(item => item.type === 'new_max' || item.isNewMax);
+            const ts = row.lastUpdatedAt || row.timestamp || activityList[activityList.length - 1]?.timestamp || new Date().toISOString();
+            return {
+                ...row,
+                userAuthUid: userUid,
+                user_id: userUid,
+                userId: userUid,
+                user_name: row.user_name || row.userName || 'Climber',
+                gymId,
+                gym_id: gymId,
+                gym_name: gymName,
+                activityDate,
+                activityList,
+                is_new_max: hasNewMax,
+                applauseCount: Number(row.applauseCount ?? row.applause_count ?? 0),
+                commentCount: Number(row.commentCount ?? row.comment_count ?? 0),
+                applause_count: Number(row.applause_count ?? row.applauseCount ?? 0),
+                comment_count: Number(row.comment_count ?? row.commentCount ?? 0),
+                timestamp: ts,
+                lastUpdatedAt: row.lastUpdatedAt || ts
+            };
+        }
+
         function areConsecutiveDays(prevYmd, nextYmd) {
             if (!prevYmd || !nextYmd) return false;
             const p = new Date(`${prevYmd}T00:00:00`);
@@ -2519,22 +2645,85 @@
             return { isNewMax, streakDays };
         }
 
-        async function createSocialActivity({ userId, gymId, gymName, type, grade = null, attempts = 1, isNewMax = false, streakDays = null }) {
+        async function findDailySocialActivityDoc(userId, activityDate) {
+            if (!userId || !activityDate) return null;
+            const queries = [
+                query(collection(db, 'socialActivities'), where('userAuthUid', '==', userId), where('activityDate', '==', activityDate), limit(1)),
+                query(collection(db, 'socialActivities'), where('user_id', '==', userId), where('activityDate', '==', activityDate), limit(1))
+            ];
+            for (const qRef of queries) {
+                try {
+                    const snap = await getDocs(qRef);
+                    if (!snap.empty) return snap.docs[0];
+                } catch (_) {}
+            }
+            return null;
+        }
+
+        async function createSocialActivity({ userId, gymId, gymName, sectorId = null, routeId = null, type, grade = null, routeColor = null, attempts = 1, isNewMax = false, streakDays = null }) {
             if (!userId || !gymId || !type) return;
+            const nowIso = new Date().toISOString();
+            const activityDate = socialDateKeyFromValue(nowIso);
+            const item = {
+                type,
+                grade: grade || null,
+                attempts: Number(attempts || 1),
+                gymId,
+                gymName: gymName || gymId,
+                timestamp: nowIso,
+                isNewMax: !!isNewMax,
+                routeColor: routeColor || null,
+                sectorId: sectorId || null,
+                routeId: routeId || null,
+                streakDays: streakDays || null
+            };
+            const existing = await findDailySocialActivityDoc(userId, activityDate);
+            if (existing) {
+                const prev = normalizeSocialActivity({ id: existing.id, ...(existing.data() || {}) });
+                const nextList = [...(prev.activityList || []), item];
+                await setDoc(doc(db, 'socialActivities', existing.id), {
+                    userAuthUid: userId,
+                    user_id: userId,
+                    userId: userId,
+                    user_name: currentUserName || prev.user_name || 'Climber',
+                    activityDate,
+                    activityList: nextList,
+                    gymId,
+                    gym_id: gymId,
+                    gym_name: gymName || gymId,
+                    timestamp: nowIso,
+                    lastUpdatedAt: nowIso,
+                    is_new_max: nextList.some(v => v.type === 'new_max' || v.isNewMax),
+                    applauseCount: Number(prev.applauseCount || 0),
+                    commentCount: Number(prev.commentCount || 0),
+                    applause_count: Number(prev.applauseCount || 0),
+                    comment_count: Number(prev.commentCount || 0),
+                    last_viewed_at: prev.last_viewed_at || nowIso
+                }, { merge: true });
+                return;
+            }
             await addDoc(collection(db, 'socialActivities'), {
+                userAuthUid: userId,
                 user_id: userId,
+                userId: userId,
                 user_name: currentUserName || 'Climber',
+                activityDate,
+                activityList: [item],
+                gymId,
                 gym_id: gymId,
                 gym_name: gymName || gymId,
                 activity_type: type,
-                grade,
-                attempts,
-                timestamp: new Date().toISOString(),
+                grade: grade || null,
+                attempts: Number(attempts || 1),
+                timestamp: nowIso,
+                lastUpdatedAt: nowIso,
                 is_new_max: !!isNewMax,
                 streak_days: streakDays || null,
+                applauseCount: 0,
+                commentCount: 0,
                 applause_count: 0,
                 comment_count: 0,
-                last_viewed_at: new Date().toISOString()
+                last_viewed_at: nowIso
             });
         }
         function getPublicProfileUidFromRoute() {
@@ -2988,10 +3177,16 @@
             const grades = climbed.filter(v => v.finalGrade).map(v => ({ label: v.finalGrade, order: Number.isFinite(v.finalGradeOrder) ? v.finalGradeOrder : -1 }));
             const max = grades.length ? grades.slice().sort((a,b)=>b.order-a.order)[0] : null;
             const avgOrder = grades.length ? (grades.reduce((a,g)=>a+Math.max(0,g.order),0) / grades.length) : 0;
-            const dist = new Map();
-            grades.forEach(g => dist.set(g.label, (dist.get(g.label) || 0) + 1));
+            const distByGym = new Map();
+            climbed.forEach(v => {
+                const gym = v.gymName || v.gymId || '-';
+                const grade = v.finalGrade || '-';
+                if (!distByGym.has(gym)) distByGym.set(gym, new Map());
+                const m = distByGym.get(gym);
+                m.set(grade, (m.get(grade) || 0) + 1);
+            });
             const topHard = climbed.slice().sort((a,b) => (Number(b.finalGradeOrder||-1)-Number(a.finalGradeOrder||-1))).slice(0,5);
-            return { total, maxLabel: max?.label || '-', avgOrder: Math.round(avgOrder*10)/10, distribution: Array.from(dist.entries()).sort((a,b)=>b[1]-a[1]), topHard };
+            return { total, maxLabel: max?.label || '-', avgOrder: Math.round(avgOrder*10)/10, distributionByGym: Array.from(distByGym.entries()).map(([gym, m]) => ({ gym, rows: Array.from(m.entries()).sort((a,b)=>b[1]-a[1]) })), topHard };
         }
 
         function openProfileProgressModal() {
@@ -3120,12 +3315,12 @@
             const latest = groupedLatest.map(e => {
                 const state = e.outcome === 'project' ? t('viewer.project') : t('viewer.climbed');
                 const countLabel = e.count > 1 ? ` · ${e.count} volte` : '';
-                return `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(e.grade || '-')}</div><span class="profile-activity-state">${escapeHtml(state)}${countLabel}</span></div><div class="profile-activity-meta">${escapeHtml(e.gymName || '-')} / ${escapeHtml(e.sectorName || '-')}</div><div class="profile-activity-meta">${escapeHtml(formatProfileDate(e.day || e.timestamp || e.sendDate || ''))}</div></div>`;
+                const dot = resolveRouteColorFromStores(e); return `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(e.grade || '-')} <span class="color-dot" style="background:${escapeHtml(dot)}"></span></div><span class="profile-activity-state">${escapeHtml(state)}${countLabel}</span></div><div class="profile-activity-meta">${escapeHtml(formatSectorGymLine(e.sectorName || e.sectorId || '', e.gymName || e.gymId || ''))}</div><div class="profile-activity-meta">${escapeHtml(formatProfileDate(e.day || e.timestamp || e.sendDate || ''))}</div></div>`;
             }).join('');
 
             const trackerSummary = computeTrackerSummary(trackerAll);
-            const distHtml = trackerSummary.distribution.slice(0,6).map(([label, count]) => `<div class="admin-feedback-compact-item"><span>${escapeHtml(label)}</span><b>${count}</b></div>`).join('') || `<p class="profile-empty">-</p>`;
-            const topHardHtml = trackerSummary.topHard.map(v => `<div class="profile-log"><b>${escapeHtml(v.routeLabel || v.routeId || '-')}</b><small>${escapeHtml(v.finalGrade || '-')} · ${escapeHtml(v.gymName || v.gymId || '-')}</small></div>`).join('') || `<p class="profile-empty">-</p>`;
+            const distHtml = (trackerSummary.distributionByGym || []).map(g => `<div class="profile-tracker-col"><h5>${escapeHtml(g.gym)}</h5>${g.rows.map(([label,count]) => `<div class="admin-feedback-compact-item"><span>${escapeHtml(label)}</span><b>${count}</b></div>`).join('')}</div>`).join('') || `<p class="profile-empty">-</p>`;
+            const topHardHtml = trackerSummary.topHard.map(v => { const c = resolveRouteColorFromStores(v); return `<div class="profile-log"><b>${escapeHtml(v.finalGrade || '-')}</b><div><span class="color-dot" style="background:${escapeHtml(c)}"></span> ${escapeHtml(getColorLabel(c))}</div><small>${escapeHtml(formatSectorGymLine(v.sectorName || v.sectorId || '', v.gymName || v.gymId || ''))}</small></div>`; }).join('') || `<p class="profile-empty">-</p>`;
 
             box.innerHTML = `
                 <div class="profile-shell">
@@ -3166,21 +3361,16 @@
                     <div class="profile-section-card">
                         <b>${t('dash.latestActivities')}</b>
                         <div class="profile-activity-list" style="margin-top:10px;">${latest || `<p class="profile-empty">${t('dash.noProgress')}</p>`}</div>
-                        <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-activities-more">Carica altre</button></div>
+                        <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-activities-more">${t('ui.loadMore')}</button></div>
                     </div>
 
                     <div class="profile-section-card">
                         <b>${t('viewer.progressTracker')}</b>
-                        <div class="admin-coverage-grid" style="margin-top:10px;">
-                            <div class="admin-coverage-kpi"><b>${trackerSummary.total}</b><span>Totale scalate</span></div>
-                            <div class="admin-coverage-kpi"><b>${escapeHtml(trackerSummary.maxLabel)}</b><span>Grado massimo</span></div>
-                            <div class="admin-coverage-kpi"><b>${trackerSummary.avgOrder}</b><span>Media grado (ordine)</span></div>
-                        </div>
                         <div class="profile-tracker-grid" style="margin-top:10px;">
                             <div class="profile-tracker-col"><h5>📊 Distribuzione gradi</h5>${distHtml}</div>
                             <div class="profile-tracker-col"><h5>🏔 Top 5 vie più difficili</h5>${topHardHtml}</div>
                         </div>
-                        <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-progress-open">Vedi tutte le scalate</button></div>
+                        <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-progress-open">${t('ui.seeAllClimbs')}</button></div>
                     </div>
                 </div>
             `;
@@ -3266,40 +3456,52 @@
             socialMyPostsError = null;
             renderMyPublicationsFeed();
 
+            const byAuthUid = query(collection(db, 'socialActivities'), where('userAuthUid', '==', activeUser.uid), limit(250));
             const byUserId = query(collection(db, 'socialActivities'), where('user_id', '==', activeUser.uid), limit(250));
             const byLegacyUserId = query(collection(db, 'socialActivities'), where('userId', '==', activeUser.uid), limit(250));
+            let authRows = [];
             let primaryRows = [];
             let legacyRows = [];
 
             const applyMerged = () => {
                 const merged = new Map();
-                [...primaryRows, ...legacyRows].forEach(item => merged.set(item.id, item));
+                [...authRows, ...primaryRows, ...legacyRows].forEach(item => merged.set(item.id, item));
                 socialMyPostsActivities = Array.from(merged.values()).sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
                 socialMyPostsLoading = false;
                 renderMyPublicationsFeed();
             };
 
-            const unsubPrimary = onSnapshot(byUserId, (snap) => {
-                primaryRows = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+            const unsubAuth = onSnapshot(byAuthUid, (snap) => {
+                authRows = snap.docs.map(d => normalizeSocialActivity({ id: d.id, ...(d.data() || {}) }));
                 applyMerged();
             }, (err) => {
                 socialMyPostsError = err;
                 socialMyPostsLoading = false;
-                socialMyPostsActivities = socialFeedActivities.filter(a => (a.user_id || a.userId || null) === activeUser.uid);
+                socialMyPostsActivities = socialFeedActivities.filter(a => (a.userAuthUid || a.user_id || a.userId || null) === activeUser.uid);
+                renderMyPublicationsFeed();
+            });
+
+            const unsubPrimary = onSnapshot(byUserId, (snap) => {
+                primaryRows = snap.docs.map(d => normalizeSocialActivity({ id: d.id, ...(d.data() || {}) }));
+                applyMerged();
+            }, (err) => {
+                socialMyPostsError = err;
+                socialMyPostsLoading = false;
+                socialMyPostsActivities = socialFeedActivities.filter(a => (a.userAuthUid || a.user_id || a.userId || null) === activeUser.uid);
                 renderMyPublicationsFeed();
             });
 
             const unsubLegacy = onSnapshot(byLegacyUserId, (snap) => {
-                legacyRows = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                legacyRows = snap.docs.map(d => normalizeSocialActivity({ id: d.id, ...(d.data() || {}) }));
                 applyMerged();
             }, (err) => {
                 socialMyPostsError = err;
                 socialMyPostsLoading = false;
-                socialMyPostsActivities = socialFeedActivities.filter(a => (a.user_id || a.userId || null) === activeUser.uid);
+                socialMyPostsActivities = socialFeedActivities.filter(a => (a.userAuthUid || a.user_id || a.userId || null) === activeUser.uid);
                 renderMyPublicationsFeed();
             });
 
-            socialMyPostsUnsubscribers.push(unsubPrimary, unsubLegacy);
+            socialMyPostsUnsubscribers.push(unsubAuth, unsubPrimary, unsubLegacy);
         }
 
         function stopSocialFeedSubscription() {
@@ -3318,7 +3520,7 @@
             socialFeedUnsubscriber = onSnapshot(query(collection(db, 'socialActivities'), limit(250)), (snap) => {
                 socialFeedError = null;
                 socialFeedLoading = false;
-                socialFeedActivities = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                socialFeedActivities = snap.docs.map(d => normalizeSocialActivity({ id: d.id, ...(d.data() || {}) }));
                 renderFollowingFeed();
                 renderMyPublicationsFeed();
             }, (err) => {
@@ -3333,7 +3535,7 @@
         function buildFollowingFeedItems() {
             const followed = new Set((userFollowingIds || []).filter(uid => uid && uid !== activeUser?.uid));
             const buildFallbackActivityId = (v) => `fallback__${v.userId || 'u'}__${v.routeId || 'r'}__${v.eventDate || v.updatedAt || ''}`;
-            const friends = socialFeedActivities.filter(a => followed.has(a.user_id));
+            const friends = socialFeedActivities.map(normalizeSocialActivity).filter(a => followed.has(a.userAuthUid || a.user_id));
             const fallbackFriends = Array.from(followingFeedMap.values()).map(v => {
                 const fallbackId = buildFallbackActivityId(v);
                 const localState = socialFeedInteractionState.get(fallbackId) || {};
@@ -3375,19 +3577,26 @@
             const snap = await getDoc(activityRef);
             if (snap.exists()) return activityRef;
             const fallback = socialFeedById.get(activityId) || {};
+            const normalized = normalizeSocialActivity(fallback);
             await setDoc(activityRef, {
-                user_id: fallback.user_id || activeUser?.uid || null,
-                user_name: fallback.user_name || resolveUsername(fallback.user_id, 'Climber') || 'Climber',
-                gym_id: fallback.gym_id || null,
-                gym_name: fallback.gym_name || fallback.gym_id || '-',
-                activity_type: fallback.activity_type || 'route',
-                grade: fallback.grade || '-',
-                attempts: fallback.attempts || 1,
-                timestamp: fallback.timestamp || new Date().toISOString(),
-                is_new_max: !!fallback.is_new_max,
-                streak_days: fallback.streak_days || null,
-                applause_count: Number(fallback.applause_count || 0),
-                comment_count: Number(fallback.comment_count || 0)
+                userAuthUid: normalized.userAuthUid || activeUser?.uid || null,
+                user_id: normalized.user_id || activeUser?.uid || null,
+                user_name: normalized.user_name || resolveUsername(normalized.user_id, 'Climber') || 'Climber',
+                activityDate: normalized.activityDate,
+                activityList: normalized.activityList || [],
+                gymId: normalized.gymId || null,
+                gym_id: normalized.gym_id || null,
+                gym_name: normalized.gym_name || normalized.gym_id || '-',
+                activity_type: normalized.activity_type || 'route',
+                grade: normalized.grade || '-',
+                attempts: normalized.attempts || 1,
+                timestamp: normalized.timestamp || new Date().toISOString(),
+                is_new_max: !!normalized.is_new_max,
+                streak_days: normalized.streak_days || null,
+                applauseCount: Number(normalized.applauseCount || 0),
+                commentCount: Number(normalized.commentCount || 0),
+                applause_count: Number(normalized.applause_count || 0),
+                comment_count: Number(normalized.comment_count || 0)
             }, { merge: true });
             return activityRef;
         }
@@ -3433,10 +3642,10 @@
             try {
                 if (wasApplauded) {
                     await deleteDoc(ref);
-                    await updateDoc(activityRef, { applause_count: increment(-1), last_interaction_at: new Date().toISOString() });
+                    await updateDoc(activityRef, { applause_count: increment(-1), applauseCount: increment(-1), last_interaction_at: new Date().toISOString() });
                 } else {
                     await setDoc(ref, { user_id: activeUser.uid, timestamp: new Date().toISOString() }, { merge: true });
-                    await updateDoc(activityRef, { applause_count: increment(1), last_interaction_at: new Date().toISOString() });
+                    await updateDoc(activityRef, { applause_count: increment(1), applauseCount: increment(1), last_interaction_at: new Date().toISOString() });
                 }
             } catch (e) {
                 socialApplauseByActivity.set(activityId, wasApplauded);
@@ -3459,7 +3668,7 @@
                 text,
                 timestamp: nowIso
             });
-            await updateDoc(activityRef, { comment_count: increment(1), last_interaction_at: nowIso });
+            await updateDoc(activityRef, { comment_count: increment(1), commentCount: increment(1), last_interaction_at: nowIso });
             const currentComments = Number(socialFeedById.get(activityId)?.comment_count || socialFeedInteractionState.get(activityId)?.comment_count || 0);
             updateLocalInteractionState(activityId, { comment_count: currentComments + 1 });
             socialMyPostsInteractionMeta.delete(activityId);
@@ -3472,20 +3681,21 @@
         }
 
         function renderSocialFeedCard(activity) {
-            const e = activity || {};
-            const ts = escapeHtml(formatProfileDate(e.timestamp || e.sendDate || ''));
-            const recent24 = (Date.now() - new Date(e.timestamp || 0).getTime()) <= (24*60*60*1000);
+            const e = normalizeSocialActivity(activity || {});
+            const ts = escapeHtml(formatProfileDate(e.activityDate || e.timestamp || e.sendDate || ''));
             const applauseCount = sanitizeSocialCount(getActivityApplauseCount(e.id, e.applause_count));
             const commentCount = sanitizeSocialCount(socialFeedInteractionState.get(e.id)?.comment_count ?? e.comment_count);
             const isApplauded = !!socialApplauseByActivity.get(e.id);
             const actionButtons = `<div class="social-feed-actions"><button class="social-action-btn ${isApplauded ? 'active' : ''}" data-action="applause" data-id="${e.id}">🔥 ${applauseCount}</button><button class="social-action-btn" data-action="comment" data-id="${e.id}">💬 ${commentCount}</button></div>`;
-            if (e.activity_type === 'new_max') {
-                return `<div class="social-feed-card ${recent24 ? 'highlight' : ''}"><div class="social-feed-head"><div class="social-feed-title">${t('ui.socialNewMaxTitle')}</div><small>${ts}</small></div><div class="social-feed-grade">${escapeHtml(e.grade || '-')}</div><div class="social-feed-meta">${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} · ${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
-            }
-            if (e.activity_type === 'streak') {
-                return `<div class="social-feed-card highlight"><div class="social-feed-head"><div class="social-feed-title">🔁 ${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} ${t('ui.socialStreakAt')} ${e.streak_days || 1} ${t('ui.socialConsecutiveDays')}</div><small>${ts}</small></div><div class="social-feed-meta">${escapeHtml(e.gym_name || e.gym_id || '-')}</div>${actionButtons}</div>`;
-            }
-            return `<div class="social-feed-card"><div class="social-feed-head"><div class="social-feed-title">${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))} ${t('ui.socialClimbedAt')} ${escapeHtml(e.grade || '-')} ${t('ui.socialAt')} ${escapeHtml(e.gym_name || e.gym_id || '-')}</div><small>${ts}</small></div><div class="social-feed-meta">${t('ui.attempts')}: ${e.attempts || 1}</div>${actionButtons}</div>`;
+
+            const climbs = (e.activityList || []).filter(item => item.type === 'route');
+            const hadNewMax = (e.activityList || []).some(item => item.type === 'new_max' || item.isNewMax);
+            const hadStreak = (e.activityList || []).find(item => item.type === 'streak' && Number(item.streakDays || 0) > 1);
+            const climbRows = climbs.slice(0, 4).map(item => { const dot = resolveRouteColorFromStores(item); const tries = Number(item.attempts || 1); const triesLabel = tries >= 3 ? '3+' : String(tries); return `<li><span class="color-dot" style="background:${escapeHtml(dot)}"></span>${escapeHtml(item.grade || '-')} <small>(${t('ui.attempts')}: ${triesLabel})</small></li>`; }).join('');
+            const extraRows = climbs.length > 4 ? `<li><small>+${climbs.length - 4} altre</small></li>` : '';
+            const gymLabel = escapeHtml(e.gym_name || e.gym_id || '-');
+
+            return `<div class="social-feed-card social-feed-card-compact"><div class="social-feed-head"><div class="social-feed-title">🔥 ${t('ui.dailyActivityTitle')}</div><small>${ts}</small></div><div class="social-feed-meta"><b>${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))}</b> · 📍 ${gymLabel}</div>${climbs.length ? `<ul class="social-feed-activity-list">${climbRows}${extraRows}</ul>` : ''}${hadNewMax ? `<div class="social-feed-meta">🏆 ${t('ui.newPersonalBest')}</div>` : ''}${hadStreak ? `<div class="social-feed-meta">🔁 ${hadStreak.streakDays} ${t('ui.socialConsecutiveDays')}</div>` : ''}${actionButtons}</div>`;
         }
 
         function bindSocialFeedActions(root) {
@@ -3552,7 +3762,7 @@
             if (!row || (row.user_id || row.userId) !== activeUser.uid) return;
             await deleteDoc(doc(db, 'socialActivities', activityId, 'comments', commentId));
             const activityRef = await ensureSocialActivityDoc(activityId);
-            await updateDoc(activityRef, { comment_count: increment(-1) });
+            await updateDoc(activityRef, { comment_count: increment(-1), commentCount: increment(-1) });
             const currentComments = Number(socialFeedById.get(activityId)?.comment_count || socialFeedInteractionState.get(activityId)?.comment_count || 0);
             updateLocalInteractionState(activityId, { comment_count: Math.max(0, currentComments - 1) });
             socialMyPostsInteractionMeta.delete(activityId);
@@ -3605,7 +3815,7 @@
             const progList = document.getElementById('following-progress-list');
             if (!progList) return;
             if (socialFeedLoading) {
-                progList.innerHTML = `<p class="profile-empty">Loading...</p>`;
+                progList.innerHTML = `<p class="profile-empty">${t('loading.init')}</p>`;
                 return;
             }
             const feed = buildFollowingFeedItems();
@@ -3727,7 +3937,12 @@
 
             const actsSnap = await safeGetDocs(query(collection(db, 'socialActivities'), where('user_id', '==', uid), limit(20)));
             const acts = actsSnap ? actsSnap.docs.map(d => d.data() || {}).sort((a,b)=> new Date(b.timestamp||0)-new Date(a.timestamp||0)) : [];
-            const latestRows = acts.slice(0,8).map(a => `<div class="profile-log"><div><b>${escapeHtml(a.grade || (a.activity_type==='streak' ? `🔁 ${a.streak_days || 1} ${t('ui.daysShort')}` : '-'))}</b> · ${escapeHtml(a.gym_name || a.gym_id || '-')}</div><small>${escapeHtml(formatProfileDate(a.timestamp || ''))} · ${escapeHtml(a.activity_type || 'route')}</small></div>`).join('');
+            const latestRows = acts.slice(0,8).map(raw => {
+                const a = normalizeSocialActivity(raw);
+                const climbs = (a.activityList || []).filter(it => it.type === 'route');
+                const label = climbs.length ? climbs.map(it => it.grade || '-').slice(0,3).join(', ') : '-';
+                return `<div class="profile-log"><div><b>${escapeHtml(label)}</b> · ${escapeHtml(a.gym_name || a.gym_id || '-')}</div><small>${escapeHtml(formatProfileDate(a.activityDate || a.timestamp || ''))} · ${t('ui.dailyActivity')}</small></div>`;
+            }).join('');
 
             wrap.style.display = 'block';
             wrap.innerHTML = `
@@ -4840,8 +5055,9 @@
         }
 
         function renderAdminUsersSection(stats) {
-            const usersWrap = document.getElementById('admin-users-summary');
-            if (!usersWrap) return;
+            const summaryWrap = document.getElementById('admin-users-summary');
+            const usersWrap = document.getElementById('admin-users-table');
+            if (!summaryWrap && !usersWrap) return;
             const avgRating = Number(stats.feedback?.globalAvg || 0);
             const reviewedRoutes = Number(stats.feedback?.reviewedRoutes || 0);
             const totalReviews = Number(stats.feedback?.totalReviews || 0);
@@ -4885,49 +5101,58 @@
                 </tr>`;
             }).join('') || '<tr><td colspan="5">-</td></tr>';
 
-            usersWrap.innerHTML = `
-                <div class="admin-users-page">
+            if (summaryWrap) {
+                summaryWrap.innerHTML = `
                     <div class="admin-block-card">
                         <h5>${t('ui.overview')}</h5>
                         <div class="admin-kpi-grid modern">
                             <div class="admin-kpi-card modern"><b>${avgRating.toFixed(2)} ⭐</b><span class="admin-kpi-label">${t('ui.avgGymRating')}</span></div>
-                            <div class="admin-kpi-card modern"><b>${reviewedRoutes}</b><span class="admin-kpi-label">${t('ui.reviewedRoutes')}</span><span class="admin-kpi-trend">${totalReviews} ${t('ui.reviewsCount')}</span></div>
+                            <div class="admin-kpi-card modern"><b>${reviewedRoutes}</b><span class="admin-kpi-label">${t('ui.reviewedRoutes')}</span></div>
+                            <div class="admin-kpi-card modern"><b>${totalReviews} ${t('ui.reviewsCount')}</b><span class="admin-kpi-label">${t('ui.totalReviewsLabel')}</span></div>
                             <div class="admin-kpi-card modern"><b>${stats.sectors.length}</b><span class="admin-kpi-label">${t('ui.activeSectors')}</span></div>
-                            <div class="admin-kpi-card modern"><b>${stats.routesLast30Days || 0}</b><span class="admin-kpi-label">${t('ui.trackedRoutes')}</span><span class="admin-kpi-trend">${trendLabel}</span></div>
+                            <div class="admin-kpi-card modern"><b>${stats.routesLast30Days || 0}</b><span class="admin-kpi-label">${t('ui.trackedRoutes')}</span></div>
+                            <div class="admin-kpi-card modern"><b>${trendLabel}</b><span class="admin-kpi-label">${t('admin.trendActivity')}</span></div>
                         </div>
-                    </div>
-                    <div class="admin-block-card">
-                        <h5>${t('ui.userPerformance')}</h5>
-                        <div class="admin-user-table-wrap">
-                            <table>
-                                <tr>
-                                    <th>#</th>
-                                    <th class="admin-table-sort" data-sort="username">Username</th>
-                                    <th class="admin-table-sort" data-sort="routes">${t('ui.routesClimbed')}</th>
-                                    <th class="admin-table-sort" data-sort="activeDays">${t('dash.activeDays')}</th>
-                                    <th class="admin-table-sort" data-sort="sector">${t('ui.mainSector')}</th>
-                                </tr>
-                                ${rows}
-                            </table>
-                        </div>
-                        <div class="admin-pager">
-                            <button class="btn-sec" type="button" id="admin-users-prev">${t('ui.previous')}</button>
-                            <span style="color:var(--muted);font-size:0.85rem;">${t('ui.page')} ${adminUsersState.page}/${totalPages}</span>
-                            <button class="btn-sec" type="button" id="admin-users-next">${t('ui.next')}</button>
-                        </div>
-                    </div>
-                </div>
-            `;
+                    </div>`;
+            }
 
-            usersWrap.querySelectorAll('.admin-table-sort').forEach(th => {
-                th.onclick = () => {
-                    const sortBy = th.dataset.sort;
-                    if (!sortBy) return;
-                    if (adminUsersState.sortBy === sortBy) adminUsersState.sortDir = adminUsersState.sortDir === 'asc' ? 'desc' : 'asc';
-                    else { adminUsersState.sortBy = sortBy; adminUsersState.sortDir = 'desc'; }
-                    renderAdminCoverage();
-                };
-            });
+            if (usersWrap) {
+                usersWrap.innerHTML = `
+                    <div class="admin-users-page">
+                        <div class="admin-block-card">
+                            <h5>${t('ui.userPerformance')}</h5>
+                            <div class="admin-user-table-wrap">
+                                <table>
+                                    <tr>
+                                        <th>#</th>
+                                        <th class="admin-table-sort" data-sort="username">Username</th>
+                                        <th class="admin-table-sort" data-sort="routes">${t('ui.routesClimbed')}</th>
+                                        <th class="admin-table-sort" data-sort="activeDays">${t('dash.activeDays')}</th>
+                                        <th class="admin-table-sort" data-sort="sector">${t('ui.mainSector')}</th>
+                                    </tr>
+                                    ${rows}
+                                </table>
+                            </div>
+                            <div class="admin-pager">
+                                <button class="btn-sec" type="button" id="admin-users-prev">${t('ui.previous')}</button>
+                                <span style="color:var(--muted);font-size:0.85rem;">${t('ui.page')} ${adminUsersState.page}/${totalPages}</span>
+                                <button class="btn-sec" type="button" id="admin-users-next">${t('ui.next')}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                usersWrap.querySelectorAll('.admin-table-sort').forEach(th => {
+                    th.onclick = () => {
+                        const sortBy = th.dataset.sort;
+                        if (!sortBy) return;
+                        if (adminUsersState.sortBy === sortBy) adminUsersState.sortDir = adminUsersState.sortDir === 'asc' ? 'desc' : 'asc';
+                        else { adminUsersState.sortBy = sortBy; adminUsersState.sortDir = 'desc'; }
+                        renderAdminCoverage();
+                    };
+                });
+            }
+
             const prev = document.getElementById('admin-users-prev');
             const next = document.getElementById('admin-users-next');
             if (prev) prev.onclick = () => { adminUsersState.page = Math.max(1, adminUsersState.page - 1); renderAdminCoverage(); };
@@ -4942,7 +5167,7 @@
             const feedback = buildAdminFeedbackAnalytics();
             stats.feedback = feedback;
             renderAdminDashboardKpis(stats);
-            renderAdminSectorPerformanceTable(stats);
+
             renderAdminUsersSection(stats);
             renderAdminFeedbackAnalytics();
             const maxTrend = Math.max(1, ...stats.trend.map(t => t.users));
@@ -5073,7 +5298,9 @@
                     reviews: routeData.count,
                     avg: routeData.count > 0 ? routeData.sum / routeData.count : 0,
                     climbs: adminCoverageSnapshot.routeUsers.get(routeKey)?.size || 0,
-                    comments
+                    comments,
+                    grade: meta.grade || '-',
+                    color: meta.color || '#9CA3BC'
                 });
             }
 
@@ -5106,7 +5333,8 @@
                     topRated,
                     topClimbed,
                     lowReviewed,
-                    starBuckets: sec.starBuckets
+                    starBuckets: sec.starBuckets,
+                    routes
                 };
             }).sort((a,b) => b.totalReviews - a.totalReviews);
 
@@ -5211,37 +5439,23 @@
                 };
 
                 sectorWrap.innerHTML = data.sectors.map(sec => {
-                    const maxVotes = Math.max(1, ...[5,4,3,2,1].map(v => sec.starBuckets.get(v) || 0));
-                    const leastRatedRows = Array.from(new Map((sec.lowReviewed || []).filter(r => Number(r.reviews || 0) <= 1).map(r => [r.routeLabel, r])).values()).slice(0,3);
+                    const routes = (Array.isArray(sec.routes) ? sec.routes : []).slice().sort((a,b)=>(Number(b.reviews||0)-Number(a.reviews||0)) || (Number(b.avg||0)-Number(a.avg||0)));
                     return `
                     <details class="admin-sector-analytics-card">
                         <summary class="admin-sector-analytics-head">
                             <b class="admin-sector-analytics-title">${escapeHtml(sec.sectorName)}</b>
                             <div class="admin-sector-analytics-summary">
+                                <span class="admin-pill">${sec.totalRoutes} ${t('ui.totalRoutesLabel')}</span>
                                 <span class="admin-pill">${sec.totalReviews} ${t('ui.reviewsCount')}</span>
-                                <span class="admin-pill">${sec.avgRating.toFixed(2)} ⭐</span>
                             </div>
                         </summary>
                         <div class="admin-sector-analytics-body">
-                            <div class="admin-sector-block">
-                                <h5>${t('ui.sectorOverview')}</h5>
-                                <div class="admin-sector-analytics-grid">
-                                    <div class="admin-sector-analytics-kpi"><b>${sec.totalRoutes}</b><span>${t('ui.totalRoutesLabel')}</span></div>
-                                    <div class="admin-sector-analytics-kpi"><b>${sec.reviewedRoutes}</b><span>${t('ui.reviewedRoutes')}</span></div>
-                                    <div class="admin-sector-analytics-kpi"><b>${sec.avgRating.toFixed(2)} ⭐</b><span>${t('ui.avgVoteLabel')}</span></div>
-                                    <div class="admin-sector-analytics-kpi"><b>${sec.totalReviews}</b><span>${t('ui.totalReviewsLabel')}</span></div>
-                                    <div class="admin-sector-analytics-kpi"><b>${sec.activeUsers}</b><span>${t('ui.activeUsersLabel')}</span></div>
-                                </div>
-                            </div>
-                            <div class="admin-sector-block">
-                                <h5>${t('ui.top3Routes')}</h5>
-                                ${sec.topRated.slice(0,3).map(r=>`<div class="admin-sector-route-row"><div class="admin-feedback-compact-item"><span>${escapeHtml(r.routeLabel)}</span><b>${r.avg.toFixed(2)} ⭐</b></div>${firstCommentPreview(r)}</div>`).join('') || `<p class="admin-feedback-empty">${t('common.noData')}</p>`}
-                            </div>
-                            <div class="admin-sector-block">
-                                <h5>${t('ui.voteDistribution')}</h5>
-                                <div class="admin-vote-rows">${[5,4,3,2,1].map(v=>{ const c = sec.starBuckets.get(v)||0; const pct = Math.max(4, Math.round((c / maxVotes) * 100)); return `<div class="admin-vote-row"><span>${v} ⭐</span><div class="admin-vote-track"><div class="admin-vote-fill" style="width:${pct}%;"></div></div><b>(${c})</b></div>`; }).join('')}</div>
-                            </div>
-                            ${leastRatedRows.length ? `<div class="admin-sector-block"><h5>${t('ui.leastRated')}</h5>${leastRatedRows.map(r=>`<div class="admin-sector-route-row"><div class="admin-feedback-compact-item"><span>${escapeHtml(r.routeLabel)}</span><b>${r.reviews}</b></div></div>`).join('')}</div>` : ''}
+                            <table class="admin-sector-routes-table">
+                                <thead><tr><th>${t('viewer.grade')}</th><th>${t('ui.color')}</th><th>${t('ui.avgVoteLabel')}</th><th>${t('ui.reviewsCount')}</th></tr></thead>
+                                <tbody>
+                                ${routes.map(r => `<tr><td>${escapeHtml(r.grade || '-')}</td><td><span class="admin-route-color-swatch" style="display:inline-block;vertical-align:middle;background:${escapeHtml(r.color || '#9CA3BC')};"></span> ${escapeHtml(getColorLabel(r.color))}</td><td>${Number(r.avg || 0).toFixed(2)} ⭐</td><td>${Number(r.reviews || 0)}</td></tr>`).join('') || `<tr><td colspan="4">${t('common.noData')}</td></tr>`}
+                                </tbody>
+                            </table>
                         </div>
                     </details>`;
                 }).join('') || `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('common.noData')}</p></div>`;
@@ -5284,7 +5498,7 @@
                             const routeKey = `${sectorId}/${routeDoc.id}`;
                             currentRoutes.add(routeKey);
                             const routeData = routeDoc.data() || {};
-                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id, grade: routeData.grade || '', isActive: routeData.active !== false, hasStart: !!(routeData.position && routeData.normal) });
+                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id, grade: routeData.grade || '', color: routeData.color || '#9CA3BC', isActive: routeData.active !== false, hasStart: !!(routeData.position && routeData.normal) });
                             refreshAdminFilterOptions();
                             if (routeReviewUnsubs.has(routeKey)) return;
 
@@ -5758,6 +5972,7 @@
                             document.getElementById('route-grade').value = r.grade;
                             ensureRouteColorOption(r.color);
                             document.getElementById('route-color').value = r.color;
+                            updateAdminRouteColorPreview();
                             document.getElementById('btn-delete-route').style.display = 'block';
                             document.getElementById('admin-editor-panel').style.display = 'block';
                         } else openSocial(rd.id, r);
@@ -5798,7 +6013,8 @@
                 gymId: activeGymId,
                 sectorId: activeSectorId,
                 routeId: id,
-                routeGrade: data?.grade || '-'
+                routeGrade: data?.grade || '-',
+                routeColor: data?.color || null
             };
             socialTrackerDraftState = null;
             document.querySelectorAll('#star-selector span').forEach(st => st.classList.remove('active'));
@@ -5885,16 +6101,20 @@
             if (addProjectBtn) addProjectBtn.onclick = () => { socialTrackerDraftState = 'project'; renderTrackerStateUI(); };
             if (addClimbedBtn) addClimbedBtn.onclick = () => { socialTrackerDraftState = 'climbed'; renderTrackerStateUI(); };
 
-            document.getElementById('tracker-attempt-count').value = socialTrackerState?.attemptCount || 1;
             const attemptInput = document.getElementById('tracker-attempt-count');
-            const attemptValue = document.getElementById('tracker-attempt-value');
-            const syncAttempt = () => { const v = Math.max(1, parseInt(attemptInput?.value || '1', 10) || 1); if (attemptInput) attemptInput.value = String(v); if (attemptValue) attemptValue.textContent = String(v); };
-            if (attemptInput) attemptInput.value = String(socialTrackerState?.attemptCount || 1);
-            syncAttempt();
-            const decBtn = document.getElementById('tracker-attempt-dec');
-            const incBtn = document.getElementById('tracker-attempt-inc');
-            if (decBtn) decBtn.onclick = () => { if (attemptInput) attemptInput.value = String(Math.max(1, (parseInt(attemptInput.value || '1', 10) || 1) - 1)); syncAttempt(); };
-            if (incBtn) incBtn.onclick = () => { if (attemptInput) attemptInput.value = String((parseInt(attemptInput.value || '1', 10) || 1) + 1); syncAttempt(); };
+            const initialAttempt = Math.min(3, Math.max(1, parseInt(String(socialTrackerState?.attemptCount || 1), 10) || 1));
+            if (attemptInput) attemptInput.value = String(initialAttempt);
+            const optionsWrap = document.getElementById('tracker-attempt-options');
+            if (optionsWrap) {
+                optionsWrap.querySelectorAll('.tracker-attempt-option').forEach(btn => {
+                    const val = Number(btn.dataset.attempt || '1');
+                    btn.classList.toggle('active', val === initialAttempt);
+                    btn.onclick = () => {
+                        if (attemptInput) attemptInput.value = String(val);
+                        optionsWrap.querySelectorAll('.tracker-attempt-option').forEach(x => x.classList.toggle('active', x === btn));
+                    };
+                });
+            }
             document.getElementById('tracker-notes').value = socialTrackerState?.notes || '';
             saveBtn.textContent = t('viewer.shareOnFeed');
             saveBtn.onclick = () => upsertRouteProgress(effectiveState);
@@ -5920,9 +6140,9 @@
                 notes: payload.notes || '',
                 eventDate: payload.completionDate || nowDate
             });
-            await createSocialActivity({ userId: activeUser.uid, gymId: socialRouteContext.gymId, gymName, type: 'route', grade: gradeLabel, attempts: 1, isNewMax: false, streakDays: statResult.streakDays });
-            if (statResult.isNewMax) await createSocialActivity({ userId: activeUser.uid, gymId: socialRouteContext.gymId, gymName, type: 'new_max', grade: gradeLabel, attempts: 1, isNewMax: true, streakDays: statResult.streakDays });
-            if (statResult.streakDays > 1) await createSocialActivity({ userId: activeUser.uid, gymId: socialRouteContext.gymId, gymName, type: 'streak', grade: null, attempts: 1, isNewMax: false, streakDays: statResult.streakDays });
+            await createSocialActivity({ userId: activeUser.uid, gymId: socialRouteContext.gymId, gymName, sectorId: socialRouteContext.sectorId, routeId: socialRouteContext.routeId, type: 'route', grade: gradeLabel, routeColor: payload.color || socialRouteContext.routeColor || null, attempts: attempt, isNewMax: false, streakDays: statResult.streakDays });
+            if (statResult.isNewMax) await createSocialActivity({ userId: activeUser.uid, gymId: socialRouteContext.gymId, gymName, sectorId: socialRouteContext.sectorId, routeId: socialRouteContext.routeId, type: 'new_max', grade: gradeLabel, routeColor: payload.color || socialRouteContext.routeColor || null, attempts: attempt, isNewMax: true, streakDays: statResult.streakDays });
+            if (statResult.streakDays > 1) await createSocialActivity({ userId: activeUser.uid, gymId: socialRouteContext.gymId, gymName, type: 'streak', grade: null, attempts: attempt, isNewMax: false, streakDays: statResult.streakDays });
         }
 
         async function upsertRouteProgress(targetState) {
@@ -5953,6 +6173,7 @@
                 notes,
                 shareOnFeed,
                 routeGrade: socialRouteContext.routeGrade,
+                color: socialRouteContext.routeColor || null,
                 routeLabel: socialRouteContext.routeGrade,
                 gymName: document.getElementById('user-gym-detail-name')?.textContent || socialRouteContext.gymId,
                 sectorName: document.querySelector('#main-list-user .card b')?.textContent || socialRouteContext.sectorId,
@@ -6203,7 +6424,9 @@
         window.saveRoute = async () => {
             const gradeValue = document.getElementById('route-grade').value.trim();
             if (!gradeValue) return alert(t('errors.completeData'));
-            const data = { grade: gradeValue, color: document.getElementById('route-color').value };
+            const selectedColor = document.getElementById('route-color').value;
+            if (!selectedColor) return alert(t('errors.completeData'));
+            const data = { grade: gradeValue, color: selectedColor };
             if(activeRouteId) await updateDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId), data);
             else await addDoc(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`), { ...data, position: tempPos, normal: tempNorm });
             window.cancelAdminEdit();
@@ -6235,7 +6458,7 @@
             await initDashboard();
         };
         window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); setStartGuideVisible(false); hideViewerMoveGuide(); document.getElementById('viewer-container').style.display = 'none'; const nav = document.getElementById('app-bottom-nav'); if (nav && currentMode !== 'admin' && currentMode !== 'superadmin') { nav.style.display = ''; nav.classList.add('active'); } hideLoading(); };
-        window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; };
+        window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; updateAdminRouteColorPreview(); };
         function showView(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); const nav = document.getElementById('app-bottom-nav'); if (nav && id !== 'view-dash') nav.classList.remove('active'); }
     </script>
 

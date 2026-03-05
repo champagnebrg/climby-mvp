@@ -33,9 +33,6 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
-    function isSelfByAuthUid(data) {
-      return signedIn() && data.authUid == request.auth.uid;
-    }
 
     function isGymOwner(gymId) {
       return signedIn()
@@ -45,8 +42,14 @@ service cloud.firestore {
 
     match /users/{uid} {
       allow read: if signedIn() || isSuperadmin();
-      allow create: if isSuperadmin() || isSelf(uid) || isSelfByAuthUid(request.resource.data);
-      allow update, delete: if isSuperadmin() || isSelf(uid) || isSelfByAuthUid(resource.data);
+      allow create: if isSuperadmin() || (
+        isSelf(uid)
+        && request.resource.data.authUid == request.auth.uid
+      );
+      allow update, delete: if isSuperadmin() || (
+        isSelf(uid)
+        && resource.data.authUid == request.auth.uid
+      );
 
       match /routeProgress/{progressId} {
         allow read: if signedIn() || isSuperadmin();
