@@ -683,6 +683,30 @@
         .admin-route-color-swatch { width:14px; height:14px; border-radius:999px; border:1px solid var(--border); }
         .admin-sector-routes-table { width:100%; border-collapse:collapse; margin-top:8px; font-size:0.86rem; }
         .admin-sector-routes-table th, .admin-sector-routes-table td { padding:8px 6px; border-bottom:1px dashed var(--border); text-align:left; }
+        .admin-dashboard-activity-card { border:1px solid var(--border); border-radius:12px; background:var(--card); padding:10px; }
+        .admin-dashboard-activity-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+        .admin-dashboard-activity-item b { display:block; font-size:0.95rem; line-height:1.2; }
+        .admin-dashboard-activity-item span { color:var(--muted); font-size:0.74rem; }
+        .admin-dashboard-activity-trend { margin-top:8px; font-size:0.78rem; color:var(--muted); }
+        .admin-sector-routes-scroll { overflow-x:auto; }
+        .admin-sector-routes-table { min-width:420px; margin-top:0; font-size:0.8rem; }
+        .admin-sector-routes-table th, .admin-sector-routes-table td { padding:6px 5px; }
+        .admin-color-cell { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+        .admin-users-mobile { display:grid; gap:10px; }
+        .admin-users-period { display:flex; align-items:center; gap:8px; font-size:0.83rem; color:var(--muted); }
+        .admin-users-period select { min-height:34px; padding:6px 10px; font-size:0.82rem; border-radius:10px; border:1px solid var(--border); background:var(--surface-elevated); color:var(--text); }
+        .admin-users-kpi-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+        .admin-users-kpi { border:1px solid var(--border); border-radius:10px; padding:9px; background:var(--surface-elevated); }
+        .admin-users-kpi b { display:block; font-size:0.95rem; line-height:1.2; }
+        .admin-users-kpi span { color:var(--muted); font-size:0.75rem; }
+        .admin-users-list { display:grid; gap:7px; }
+        .admin-users-list-item { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; border-bottom:1px dashed var(--border); padding:6px 0; font-size:0.82rem; }
+        .admin-users-list-item:last-child { border-bottom:none; }
+        .admin-users-details summary { cursor:pointer; font-size:0.9rem; font-weight:600; }
+        .admin-users-table-wrap { overflow-x:auto; }
+        .admin-users-table-wrap table { min-width:680px; font-size:0.8rem; }
+        .admin-users-table-wrap th, .admin-users-table-wrap td { padding:6px 5px; }
+
         .social-action-btn { min-height:36px; padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:var(--surface-elevated); color:var(--muted); font-size:13px; }
         .social-action-btn.active { border-color: var(--primary); color: var(--primary); }
         .social-feed-card.engaged { border-color: rgba(255, 107, 107, 0.45); background: rgba(255, 107, 107, 0.06); }
@@ -1186,20 +1210,12 @@
                                         <select id="admin-sector-avg-sort"><option value="avg" data-i18n="admin.sortSectorAvg"></option><option value="reviews" data-i18n="admin.sortSectorReviews"></option></select>
                                     </div>
                                 </div>
-                                <div class="admin-kpi-grid" id="admin-dashboard-kpis"></div>
-                                <div class="admin-coverage-toolbar">
-                                    <label for="admin-coverage-period" data-i18n="admin.periodFilter"></label>
-                                    <select id="admin-coverage-period">
-                                        <option value="7" data-i18n="admin.last7Days"></option>
-                                        <option value="30" selected data-i18n="admin.last30Days"></option>
-                                        <option value="90" data-i18n="admin.last90Days"></option>
-                                    </select>
-                                </div>
+                                <h4 class="admin-section-title" data-i18n="ui.overview"></h4>
+                                <div id="admin-users-summary"></div>
                                 <h4 class="admin-section-title" data-i18n="admin.activityLast30"></h4>
                                 <div id="admin-coverage-container"></div>
-                                <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="ui.overview"></h4>
-                                <div id="admin-users-summary"></div>
-
+                                <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.sectorAnalysis"></h4>
+                                <div id="admin-sector-analytics" class="admin-sector-analytics"></div>
                             </div>
                         </div>
 
@@ -1226,10 +1242,6 @@
                         <div id="admin-tab-users" class="admin-tab-panel">
                             <h3 class="headline-brand" data-i18n="admin.navUsersSimple"></h3>
                             <div id="admin-users-table"></div>
-                            <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.feedbackAnalyticsUsers"></h4>
-                            <div id="admin-feedback-analytics" class="admin-feedback-analytics"></div>
-                            <h4 class="admin-section-title" style="margin-top:14px;" data-i18n="admin.sectorAnalysis"></h4>
-                            <div id="admin-sector-analytics" class="admin-sector-analytics"></div>
                             <div id="admin-feedback-modal-backdrop" class="admin-modal-backdrop">
                                 <div class="admin-modal">
                                     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><h4 id="admin-feedback-modal-title" class="admin-section-title" style="margin:0;"></h4><button class="btn-sec" type="button" onclick="window.closeAdminFeedbackModal()" data-i18n="common.close"></button></div>
@@ -1571,7 +1583,10 @@
         let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), sectorResetAt: new Map(), routeMeta: new Map(), reviewsByRoute: new Map(), routeUsers: new Map() };
         let adminDashboardFilters = { days: 30, sectorId: 'all', grade: 'all', onlyActive: false, onlyReviewed: false };
         let adminUsersState = { page: 1, pageSize: 5, sortBy: 'routes', sortDir: 'desc' };
+        let adminUsersInsightsState = { period: '30' };
         let adminFeedbackState = { tab: 'topRated', modalOpen: false, modalPage: 1, modalType: 'topRated' };
+        let adminUsersRenderSeq = 0;
+        const adminUserNameCache = new Map();
         let adminSectorSortState = 'avg';
         let adminFiltersOpen = false;
         let gymDetailUnsubscriber = null;
@@ -2838,6 +2853,26 @@
             return map;
         }
 
+        async function resolveAdminUsername(uid) {
+            const key = String(uid || '').trim();
+            if (!key) return 'Utente';
+            if (adminUserNameCache.has(key)) return adminUserNameCache.get(key);
+            let name = 'Utente';
+            try {
+                const snap = await getDoc(doc(db, 'users', key));
+                if (snap.exists()) {
+                    const d = snap.data() || {};
+                    const username = String(d.username || '').trim();
+                    const displayName = String(d.displayName || '').trim();
+                    const first = String(d.name || '').trim();
+                    const last = String(d.surname || '').trim();
+                    name = username || displayName || `${first} ${last}`.trim() || name;
+                }
+            } catch (_) {}
+            adminUserNameCache.set(key, name);
+            return name;
+        }
+
         function normalizeProgressValue(localRank, scaleSize) {
             if (localRank < 0 || !scaleSize || scaleSize <= 1) return 0;
             return localRank / (scaleSize - 1);
@@ -3691,11 +3726,10 @@
             const climbs = (e.activityList || []).filter(item => item.type === 'route');
             const hadNewMax = (e.activityList || []).some(item => item.type === 'new_max' || item.isNewMax);
             const hadStreak = (e.activityList || []).find(item => item.type === 'streak' && Number(item.streakDays || 0) > 1);
-            const climbRows = climbs.slice(0, 4).map(item => { const dot = resolveRouteColorFromStores(item); const tries = Number(item.attempts || 1); const triesLabel = tries >= 3 ? '3+' : String(tries); return `<li><span class="color-dot" style="background:${escapeHtml(dot)}"></span>${escapeHtml(item.grade || '-')} <small>(${t('ui.attempts')}: ${triesLabel})</small></li>`; }).join('');
-            const extraRows = climbs.length > 4 ? `<li><small>+${climbs.length - 4} altre</small></li>` : '';
+            const climbRows = climbs.map(item => { const dot = resolveRouteColorFromStores(item); const tries = Number(item.attempts || 1); const triesLabel = tries >= 3 ? '3+' : String(tries); return `<li><span class="color-dot" style="background:${escapeHtml(dot)}"></span>${escapeHtml(item.grade || '-')} <small>(${t('ui.attempts')}: ${triesLabel})</small></li>`; }).join('');
             const gymLabel = escapeHtml(e.gym_name || e.gym_id || '-');
 
-            return `<div class="social-feed-card social-feed-card-compact"><div class="social-feed-head"><div class="social-feed-title">🔥 ${t('ui.dailyActivityTitle')}</div><small>${ts}</small></div><div class="social-feed-meta"><b>${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))}</b> · 📍 ${gymLabel}</div>${climbs.length ? `<ul class="social-feed-activity-list">${climbRows}${extraRows}</ul>` : ''}${hadNewMax ? `<div class="social-feed-meta">🏆 ${t('ui.newPersonalBest')}</div>` : ''}${hadStreak ? `<div class="social-feed-meta">🔁 ${hadStreak.streakDays} ${t('ui.socialConsecutiveDays')}</div>` : ''}${actionButtons}</div>`;
+            return `<div class="social-feed-card social-feed-card-compact"><div class="social-feed-head"><div class="social-feed-title">🔥 ${t('ui.dailyActivityTitle')}</div><small>${ts}</small></div><div class="social-feed-meta"><b>${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))}</b> · 📍 ${gymLabel}</div>${climbs.length ? `<ul class="social-feed-activity-list">${climbRows}</ul>` : ''}${hadNewMax ? `<div class="social-feed-meta">🏆 ${t('ui.newPersonalBest')}</div>` : ''}${hadStreak ? `<div class="social-feed-meta">🔁 ${hadStreak.streakDays} ${t('ui.socialConsecutiveDays')}</div>` : ''}${actionButtons}</div>`;
         }
 
         function bindSocialFeedActions(root) {
@@ -5026,16 +5060,7 @@
 
         function renderAdminDashboardKpis(stats) {
             const kpiWrap = document.getElementById('admin-dashboard-kpis');
-            if (!kpiWrap) return;
-            const avgRating = Number(stats.feedback?.globalAvg || 0);
-            const reviewedRoutes = Number(stats.feedback?.reviewedRoutes || 0);
-            const totalReviews = Number(stats.feedback?.totalReviews || 0);
-            kpiWrap.innerHTML = `
-                <div class="admin-kpi-card"><i>⭐ ${t('ui.avgGymRating')}</i><b>${avgRating.toFixed(2)} ⭐</b></div>
-                <div class="admin-kpi-card"><i>🧗 ${t('ui.reviewedRoutes')}</i><b>${reviewedRoutes}</b><span style="font-size:0.78rem;color:var(--muted);">${totalReviews} ${t('ui.reviewsCount')}</span></div>
-                <div class="admin-kpi-card"><i>📊 ${t('admin.selectedCoverage')}</i><b class="admin-highlight">${stats.selectedCoverage}%</b></div>
-                <div class="admin-kpi-card"><i>🛣 ${t('admin.routesRegistered30d')}</i><b>${stats.routesLast30Days || 0}</b></div>
-            `;
+            if (kpiWrap) kpiWrap.innerHTML = '';
         }
 
         function renderAdminSectorPerformanceTable(stats) {
@@ -5056,173 +5081,337 @@
 
         function renderAdminUsersSection(stats) {
             const summaryWrap = document.getElementById('admin-users-summary');
-            const usersWrap = document.getElementById('admin-users-table');
-            if (!summaryWrap && !usersWrap) return;
+            if (!summaryWrap) return;
             const avgRating = Number(stats.feedback?.globalAvg || 0);
-            const reviewedRoutes = Number(stats.feedback?.reviewedRoutes || 0);
             const totalReviews = Number(stats.feedback?.totalReviews || 0);
-            const trendNow = Number(stats.activityTrend?.now || 0);
-            const trendPrev = Number(stats.activityTrend?.prev || 0);
-            const trendDelta = trendPrev > 0 ? Math.round(((trendNow - trendPrev) / trendPrev) * 100) : 0;
-            const trendLabel = `${trendDelta >= 0 ? '+' : ''}${trendDelta}%`;
-
-            const usersAll = [...stats.userActivity.entries()].map(([uid, routes]) => ({
-                uid,
-                username: resolveUsername(uid, 'Climber'),
-                routes,
-                activeDays: stats.userActiveDays.get(uid) || 0,
-                sector: stats.userMainSector.get(uid) || '-'
-            }));
-
-            const key = adminUsersState.sortBy;
-            const dir = adminUsersState.sortDir === 'asc' ? 1 : -1;
-            usersAll.sort((a, b) => {
-                const av = key === 'username' ? String(a.username).toLowerCase() : (a[key] || 0);
-                const bv = key === 'username' ? String(b.username).toLowerCase() : (b[key] || 0);
-                if (av < bv) return -1 * dir;
-                if (av > bv) return 1 * dir;
-                return 0;
-            });
-
-            const pageSize = adminUsersState.pageSize || 5;
-            const totalPages = Math.max(1, Math.ceil(usersAll.length / pageSize));
-            if (adminUsersState.page > totalPages) adminUsersState.page = totalPages;
-            const start = (adminUsersState.page - 1) * pageSize;
-            const pageRows = usersAll.slice(start, start + pageSize);
-            const rows = pageRows.map((u, idx) => {
-                const rank = start + idx + 1;
-                const rankCls = rank === 1 ? 'admin-rank top' : 'admin-rank';
-                return `<tr>
-                    <td><span class="${rankCls}">${rank}</span></td>
-                    <td><b>${escapeHtml(u.username)}</b>${badgePillHtml(resolveUserHighestBadge(u.uid))}</td>
-                    <td>${u.routes}</td>
-                    <td>${u.activeDays}</td>
-                    <td>${escapeHtml(u.sector)}</td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="5">-</td></tr>';
-
-            if (summaryWrap) {
-                summaryWrap.innerHTML = `
-                    <div class="admin-block-card">
-                        <h5>${t('ui.overview')}</h5>
-                        <div class="admin-kpi-grid modern">
-                            <div class="admin-kpi-card modern"><b>${avgRating.toFixed(2)} ⭐</b><span class="admin-kpi-label">${t('ui.avgGymRating')}</span></div>
-                            <div class="admin-kpi-card modern"><b>${reviewedRoutes}</b><span class="admin-kpi-label">${t('ui.reviewedRoutes')}</span></div>
-                            <div class="admin-kpi-card modern"><b>${totalReviews} ${t('ui.reviewsCount')}</b><span class="admin-kpi-label">${t('ui.totalReviewsLabel')}</span></div>
-                            <div class="admin-kpi-card modern"><b>${stats.sectors.length}</b><span class="admin-kpi-label">${t('ui.activeSectors')}</span></div>
-                            <div class="admin-kpi-card modern"><b>${stats.routesLast30Days || 0}</b><span class="admin-kpi-label">${t('ui.trackedRoutes')}</span></div>
-                            <div class="admin-kpi-card modern"><b>${trendLabel}</b><span class="admin-kpi-label">${t('admin.trendActivity')}</span></div>
-                        </div>
-                    </div>`;
-            }
-
-            if (usersWrap) {
-                usersWrap.innerHTML = `
-                    <div class="admin-users-page">
-                        <div class="admin-block-card">
-                            <h5>${t('ui.userPerformance')}</h5>
-                            <div class="admin-user-table-wrap">
-                                <table>
-                                    <tr>
-                                        <th>#</th>
-                                        <th class="admin-table-sort" data-sort="username">Username</th>
-                                        <th class="admin-table-sort" data-sort="routes">${t('ui.routesClimbed')}</th>
-                                        <th class="admin-table-sort" data-sort="activeDays">${t('dash.activeDays')}</th>
-                                        <th class="admin-table-sort" data-sort="sector">${t('ui.mainSector')}</th>
-                                    </tr>
-                                    ${rows}
-                                </table>
-                            </div>
-                            <div class="admin-pager">
-                                <button class="btn-sec" type="button" id="admin-users-prev">${t('ui.previous')}</button>
-                                <span style="color:var(--muted);font-size:0.85rem;">${t('ui.page')} ${adminUsersState.page}/${totalPages}</span>
-                                <button class="btn-sec" type="button" id="admin-users-next">${t('ui.next')}</button>
-                            </div>
-                        </div>
+            summaryWrap.innerHTML = `
+                <div class="admin-block-card">
+                    <div class="admin-kpi-grid modern">
+                        <div class="admin-kpi-card modern"><b>${avgRating.toFixed(2)} ⭐</b><span class="admin-kpi-label">${t('ui.avgGymRating')}</span></div>
+                        <div class="admin-kpi-card modern"><b>${totalReviews}</b><span class="admin-kpi-label">${t('ui.totalReviewsLabel')}</span></div>
+                        <div class="admin-kpi-card modern"><b>${stats.sectors.length}</b><span class="admin-kpi-label">${t('ui.activeSectors')}</span></div>
+                        <div class="admin-kpi-card modern"><b>${stats.routesLast30Days || 0}</b><span class="admin-kpi-label">${t('ui.trackedRoutes')}</span></div>
                     </div>
-                `;
-
-                usersWrap.querySelectorAll('.admin-table-sort').forEach(th => {
-                    th.onclick = () => {
-                        const sortBy = th.dataset.sort;
-                        if (!sortBy) return;
-                        if (adminUsersState.sortBy === sortBy) adminUsersState.sortDir = adminUsersState.sortDir === 'asc' ? 'desc' : 'asc';
-                        else { adminUsersState.sortBy = sortBy; adminUsersState.sortDir = 'desc'; }
-                        renderAdminCoverage();
-                    };
-                });
-            }
-
-            const prev = document.getElementById('admin-users-prev');
-            const next = document.getElementById('admin-users-next');
-            if (prev) prev.onclick = () => { adminUsersState.page = Math.max(1, adminUsersState.page - 1); renderAdminCoverage(); };
-            if (next) next.onclick = () => { adminUsersState.page = Math.min(totalPages, adminUsersState.page + 1); renderAdminCoverage(); };
+                </div>`;
         }
 
-        function renderAdminCoverage() {
+        async function renderAdminUsersTab(stats) {
+            const usersWrap = document.getElementById('admin-users-table');
+            if (!usersWrap) return;
+            const renderSeq = ++adminUsersRenderSeq;
+
+            const users = new Map();
+            const sectorClimbs = new Map();
+            const recent = [];
+            const now = new Date();
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            const ensureUser = (uid) => {
+                const key = uid || 'anon';
+                if (!users.has(key)) {
+                    users.set(key, {
+                        uid: key,
+                        username: resolveUsername(uid, 'Utente'),
+                        climbedRouteKeys: new Set(),
+                        climbedMonthlyRouteKeys: new Set(),
+                        sectorsTried: new Set(),
+                        sectorCount: new Map(),
+                        reviews: 0,
+                        activeDays: new Set(),
+                        monthlyActiveDays: new Set(),
+                        hardestMonthlyOrder: -1,
+                        lastActivity: null
+                    });
+                }
+                return users.get(key);
+            };
+
+            const toDate = (v) => {
+                if (!v) return null;
+                const d = new Date(v);
+                return Number.isNaN(d.getTime()) ? null : d;
+            };
+
+            const updLastActivity = (u, dt) => {
+                if (!dt) return;
+                if (!u.lastActivity || dt > u.lastActivity) u.lastActivity = dt;
+            };
+
+            const addRecent = (entry) => {
+                recent.push(entry);
+            };
+
+            let totalCompletedAscents = 0;
+            const historicalSectors = new Set();
+
+            const ingestProgressRow = (p = {}, fallbackUid = 'anon', fallbackRouteId = 'unknown') => {
+                const state = String(p.state || '').toLowerCase();
+                if (!(state === 'climbed' || state === 'completed')) return;
+                const uid = p.userId || p.userAuthUid || p.uid || fallbackUid || 'anon';
+                const sectorId = String(p.sectorId || 'unknown');
+                const routeId = String(p.routeId || fallbackRouteId || 'unknown');
+                const routeKey = `${sectorId}:${routeId}`;
+                const sectorName = adminCoverageSnapshot.sectorNames.get(sectorId) || sectorId;
+                const dt = toDate(p.updatedAt || p.completionDate || p.eventDate || p.createdAt);
+                const dayKey = dt ? toYYYYMMDD(dt) : '';
+
+                const u = ensureUser(uid);
+                u.climbedRouteKeys.add(routeKey);
+                u.sectorsTried.add(sectorName);
+                u.sectorCount.set(sectorName, (u.sectorCount.get(sectorName) || 0) + 1);
+                if (dayKey) u.activeDays.add(dayKey);
+
+                totalCompletedAscents += 1;
+                historicalSectors.add(sectorName);
+                sectorClimbs.set(sectorName, (sectorClimbs.get(sectorName) || 0) + 1);
+                updLastActivity(u, dt);
+
+                if (dt && dt >= monthStart) {
+                    u.climbedMonthlyRouteKeys.add(routeKey);
+                    if (dayKey) u.monthlyActiveDays.add(dayKey);
+                    const routeMeta = adminCoverageSnapshot.routeMeta.get(`${sectorId}/${routeId}`) || {};
+                    const ord = Number.isFinite(routeMeta.gradeOrder) ? Number(routeMeta.gradeOrder) : Number(p.finalGradeOrder);
+                    if (Number.isFinite(ord)) u.hardestMonthlyOrder = Math.max(u.hardestMonthlyOrder, ord);
+                }
+
+                addRecent({
+                    dt: dt || new Date(),
+                    uid: u.uid,
+                    username: u.username,
+                    sectorName,
+                    grade: p.finalGrade || p.routeGrade || '-',
+                    color: resolveRouteColorFromStores({ gymId: realUserGymId, sectorId, routeId }),
+                    hasText: false
+                });
+            };
+
+            let progressLoaded = false;
+            try {
+                const progressSnap = await getDocs(query(collectionGroup(db, 'routeProgress'), where('gymId', '==', realUserGymId)));
+                progressSnap.forEach((d) => ingestProgressRow(d.data() || {}, d.ref.parent?.parent?.id || 'anon', d.id));
+                progressLoaded = progressSnap.size > 0;
+            } catch (_) {
+                progressLoaded = false;
+            }
+
+            if (!progressLoaded) {
+                try {
+                    const usersSnap = await getDocs(collection(db, 'users'));
+                    for (const uDoc of usersSnap.docs) {
+                        try {
+                            const q = query(collection(db, 'users', uDoc.id, 'routeProgress'), where('gymId', '==', realUserGymId));
+                            const rpSnap = await getDocs(q);
+                            rpSnap.forEach((d) => ingestProgressRow(d.data() || {}, uDoc.id, d.id));
+                        } catch (_) {}
+                    }
+                } catch (_) {
+                    // fallback finale: nessun dato progress disponibile
+                }
+            }
+
+            // Reviews: contano solo come recensioni e attività recente, NON come scalate
+            for (const [routeKey, reviewsMap] of adminCoverageSnapshot.reviewsByRoute.entries()) {
+                if (!routeMatchesAdminFilters(routeKey, reviewsMap)) continue;
+                const meta = adminCoverageSnapshot.routeMeta.get(routeKey) || {};
+                const sectorId = meta.sectorId || routeKey.split('/')[0] || 'unknown';
+                const sectorName = adminCoverageSnapshot.sectorNames.get(sectorId) || sectorId;
+                for (const rv of reviewsMap.values()) {
+                    const u = ensureUser(rv?.uid || 'anon');
+                    u.reviews += 1;
+                    const dt = rv?.dt instanceof Date ? rv.dt : null;
+                    updLastActivity(u, dt);
+                    addRecent({
+                        dt: dt || new Date(),
+                        uid: u.uid,
+                        username: u.username,
+                        sectorName,
+                        grade: meta.grade || '-',
+                        color: meta.color || '#9CA3BC',
+                        hasText: !!String(rv?.text || '').trim()
+                    });
+                }
+            }
+
+            const uidList = Array.from(new Set(Array.from(users.keys()).filter(uid => uid && uid !== 'anon')));
+            await Promise.all(uidList.map(async (uid) => {
+                const resolved = await resolveAdminUsername(uid);
+                const u = users.get(uid);
+                if (u) u.username = resolved || u.username || 'Utente';
+            }));
+
+            const usersRows = Array.from(users.values()).map(u => {
+                const mainSectorEntry = Array.from(u.sectorCount.entries()).sort((a,b)=>b[1]-a[1])[0];
+                return {
+                    ...u,
+                    username: String(u.username || '').trim() || 'Utente',
+                    climbedCount: u.climbedRouteKeys.size,
+                    climbedMonthlyCount: u.climbedMonthlyRouteKeys.size,
+                    sectorsCount: u.sectorsTried.size,
+                    activeDaysCount: u.activeDays.size,
+                    monthlyActiveDaysCount: u.monthlyActiveDays.size,
+                    mainSector: mainSectorEntry ? mainSectorEntry[0] : '-',
+                    lastActivityLabel: u.lastActivity ? formatProfileDate(u.lastActivity.toISOString()) : '-'
+                };
+            }).sort((a,b)=>(b.climbedCount-a.climbedCount) || (b.reviews-a.reviews) || String(a.username).localeCompare(String(b.username)));
+
+            if (renderSeq !== adminUsersRenderSeq) return;
+
+            const activeUsersHistorical = usersRows.filter(u => u.climbedCount > 0).length;
+            const totalReviews = usersRows.reduce((acc,u)=>acc+u.reviews,0);
+
+            const activeIn = (days) => {
+                const cutoff = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+                return usersRows.filter(u => u.lastActivity && u.lastActivity >= cutoff).length;
+            };
+
+            const topMonth = usersRows.slice().sort((a,b)=>(b.climbedMonthlyCount-a.climbedMonthlyCount) || (b.monthlyActiveDaysCount-a.monthlyActiveDaysCount) || (b.hardestMonthlyOrder-a.hardestMonthlyOrder) || String(a.username).localeCompare(String(b.username))).slice(0,3);
+            const climber = topMonth[0] || null;
+
+            const sectorTop = Array.from(sectorClimbs.entries())
+                .map(([name, climbs]) => ({ name, climbs }))
+                .sort((a,b)=>b.climbs-a.climbs)
+                .slice(0,3);
+
+            const recentRows = recent
+                .sort((a,b)=> (b.dt?.getTime?.() || 0) - (a.dt?.getTime?.() || 0))
+                .slice(0,4);
+
+            const tableRows = usersRows.slice(0,10).map((u,idx)=>`<tr>
+                <td>${idx+1}</td>
+                <td><b>${escapeHtml(u.username)}</b>${badgePillHtml(resolveUserHighestBadge(u.uid))}</td>
+                <td>${u.climbedCount}</td>
+                <td>${u.activeDaysCount}</td>
+                <td>${escapeHtml(u.mainSector)}</td>
+            </tr>`).join('') || `<tr><td colspan="5">-</td></tr>`;
+
+            usersWrap.innerHTML = `
+                <div class="admin-users-mobile">
+                    <details class="admin-block-card admin-users-details" open>
+                        <summary>1️⃣ Panoramica utenti</summary>
+                        <div class="admin-users-kpi-grid" style="margin-top:8px;">
+                            <div class="admin-users-kpi"><b>👥 ${activeUsersHistorical}</b><span>Utenti attivi</span></div>
+                            <div class="admin-users-kpi"><b>🧗 ${totalCompletedAscents}</b><span>Vie scalate</span></div>
+                            <div class="admin-users-kpi"><b>🧩 ${historicalSectors.size}</b><span>Settori provati</span></div>
+                            <div class="admin-users-kpi"><b>⭐ ${totalReviews}</b><span>Recensioni lasciate</span></div>
+                        </div>
+                    </details>
+
+                    <details class="admin-block-card admin-users-details" open>
+                        <summary>2️⃣ 📈 Attività utenti</summary>
+                        <div class="admin-users-list" style="margin-top:8px;">
+                            <div class="admin-users-list-item"><span>Attività totale registrata</span><b>${totalCompletedAscents}</b></div>
+                            <div class="admin-users-list-item"><span>Utenti attivi ultimi 7 giorni</span><b>${activeIn(7)}</b></div>
+                            <div class="admin-users-list-item"><span>Utenti attivi ultimi 30 giorni</span><b>${activeIn(30)}</b></div>
+                            <div class="admin-users-list-item"><span>Utenti attivi ultimi 90 giorni</span><b>${activeIn(90)}</b></div>
+                        </div>
+                    </details>
+
+                    <details class="admin-block-card admin-users-details" open>
+                        <summary>3️⃣ 🏆 Top utenti del mese</summary>
+                        <div class="admin-users-list" style="margin-top:8px;">
+                            ${topMonth.map((u,idx)=>`<div class="admin-users-list-item"><span>${idx+1}. ${escapeHtml(u.username)}</span><b>${u.climbedMonthlyCount} vie scalate</b></div>`).join('') || `<p class="admin-feedback-empty">${t('common.noData')}</p>`}
+                        </div>
+                    </details>
+
+                    <details class="admin-block-card admin-users-details" open>
+                        <summary>4️⃣ 🔥 Climber del mese</summary>
+                        ${climber ? `<div class="admin-users-list" style="margin-top:8px;"><div class="admin-users-list-item"><span><b>${escapeHtml(climber.username)}</b></span><b>${climber.climbedMonthlyCount} vie scalate</b></div><div class="admin-users-list-item"><span>Giorni attivi nel mese</span><b>${climber.monthlyActiveDaysCount}</b></div></div>` : `<p class="admin-feedback-empty" style="margin-top:8px;">${t('common.noData')}</p>`}
+                    </details>
+
+                    <details class="admin-block-card admin-users-details" open>
+                        <summary>5️⃣ Tabella principale utenti</summary>
+                        <div class="admin-users-table-wrap" style="margin-top:8px;">
+                            <table>
+                                <tr><th>#</th><th>Username</th><th>Vie scalate</th><th>Giorni attivi</th><th>Settore principale</th></tr>
+                                ${tableRows}
+                            </table>
+                        </div>
+                    </details>
+
+                    <details class="admin-block-card admin-users-details" open>
+                        <summary>7️⃣ 📊 Settori più frequentati</summary>
+                        <div class="admin-users-list" style="margin-top:8px;">
+                            ${sectorTop.map(s=>`<div class="admin-users-list-item"><span>${escapeHtml(s.name)}</span><b>${s.climbs} scalate</b></div>`).join('') || `<p class="admin-feedback-empty">${t('common.noData')}</p>`}
+                        </div>
+                    </details>
+
+                    <details class="admin-block-card admin-users-details" open>
+                        <summary>8️⃣ 🕒 Attività recente</summary>
+                        <div class="admin-users-list" style="margin-top:8px;">
+                            ${recentRows.map(ev=>`<div class="admin-users-list-item"><span>${escapeHtml((users.get(ev.uid || '')?.username) || ev.username || 'Utente')} ${ev.hasText ? 'ha lasciato una recensione' : 'ha scalato'} ${escapeHtml(ev.grade)} · ${escapeHtml((() => { const c = getColorLabel(ev.color); return c === t('ui.customColor') ? '-' : c; })())} · ${escapeHtml(ev.sectorName)}</span><b>${escapeHtml(formatProfileDate(ev.dt?.toISOString?.() || ''))}</b></div>`).join('') || `<p class="admin-feedback-empty">${t('common.noData')}</p>`}
+                        </div>
+                    </details>
+                </div>
+            `;
+        }
+
+        async function renderAdminCoverage() {
             const wrap = document.getElementById('admin-coverage-container');
             if (!wrap || !realUserGymId) return;
             const days = getAdminSelectedPeriodDays();
             const stats = buildCoverageStats(days);
             const feedback = buildAdminFeedbackAnalytics();
             stats.feedback = feedback;
-            renderAdminDashboardKpis(stats);
 
             renderAdminUsersSection(stats);
-            renderAdminFeedbackAnalytics();
-            const maxTrend = Math.max(1, ...stats.trend.map(t => t.users));
-            const donutPct = stats.selectedCoverage;
-            const trendHtml = stats.trend.map(ti => {
-                const width = Math.max(6, Math.round((ti.users / maxTrend) * 100));
-                return `<div class="admin-trend-item"><b>${ti.users}</b><span>· ${ti.days}d</span><div class="admin-trend-bar"><i style="width:${width}%"></i></div></div>`;
-            }).join('');
-            const sectorHtml = stats.sectors.slice(0, 3).map(sec => {
-                const secMax = Math.max(1, ...sec.trend.map(ti => ti.users));
-                const secTrend = sec.trend.map(ti => `<div class="admin-trend-item"><b>${ti.users}</b><span>· ${ti.days}d</span><div class="admin-trend-bar"><i style="width:${Math.max(6, Math.round((ti.users / secMax) * 100))}%"></i></div></div>`).join('');
-                const top = sec.topUsers.length
-                    ? `<ol class="admin-sector-top-list">${sec.topUsers.map(u => `<li><b>${escapeHtml(u.username)}</b> · ${u.count}</li>`).join('')}</ol>`
-                    : `<p class="profile-empty">-</p>`;
-                return `
-                    <div class="admin-sector-coverage-card">
-                        <div class="admin-sector-coverage-head">
-                            <b>${escapeHtml(sec.sectorName)}</b>
-                            <span>${sec.coveragePct}%</span>
-                        </div>
-                        <div class="admin-coverage-grid">
-                            <div class="admin-coverage-kpi"><b>${sec.routeCount || 0}</b><span>${t('admin.routesRegistered')}</span></div>
-                            <div class="admin-coverage-kpi"><b>${sec.activePeriod}</b><span>${t('admin.activeUsers')}</span></div>
-                            <div class="admin-coverage-kpi"><b>${sec.coveragePct}%</b><span>${t('admin.coveragePercent')}</span></div>
-                        </div>
-                        <div class="admin-trend">${secTrend}</div>
-                        <div style="margin-top:8px; font-size:0.85rem; color:var(--muted);">${t('admin.topUsersSector')}</div>
-                        ${top}
-                    </div>`;
-            }).join('') || `<p class="profile-empty">-</p>`;
+            await renderAdminUsersTab(stats);
+            renderAdminSectorAnalytics(feedback);
 
             wrap.innerHTML = `
-                <div class="admin-coverage-grid">
-                    <div class="admin-coverage-kpi"><b>${stats.routesLast30Days || 0}</b><span>${t('admin.routesRegistered30d')}</span></div>
-                    <div class="admin-coverage-kpi"><b>${stats.sectors.length}</b><span>${t('superadmin.sectorsLoaded')}</span></div>
-                    <div class="admin-coverage-kpi" style="display:flex; align-items:center; gap:10px;">
-                        <div>
-                            <b>${stats.selectedCoverage}%</b><span>${t('admin.selectedCoverage')}</span>
-                        </div>
-                        <div class="admin-donut" style="background:conic-gradient(var(--accent) 0 ${donutPct}%, rgba(255,255,255,0.06) ${donutPct}% 100%);">
-                            <div class="admin-donut-inner">${donutPct}%</div>
-                        </div>
+                <div class="admin-dashboard-activity-card">
+                    <div class="admin-dashboard-activity-grid">
+                        <div class="admin-dashboard-activity-item"><b>${stats.routesLast30Days || 0}</b><span>${t('admin.routesRegistered30d')}</span></div>
+                        <div class="admin-dashboard-activity-item"><b>${stats.sectors.length}</b><span>${t('superadmin.sectorsLoaded')}</span></div>
+                        <div class="admin-dashboard-activity-item"><b>${stats.selectedCoverage}%</b><span>${t('admin.selectedCoverage')}</span></div>
+                        <div class="admin-dashboard-activity-item"><b>${stats.trendDeltaPct >= 0 ? '+' : ''}${stats.trendDeltaPct}%</b><span>Trend vs periodo precedente</span></div>
                     </div>
+                    <div class="admin-dashboard-activity-trend"><b>${t('admin.trendActivity')}:</b> ${stats.trend.map(ti => `${ti.days}d: ${ti.users}`).join(' · ')}</div>
                 </div>
-                <div style="margin-top:12px; font-size:0.85rem; color:var(--muted);">${t('admin.trendActivity')}</div>
-                <div class="admin-trend">${trendHtml}</div>
-                <div class="admin-activity-trend">Trend vs periodo precedente: <b class="${stats.trendDeltaPct >= 0 ? 'admin-highlight' : ''}">${stats.trendDeltaPct >= 0 ? '+' : ''}${stats.trendDeltaPct}%</b></div>
-                <div class="admin-sector-coverage-list">${sectorHtml}</div>
             `;
+        }
 
-            const sortSel = document.getElementById('admin-sector-sort');
-            if (sortSel && !sortSel.dataset.bound) {
-                sortSel.dataset.bound = '1';
-                sortSel.onchange = () => renderAdminCoverage();
+        function renderAdminSectorAnalytics(data) {
+            const sectorWrap = document.getElementById('admin-sector-analytics');
+            if (!sectorWrap) return;
+            if (!data || !Array.isArray(data.sectors) || !data.sectors.length) {
+                sectorWrap.innerHTML = `<div class="admin-feedback-card"><p class="admin-feedback-empty">${t('common.noData')}</p></div>`;
+                return;
             }
+
+            const gradeOrderMap = gradeSystemArrayToMap(currentGymGradeSystem);
+            const gradeOrderForRoute = (route) => {
+                if (Number.isFinite(route?.gradeOrder)) return Number(route.gradeOrder);
+                const grade = normalizeLevelValue(route?.grade);
+                return gradeOrderMap.has(grade) ? Number(gradeOrderMap.get(grade)) : -1;
+            };
+
+            sectorWrap.innerHTML = data.sectors.map(sec => {
+                const routes = (Array.isArray(sec.routes) ? sec.routes : []).slice().sort((a, b) => {
+                    const byGrade = gradeOrderForRoute(b) - gradeOrderForRoute(a);
+                    if (byGrade !== 0) return byGrade;
+                    return Number(b.reviews || 0) - Number(a.reviews || 0);
+                });
+                return `
+                    <details class="admin-sector-analytics-card" open>
+                        <summary class="admin-sector-analytics-head">
+                            <b class="admin-sector-analytics-title">${escapeHtml(sec.sectorName)}</b>
+                            <div class="admin-sector-analytics-summary">
+                                <span class="admin-pill">${sec.totalRoutes} ${t('ui.totalRoutesLabel')}</span>
+                                <span class="admin-pill">${sec.totalReviews} ${t('ui.reviewsCount')}</span>
+                            </div>
+                        </summary>
+                        <div class="admin-sector-analytics-body">
+                            <div class="admin-sector-routes-scroll">
+                                <table class="admin-sector-routes-table">
+                                    <thead><tr><th>${t('viewer.grade')}</th><th>${t('ui.color')}</th><th>${t('ui.avgVoteLabel')}</th><th>${t('ui.reviewsCount')}</th></tr></thead>
+                                    <tbody>
+                                    ${routes.map(r => `<tr><td>${escapeHtml(r.grade || '-')}</td><td><span class="admin-color-cell"><span class="admin-route-color-swatch" style="background:${escapeHtml(r.color || '#9CA3BC')};"></span>${escapeHtml(getColorLabel(r.color))}</span></td><td>${Number(r.avg || 0).toFixed(2)} ⭐</td><td>${Number(r.reviews || 0)}</td></tr>`).join('') || `<tr><td colspan="4">${t('common.noData')}</td></tr>`}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </details>`;
+            }).join('');
         }
 
 
@@ -5300,6 +5489,7 @@
                     climbs: adminCoverageSnapshot.routeUsers.get(routeKey)?.size || 0,
                     comments,
                     grade: meta.grade || '-',
+                    gradeOrder: Number.isFinite(meta.gradeOrder) ? Number(meta.gradeOrder) : null,
                     color: meta.color || '#9CA3BC'
                 });
             }
@@ -5498,7 +5688,7 @@
                             const routeKey = `${sectorId}/${routeDoc.id}`;
                             currentRoutes.add(routeKey);
                             const routeData = routeDoc.data() || {};
-                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id, grade: routeData.grade || '', color: routeData.color || '#9CA3BC', isActive: routeData.active !== false, hasStart: !!(routeData.position && routeData.normal) });
+                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id, grade: routeData.grade || '', gradeOrder: Number.isFinite(routeData.gradeOrder) ? Number(routeData.gradeOrder) : null, color: routeData.color || '#9CA3BC', isActive: routeData.active !== false, hasStart: !!(routeData.position && routeData.normal) });
                             refreshAdminFilterOptions();
                             if (routeReviewUnsubs.has(routeKey)) return;
 
