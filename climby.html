@@ -1581,6 +1581,7 @@
         let currentGymCoverage = { totalUsers: 0, activeUsers: 0, coveragePct: 0 };
         let adminCoverageUnsubscribers = [];
         let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), sectorResetAt: new Map(), routeMeta: new Map(), reviewsByRoute: new Map(), routeUsers: new Map() };
+        let sectorNameByGymSector = new Map();
         let adminDashboardFilters = { days: 30, sectorId: 'all', grade: 'all', onlyActive: false, onlyReviewed: false };
         let adminUsersState = { page: 1, pageSize: 5, sortBy: 'routes', sortDir: 'desc' };
         let adminUsersInsightsState = { period: '30' };
@@ -2439,6 +2440,7 @@
                 if (typeof u === 'function') u();
             }
             gym3DStatusMap = new Map();
+            sectorNameByGymSector = new Map();
         }
 
         function startGym3DSubscriptions(gymsSnapshot) {
@@ -2446,7 +2448,7 @@
             gymsSnapshot.forEach(g => {
                 const unsub = onSnapshot(collection(db, 'gyms', g.id, 'Sectors'), (snap) => {
                     let has3D = false;
-                    snap.forEach(sec => { if (sec.data()?.meshUrl) has3D = true; });
+                    snap.forEach(sec => { if (sec.data()?.meshUrl) has3D = true; sectorNameByGymSector.set(`${g.id}__${sec.id}`, sec.data()?.name || sec.id); });
                     gym3DStatusMap.set(g.id, { has3D, sectors: snap.size });
                     renderUserGymList();
                 });
@@ -2825,7 +2827,19 @@
             if (!activeUser) return;
             routeProgressUnsubscriber = onSnapshot(collection(db, 'users', activeUser.uid, 'routeProgress'), (snap) => {
                 routeProgressMap = new Map();
-                snap.forEach(d => routeProgressMap.set(d.id, d.data() || {}));
+                snap.forEach(d => {
+                    const raw = d.data() || {};
+                    const parts = String(d.id || '').split('__');
+                    const parsedGymId = parts.length >= 3 ? parts[0] : null;
+                    const parsedSectorId = parts.length >= 3 ? parts[1] : null;
+                    const parsedRouteId = parts.length >= 3 ? parts[2] : null;
+                    const gymId = raw.gymId || raw.gym_id || parsedGymId || null;
+                    const sectorId = raw.sectorId || raw.sector_id || parsedSectorId || null;
+                    const gymName = raw.gymName || raw.gym_name || (lastUserGymsSnap?.docs?.find?.(g => g.id === gymId)?.data?.()?.name) || gymId || '-';
+                    const sectorName = raw.sectorName || raw.sector_name || (gymId && sectorId ? sectorNameByGymSector.get(`${gymId}__${sectorId}`) : null) || sectorId || '-';
+                    const routeId = raw.routeId || raw.route_id || parsedRouteId || null;
+                    routeProgressMap.set(d.id, { ...raw, gymId, sectorId, routeId, gymName, sectorName });
+                });
                 renderProfileDashboard();
                 renderChallengesHub();
             });
@@ -3178,7 +3192,12 @@
                     map.set(key, row);
                     grouped.push(row);
                 } else {
-                    map.get(key).count += 1;
+                    const existing = map.get(key);
+                    existing.count += 1;
+                    if ((!existing.sectorName || existing.sectorName === '-' || existing.sectorName === existing.sectorId) && e.sectorName && e.sectorName !== '-') existing.sectorName = e.sectorName;
+                    if ((!existing.gymName || existing.gymName === '-' || existing.gymName === existing.gymId) && e.gymName && e.gymName !== '-') existing.gymName = e.gymName;
+                    if (!existing.sectorId && e.sectorId) existing.sectorId = e.sectorId;
+                    if (!existing.gymId && e.gymId) existing.gymId = e.gymId;
                 }
             });
             return grouped;
@@ -3194,7 +3213,14 @@
                 const constraints = [orderBy('timestamp', 'desc'), limit(25)];
                 if (profileActivitiesState.cursor) constraints.push(startAfter(profileActivitiesState.cursor));
                 const snap = await getDocs(query(colRef, ...constraints));
-                const incoming = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                const incoming = snap.docs.map(d => {
+                    const row = { id: d.id, ...(d.data() || {}) };
+                    const gymId = row.gymId || row.gym_id || row.gym || null;
+                    const sectorId = row.sectorId || row.sector_id || null;
+                    const gymName = row.gymName || row.gym_name || (lastUserGymsSnap?.docs?.find?.(g => g.id === gymId)?.data?.()?.name) || gymId || '-';
+                    const sectorName = row.sectorName || row.sector_name || (gymId && sectorId ? sectorNameByGymSector.get(`${gymId}__${sectorId}`) : null) || sectorId || '-';
+                    return { ...row, gymId, sectorId, gymName, sectorName };
+                });
                 profileActivitiesState.raw = profileActivitiesState.raw.concat(incoming);
                 profileActivitiesState.grouped = groupProfileActivities(profileActivitiesState.raw);
                 profileActivitiesState.cursor = snap.docs.length ? snap.docs[snap.docs.length - 1] : profileActivitiesState.cursor;
@@ -5180,7 +5206,8 @@
                     username: u.username,
                     sectorName,
                     grade: p.finalGrade || p.routeGrade || '-',
-                    color: resolveRouteColorFromStores({ gymId: realUserGymId, sectorId, routeId }),
+                    color: (adminCoverageSnapshot.routeMeta.get(`${sectorId}/${routeId}`)?.color) || resolveRouteColorFromStores({ gymId: realUserGymId, sectorId, routeId }),
+                    colorLabel: adminCoverageSnapshot.routeMeta.get(`${sectorId}/${routeId}`)?.colorLabel || '',
                     hasText: false
                 });
             };
@@ -5227,6 +5254,7 @@
                         sectorName,
                         grade: meta.grade || '-',
                         color: meta.color || '#9CA3BC',
+                        colorLabel: meta.colorLabel || '',
                         hasText: !!String(rv?.text || '').trim()
                     });
                 }
@@ -5272,9 +5300,18 @@
                 .sort((a,b)=>b.climbs-a.climbs)
                 .slice(0,3);
 
-            const recentRows = recent
-                .sort((a,b)=> (b.dt?.getTime?.() || 0) - (a.dt?.getTime?.() || 0))
-                .slice(0,4);
+            const recentRows = (() => {
+                const seen = new Set();
+                return recent
+                    .sort((a,b)=> (b.dt?.getTime?.() || 0) - (a.dt?.getTime?.() || 0))
+                    .filter(ev => {
+                        const k = `${ev.uid || ''}__${ev.hasText ? 'review' : 'climb'}__${ev.sectorName || ''}__${ev.grade || ''}__${ev.dt?.toISOString?.() || ''}`;
+                        if (seen.has(k)) return false;
+                        seen.add(k);
+                        return true;
+                    })
+                    .slice(0,4);
+            })();
 
             const tableRows = usersRows.slice(0,10).map((u,idx)=>`<tr>
                 <td>${idx+1}</td>
@@ -5338,7 +5375,7 @@
                     <details class="admin-block-card admin-users-details" open>
                         <summary>8️⃣ 🕒 Attività recente</summary>
                         <div class="admin-users-list" style="margin-top:8px;">
-                            ${recentRows.map(ev=>`<div class="admin-users-list-item"><span>${escapeHtml((users.get(ev.uid || '')?.username) || ev.username || 'Utente')} ${ev.hasText ? 'ha lasciato una recensione' : 'ha scalato'} ${escapeHtml(ev.grade)} · ${escapeHtml((() => { const c = getColorLabel(ev.color); return c === t('ui.customColor') ? '-' : c; })())} · ${escapeHtml(ev.sectorName)}</span><b>${escapeHtml(formatProfileDate(ev.dt?.toISOString?.() || ''))}</b></div>`).join('') || `<p class="admin-feedback-empty">${t('common.noData')}</p>`}
+                            ${recentRows.map(ev=>`<div class="admin-users-list-item"><span>${escapeHtml((users.get(ev.uid || '')?.username) || ev.username || 'Utente')} ${ev.hasText ? 'ha lasciato una recensione' : 'ha scalato'} ${escapeHtml(ev.grade)} · ${escapeHtml((() => { const c = String(ev.colorLabel || '').trim() || getColorLabel(ev.color); return c === t('ui.customColor') ? '-' : c; })())} · ${escapeHtml(ev.sectorName)}</span><b>${escapeHtml(formatProfileDate(ev.dt?.toISOString?.() || ''))}</b></div>`).join('') || `<p class="admin-feedback-empty">${t('common.noData')}</p>`}
                         </div>
                     </details>
                 </div>
@@ -5688,7 +5725,7 @@
                             const routeKey = `${sectorId}/${routeDoc.id}`;
                             currentRoutes.add(routeKey);
                             const routeData = routeDoc.data() || {};
-                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id, grade: routeData.grade || '', gradeOrder: Number.isFinite(routeData.gradeOrder) ? Number(routeData.gradeOrder) : null, color: routeData.color || '#9CA3BC', isActive: routeData.active !== false, hasStart: !!(routeData.position && routeData.normal) });
+                            adminCoverageSnapshot.routeMeta.set(routeKey, { sectorId, routeId: routeDoc.id, routeLabel: routeData.name || routeData.grade || routeDoc.id, grade: routeData.grade || '', gradeOrder: Number.isFinite(routeData.gradeOrder) ? Number(routeData.gradeOrder) : null, color: routeData.color || '#9CA3BC', colorLabel: routeData.colorLabel || routeData.colorName || '', isActive: routeData.active !== false, hasStart: !!(routeData.position && routeData.normal) });
                             refreshAdminFilterOptions();
                             if (routeReviewUnsubs.has(routeKey)) return;
 
