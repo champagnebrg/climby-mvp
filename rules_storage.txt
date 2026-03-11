@@ -5,6 +5,10 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    function verifiedEmail() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+
     function myUid() {
       return request.auth.uid;
     }
@@ -48,10 +52,31 @@ service firebase.storage {
     // 3D meshes uploaded by gym managers/admins.
     // Path used by app: meshes/{gymId}/{sectorId}.glb
     match /meshes/{gymId}/{fileName} {
-      allow read: if signedIn() || isSuperadmin();
+      allow read: if verifiedEmail() || isSuperadmin();
 
       allow write: if fileName.matches('.*\\.glb$')
         && canManageGym(gymId);
+    }
+
+
+    // Gym logo/floor map uploads.
+    // Path used by app: gymMedia/{gymId}/{fileName}
+    match /gymMedia/{gymId}/{fileName} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow write: if verifiedEmail()
+        && canManageGym(gymId)
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // User profile avatars.
+    // Path used by app: avatars/{uid}/{fileName}
+    match /avatars/{uid}/{fileName} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow write: if verifiedEmail()
+        && uid == myUid()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
     }
 
     // Deny everything else by default.

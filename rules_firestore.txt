@@ -5,6 +5,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function verifiedEmail() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+
     function userDoc() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
@@ -41,7 +45,7 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow read: if signedIn() || isSuperadmin();
+      allow read: if verifiedEmail() || isSuperadmin();
       allow create: if isSuperadmin() || (
         isSelf(uid)
         && request.resource.data.authUid == request.auth.uid
@@ -52,68 +56,68 @@ service cloud.firestore {
       );
 
       match /routeProgress/{progressId} {
-        allow read: if signedIn() || isSuperadmin();
-        allow create, update: if isSuperadmin() || isSelf(uid);
-        allow delete: if isSuperadmin() || isSelf(uid) || canManageGym(resource.data.gymId);
+        allow read: if verifiedEmail() || isSuperadmin();
+        allow create, update: if isSuperadmin() || (verifiedEmail() && isSelf(uid));
+        allow delete: if isSuperadmin() || (verifiedEmail() && isSelf(uid)) || canManageGym(resource.data.gymId);
       }
 
       match /gymStats/{gymId} {
-        allow read: if signedIn() || isSuperadmin();
-        allow write: if isSuperadmin() || isSelf(uid);
+        allow read: if verifiedEmail() || isSuperadmin();
+        allow write: if isSuperadmin() || (verifiedEmail() && isSelf(uid));
       }
 
       match /progressHistory/{recordId} {
-        allow read: if isSuperadmin() || isSelf(uid);
-        allow create, update: if isSuperadmin() || isSelf(uid);
-        allow delete: if isSuperadmin() || isSelf(uid);
+        allow read: if isSuperadmin() || (verifiedEmail() && isSelf(uid));
+        allow create, update: if isSuperadmin() || (verifiedEmail() && isSelf(uid));
+        allow delete: if isSuperadmin() || (verifiedEmail() && isSelf(uid));
       }
 
     }
 
     match /follows/{followId} {
-      allow read: if signedIn() || isSuperadmin();
-      allow create: if isSuperadmin() || (signedIn() && request.resource.data.followerId == request.auth.uid);
-      allow update, delete: if isSuperadmin() || (signedIn() && resource.data.followerId == request.auth.uid);
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create: if isSuperadmin() || (verifiedEmail() && request.resource.data.followerId == request.auth.uid);
+      allow update, delete: if isSuperadmin() || (verifiedEmail() && resource.data.followerId == request.auth.uid);
     }
 
     match /gyms/{gymId} {
-      allow read: if signedIn() || isSuperadmin();
-      allow create: if isSuperadmin() || (signedIn() && request.resource.data.owner == request.auth.uid);
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create: if isSuperadmin() || (verifiedEmail() && request.resource.data.owner == request.auth.uid);
       allow update, delete: if canManageGym(gymId);
 
       match /Sectors/{sectorId} {
-        allow read: if signedIn() || isSuperadmin();
+        allow read: if verifiedEmail() || isSuperadmin();
         allow write: if canManageGym(gymId);
 
         match /routes/{routeId} {
-          allow read: if signedIn() || isSuperadmin();
+          allow read: if verifiedEmail() || isSuperadmin();
           allow write: if canManageGym(gymId);
 
           match /reviews/{reviewId} {
-            allow read: if signedIn() || isSuperadmin();
-            allow create, update, delete: if canManageGym(gymId) || (signedIn() && request.auth.uid == reviewId);
+            allow read: if verifiedEmail() || isSuperadmin();
+            allow create, update, delete: if canManageGym(gymId) || (verifiedEmail() && request.auth.uid == reviewId);
           }
 
           match /progressFeed/{entryId} {
-            allow read: if signedIn() || isSuperadmin();
-            allow write: if canManageGym(gymId) || (signedIn() && request.auth.uid == entryId);
+            allow read: if verifiedEmail() || isSuperadmin();
+            allow write: if canManageGym(gymId) || (verifiedEmail() && request.auth.uid == entryId);
           }
         }
       }
 
       match /models/{modelVersionId} {
-        allow read: if signedIn() || isSuperadmin();
+        allow read: if verifiedEmail() || isSuperadmin();
         allow write: if canManageGym(gymId);
       }
 
 
       match /members/{uid} {
-        allow read: if isSuperadmin() || canManageGym(gymId) || (signedIn() && request.auth.uid == uid);
-        allow create, update: if signedIn()
+        allow read: if verifiedEmail() || isSuperadmin() || canManageGym(gymId);
+        allow create, update: if verifiedEmail()
           && request.auth.uid == uid
           && request.resource.data.uid == uid
           && request.resource.data.keys().hasOnly([
-            "uid", "username", "firstName", "lastName", "city", "birthDate", "createdAt", "totalClimbsInGym", "lastActivityInGym", "status"
+            "uid", "username", "firstName", "lastName", "city", "birthDate", "createdAt", "totalClimbsInGym", "lastActivityInGym", "status", "avatarUrl"
           ])
           && request.resource.data.status in ["active", "inactive"];
         allow delete: if false;
@@ -123,26 +127,26 @@ service cloud.firestore {
 
     match /socialActivities/{activityId} {
       // Social V1: authenticated users can view and interact with all activities.
-      allow read: if signedIn() || isSuperadmin();
-      allow create: if isSuperadmin() || signedIn();
-      allow update: if isSuperadmin() || signedIn();
-      allow delete: if isSuperadmin() || canManageGym(resource.data.gymId) || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create: if isSuperadmin() || verifiedEmail();
+      allow update: if isSuperadmin() || verifiedEmail();
+      allow delete: if isSuperadmin() || canManageGym(resource.data.gymId) || (verifiedEmail() && resource.data.user_id == request.auth.uid);
 
       match /applause/{applauseUid} {
-        allow read: if signedIn() || isSuperadmin();
-        allow write: if isSuperadmin() || signedIn();
+        allow read: if verifiedEmail() || isSuperadmin();
+        allow write: if isSuperadmin() || verifiedEmail();
       }
 
       match /comments/{commentId} {
-        allow read: if signedIn() || isSuperadmin();
-        allow create: if isSuperadmin() || signedIn();
-        allow update, delete: if isSuperadmin() || canManageGym(get(/databases/$(database)/documents/socialActivities/$(activityId)).data.gymId) || signedIn();
+        allow read: if verifiedEmail() || isSuperadmin();
+        allow create: if isSuperadmin() || verifiedEmail();
+        allow update, delete: if isSuperadmin() || canManageGym(get(/databases/$(database)/documents/socialActivities/$(activityId)).data.gymId) || verifiedEmail();
       }
     }
 
     match /gymOwnerRequests/{requestId} {
       allow create: if isSuperadmin() || (
-        signedIn()
+        verifiedEmail()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "pending"
         && request.resource.data.gymName is string
@@ -150,8 +154,71 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(["userId", "gymName", "status", "createdAt"])
       );
 
-      allow read: if isSuperadmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow read: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
       allow update, delete: if isSuperadmin();
+    }
+
+
+    match /gymFollowers/{followId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create: if isSuperadmin() || (
+        verifiedEmail()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.gymId is string
+        && request.resource.data.notificationsEnabled == true
+      );
+      allow update: if isSuperadmin() || (
+        verifiedEmail()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+      );
+      allow delete: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
+    }
+
+
+    match /notifications/{notificationId} {
+      allow read: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
+      allow create: if isSuperadmin() || (
+        verifiedEmail()
+        && request.resource.data.read == false
+        && request.resource.data.userId is string
+        && request.resource.data.type is string
+        && request.resource.data.message is string
+        && (!request.resource.data.keys().hasAny(["actorId"]) || request.resource.data.actorId == null || request.resource.data.actorId is string)
+        && (!request.resource.data.keys().hasAny(["postId"]) || request.resource.data.postId == null || request.resource.data.postId is string)
+        && (!request.resource.data.keys().hasAny(["gymId"]) || request.resource.data.gymId == null || request.resource.data.gymId is string)
+        && (!request.resource.data.keys().hasAny(["sectorId"]) || request.resource.data.sectorId == null || request.resource.data.sectorId is string)
+        && request.resource.data.keys().hasOnly([
+          "userId", "type", "message", "actorId", "postId", "gymId", "sectorId", "createdAt", "read"
+        ])
+        && (
+          // Self notifications (es. welcome / ranking)
+          request.resource.data.userId == request.auth.uid
+          // Gym notifications fan-out by gym managers
+          || (
+            request.resource.data.gymId is string
+            && canManageGym(request.resource.data.gymId)
+          )
+          // Social notifications generated by the actor on the target post owner
+          || (
+            request.resource.data.type in ["POST_LIKE", "POST_COMMENT"]
+            && request.resource.data.actorId is string
+            && request.resource.data.actorId == request.auth.uid
+            && request.resource.data.postId is string
+            && exists(/databases/$(database)/documents/socialActivities/$(request.resource.data.postId))
+            && (
+              get(/databases/$(database)/documents/socialActivities/$(request.resource.data.postId)).data.user_id == request.resource.data.userId
+              || get(/databases/$(database)/documents/socialActivities/$(request.resource.data.postId)).data.userId == request.resource.data.userId
+            )
+          )
+        )
+      );
+      allow update: if isSuperadmin() || (
+        verifiedEmail()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+      );
+      allow delete: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
     }
 
     // KPI globali: accessibili solo al superadmin, write bloccata lato client.

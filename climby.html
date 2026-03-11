@@ -769,6 +769,7 @@
         }
         .gym-3d-card:active { transform: translateY(1px) scale(0.995); box-shadow: 0 6px 14px rgba(7,14,30,0.3), inset 0 0 0 1px var(--border); }
         .gym-3d-overlay { position:absolute; inset:0; pointer-events:none; background: radial-gradient(circle at 88% 18%, rgba(43,224,125,0.12), transparent 44%), radial-gradient(circle at 14% 82%, rgba(43,224,125,0.1), transparent 46%); }
+        .gym-card-logo { width:52px; height:52px; border-radius:12px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.08); }
         .gym-3d-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; position:relative; z-index:1; }
         .user-gym-card .user-gym-name { flex:1; font-size:18px; font-weight:600; line-height:1.3; }
         .gym-3d-badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; border:1px solid var(--primary); padding:6px 10px; font-size:0.78rem; color:var(--primary); background:rgba(43,224,125,0.12); font-weight:600; }
@@ -779,6 +780,8 @@
         .gym-3d-cta:active { transform: scale(0.99); }
         .user-gym-card .btn-fav { background: rgba(9,16,31,0.5); border:1px solid var(--border); color: var(--muted); cursor: pointer; padding: 10px; min-width: 44px; min-height: 44px; font-size: 1.25rem; display:flex; align-items:center; justify-content:center; border-radius:12px; }
         .user-gym-card .btn-fav.fav { color: var(--danger); border-color: var(--danger); }
+        .user-gym-card .btn-bell.on { color: #fff; border-color: var(--primary); background: var(--primary); box-shadow: 0 0 0 2px rgba(111,77,255,0.24), 0 8px 14px rgba(111,77,255,0.28); transform: translateY(-1px); }
+        #user-gym-detail-notif-toggle.on { color:#fff; border-color:var(--primary); background:var(--primary); box-shadow:0 0 0 2px rgba(111,77,255,0.24), 0 8px 14px rgba(111,77,255,0.28); }
         .user-detail-view { margin-top: 0; }
         .gym-detail-overview {
             display:block;
@@ -789,6 +792,10 @@
             padding:16px;
         }
         .gym-detail-overview { box-shadow: 0 12px 24px rgba(7,14,30,0.18); }
+        .gym-detail-cover { width:100%; height:180px; border-radius:14px; object-fit:cover; border:1px solid var(--border); margin-bottom:12px; background:rgba(255,255,255,0.05); }
+        .gym-floor-map { width:100%; max-height:340px; object-fit:contain; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.03); }
+        .gym-admin-media-row { display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; }
+        .gym-admin-media-preview { width:72px; height:72px; border-radius:10px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.06); }
         .gym-detail-eyebrow { margin: 10px 0 8px; display:inline-flex; align-items:center; gap:8px; border:1px solid color-mix(in srgb, var(--primary) 40%, var(--border) 60%); background:rgba(111,77,255,0.12); color:var(--primary); border-radius:999px; padding:6px 12px; font-size:0.76rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
         .gym-detail-hero-cta { margin-top:14px; padding:14px; border-radius:14px; border:1px solid var(--primary); background:linear-gradient(160deg, rgba(111,77,255,0.14), rgba(255,255,255,0.85)); }
         .gym-detail-hero-cta b { display:block; font-size: 1rem; margin-bottom: 4px; }
@@ -825,6 +832,15 @@
             text-overflow:ellipsis;
         }
         .gym-tab.active { color:var(--primary); border-color:var(--primary); background:var(--surface-elevated); box-shadow:inset 0 0 0 1px rgba(111,77,255,0.22); }
+        .gym-leaderboard-list { display:grid; gap:10px; margin-top:10px; }
+        .gym-leaderboard-row { display:flex; align-items:center; gap:10px; border:1px solid var(--border); background:var(--surface-elevated); border-radius:12px; padding:10px; }
+        .gym-leaderboard-row.top3 { border-color: color-mix(in srgb, var(--primary) 60%, var(--border) 40%); background: linear-gradient(150deg, rgba(111,77,255,0.16), rgba(255,255,255,0.95)); }
+        .gym-leaderboard-pos { min-width:32px; font-weight:800; color:var(--muted); text-align:center; }
+        .gym-leaderboard-row.top3 .gym-leaderboard-pos { color:var(--primary); }
+        .gym-leaderboard-avatar { width:40px; height:40px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.08); display:grid; place-items:center; font-size:0.78rem; font-weight:700; color:var(--muted); }
+        .gym-leaderboard-meta { flex:1; min-width:0; display:flex; flex-direction:column; }
+        .gym-leaderboard-meta b { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .gym-leaderboard-routes { font-weight:700; color:var(--text); font-size:0.9rem; white-space:nowrap; }
         .gym-tab-panel { margin-bottom: 28px; }
         .user-gym-detail-desc { color: var(--muted); font-size: 1rem; line-height: 1.6; margin: 0 0 14px 0; }
         .gym-info-block { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-elevated); padding: 14px; }
@@ -907,6 +923,10 @@
         .profile-shell { display:flex; flex-direction:column; gap:12px; }
         .profile-header-main { border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--card); }
         .profile-header-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+        .profile-avatar-wrap { display:flex; gap:12px; align-items:center; }
+        .profile-avatar-large { width:72px; height:72px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.08); display:grid; place-items:center; font-weight:700; color:var(--muted); font-size:1rem; }
+        .profile-avatar-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+        .profile-avatar-actions .btn-sec { min-height:38px; padding:8px 12px; }
         .profile-username { margin:0; font-size:28px; font-weight:600; color:var(--text); line-height:1.1; }
         .profile-subcopy { margin:8px 0 0; color:var(--muted); font-size:13px; font-weight:500; }
         .profile-header-actions { display:flex; gap:8px; }
@@ -923,7 +943,6 @@
         .profile-heatmap { display:grid; grid-template-columns: repeat(10, minmax(0,1fr)); gap:5px; }
         .profile-heat { height:12px; border-radius:4px; background:rgba(255,255,255,0.06); border:1px solid var(--border); }
         .profile-heat.on { background:var(--primary-dim); border-color:var(--primary); }
-        .profile-progress-tech { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); }
         .profile-sparkline { width:100%; height:60px; display:block; }
         .profile-activity-list { display:flex; flex-direction:column; gap:8px; }
         .profile-activity-card { border:1px solid var(--border); border-radius:12px; padding:10px; background:var(--card); }
@@ -984,6 +1003,13 @@
             box-shadow: 0 8px 18px rgba(73, 88, 130, 0.1);
         }
         .dash-header .lang-switcher { flex-shrink: 0; }
+        .notif-btn { position:relative; min-width:44px; min-height:44px; border-radius:12px; }
+        .notif-badge { position:absolute; top:-6px; right:-6px; min-width:20px; height:20px; border-radius:999px; background:var(--danger); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 5px; }
+        .notif-item { border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:8px; cursor:pointer; display:flex; gap:10px; align-items:flex-start; }
+        .notif-item.unread { border-color:var(--primary); background:rgba(111,77,255,0.08); }
+        .notif-avatar { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.06); display:grid; place-items:center; font-size:12px; color:var(--muted); font-weight:700; flex-shrink:0; }
+        .notif-content { flex:1; min-width:0; }
+        .notif-meta { display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:12px; margin-top:6px; }
         .viewer-close {
             position: absolute;
             top: max(16px, var(--safe-top));
@@ -1089,8 +1115,8 @@
                 <h1 class="climby-wordmark landing-hero-title">Climby</h1>
                 <p class="landing-tagline" data-i18n="landing.tagline"></p>
                 <div class="landing-cta">
-                    <button class="btn-main landing-cta-primary" onclick="window.goToAuth()" data-i18n="landing.start"></button>
-                    <button class="btn-sec landing-cta-sec" onclick="window.goToAuth()" data-i18n="landing.login"></button>
+                    <button class="btn-main landing-cta-primary" onclick="window.goToAuth('register')" data-i18n="landing.start"></button>
+                    <button class="btn-sec landing-cta-sec" onclick="window.goToAuth('login')" data-i18n="landing.login"></button>
                 </div>
             </div>
         </section>
@@ -1196,6 +1222,16 @@
         </div>
     </div>
 
+    <div id="notifications-modal" class="social-modal" style="display:none;">
+        <div class="social-modal-sheet">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <h4 class="following-section-title" style="margin:0;" data-i18n="notifications.title"></h4>
+                <button type="button" class="btn-sec" id="notifications-close" data-i18n="common.close"></button>
+            </div>
+            <div id="notifications-list" style="margin-top:10px;"><p class="profile-empty" data-i18n="notifications.loading"></p></div>
+        </div>
+    </div>
+
 <div id="view-auth" class="view">
         <div class="container">
             <div class="card" style="text-align:center; margin-top:50px; padding: 30px;">
@@ -1220,6 +1256,19 @@
         </div>
     </div>
 
+    <div id="view-email-verification" class="view">
+        <div class="container">
+            <div class="card" style="text-align:center; margin-top:50px; padding: 30px;">
+                <h1 class="climby-wordmark" style="color:var(--primary)">Climby</h1>
+                <h3 data-i18n="emailVerification.title"></h3>
+                <p class="profile-subtitle" data-i18n="emailVerification.description"></p>
+                <button class="btn-main" id="btn-resend-verification" data-i18n="emailVerification.resend"></button>
+                <button class="btn-sec" id="btn-refresh-verification" data-i18n="emailVerification.refresh"></button>
+                <button class="btn-sec" onclick="window.logout()" data-i18n="dash.logout"></button>
+            </div>
+        </div>
+    </div>
+
     <div id="view-dash" class="view">
         <div class="container">
             <div class="dash-header">
@@ -1231,6 +1280,7 @@
                     </div>
                     <button class="btn-sec" id="btn-gym-owner-request" onclick="window.openGymOwnerRequest()" style="display:none;" data-i18n="ownerRequest.cta"></button>
                     <button class="btn-sec" id="btn-mode-toggle" onclick="window.switchMode()" data-i18n="dash.switchView"></button>
+                    <button class="btn-sec notif-btn" id="btn-notifications" aria-label="Notifiche">🔔<span id="notifications-badge" class="notif-badge" style="display:none;">0</span></button>
                                         <button class="btn-sec" onclick="window.logout()" data-i18n="dash.logout"></button>
                 </div>
             </div>
@@ -1325,6 +1375,18 @@
                                         <input type="text" id="admin-gym-phone" data-i18n-placeholder="gym.phone">
                                         <input type="email" id="admin-gym-email" data-i18n-placeholder="gym.emailLabel">
                                         <input type="text" id="admin-gym-website" data-i18n-placeholder="gym.website">
+                                        <div class="full gym-admin-media-row">
+                                            <img id="admin-gym-logo-preview" class="gym-admin-media-preview" alt="logo" />
+                                            <label class="btn-sec" for="admin-gym-logo-file" data-i18n="gym.uploadLogo"></label>
+                                            <button type="button" class="btn-sec" id="admin-gym-logo-remove" data-i18n="gym.removeLogo"></button>
+                                            <input type="file" id="admin-gym-logo-file" accept="image/*" style="display:none;">
+                                        </div>
+                                        <div class="full gym-admin-media-row">
+                                            <img id="admin-gym-floor-preview" class="gym-admin-media-preview" alt="floor map" />
+                                            <label class="btn-sec" for="admin-gym-floor-file" data-i18n="gym.uploadFloorMap"></label>
+                                            <button type="button" class="btn-sec" id="admin-gym-floor-remove" data-i18n="gym.removeFloorMap"></button>
+                                            <input type="file" id="admin-gym-floor-file" accept="image/*" style="display:none;">
+                                        </div>
                                         <h5 class="full" data-i18n="gym.climbingArea"></h5>
                                         <input type="number" step="0.1" id="admin-bouldering-height" data-i18n-placeholder="admin.boulderingHeight">
                                         <input type="number" step="0.1" id="admin-bouldering-area" data-i18n-placeholder="admin.boulderingArea">
@@ -1428,36 +1490,39 @@
                     <button type="button" class="btn-sec" id="user-gym-detail-back" data-i18n="dash.back"></button>
                     <p id="user-gym-detail-eyebrow" class="gym-detail-eyebrow" data-i18n="dash.gymPresentation"></p>
                     <div class="card gym-detail-overview">
+                        <img id="user-gym-detail-cover" class="gym-detail-cover" alt="gym cover">
                         <h2 id="user-gym-detail-name" class="gym-detail-title"></h2>
                         <p id="user-gym-detail-desc" class="user-gym-detail-desc"></p>
                         <div id="user-gym-detail-highlights" class="gym-detail-meta"></div>
                         <div class="gym-detail-hero-cta">
-                            <b data-i18n="dash.gym3dTitle"></b>
-                            <p data-i18n="dash.gym3dDesc"></p>
-                            <button type="button" class="btn-main" id="user-gym-detail-explore-top" data-i18n="dash.explore3dCta"></button>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                <button type="button" class="btn-main" id="user-gym-detail-explore-top" data-i18n="dash.explore3dCta"></button>
+                                <button type="button" class="btn-sec" id="user-gym-detail-notif-toggle">🔔</button>
+                            </div>
                         </div>
                                             </div>
+                    <div id="user-gym-detail-sectors-list"></div>
+
                     <div class="gym-detail-tabs">
-                        <button type="button" class="gym-tab active" data-tab="info" id="gym-tab-info"></button>
-                        <button type="button" class="gym-tab" data-tab="sectors" id="gym-tab-sectors"></button>
+                        <button type="button" class="gym-tab active" data-tab="leaderboard" id="gym-tab-leaderboard"></button>
                         <button type="button" class="gym-tab" data-tab="details" id="gym-tab-details"></button>
                     </div>
-                    <div id="gym-tab-info-panel" class="gym-tab-panel">
+                    <div id="gym-tab-leaderboard-panel" class="gym-tab-panel">
+                        <div class="gym-info-block">
+                            <h4 class="gym-info-heading" data-i18n="gym.leaderboardTitle"></h4>
+                            <p class="profile-subtitle" data-i18n="gym.leaderboardHint"></p>
+                            <div id="user-gym-detail-leaderboard" class="gym-leaderboard-list"></div>
+                        </div>
+                    </div>
+                    <div id="gym-tab-details-panel" class="gym-tab-panel" style="display:none;">
+                        <div class="gym-info-block">
+                            <h4 class="gym-info-heading" data-i18n="gym.floorMap"></h4>
+                            <img id="user-gym-detail-floor-map" class="gym-floor-map" alt="gym floor map">
+                        </div>
                         <div class="gym-info-block">
                             <h4 class="gym-info-heading" data-i18n="gym.climbingArea"></h4>
                             <div id="user-gym-detail-climbing" class="gym-climbing-rows"></div>
                         </div>
-                    </div>
-                    <div id="gym-tab-sectors-panel" class="gym-tab-panel" style="display:none;">
-                        <div class="gym-info-block gym-sectors-primary">
-                            <h4 class="gym-info-heading" data-i18n="dash.gym3dTitle"></h4>
-                            <p class="gym-sectors-subtitle" data-i18n="gym.sectorsHint"></p>
-                            <div id="user-gym-detail-sectors-summary" class="gym-meta-chip"></div>
-                            <button type="button" class="btn-main" id="user-gym-detail-explore" data-i18n="dash.explore3dCta"></button>
-                        </div>
-                        <div id="user-gym-detail-sectors-list"></div>
-                    </div>
-                    <div id="gym-tab-details-panel" class="gym-tab-panel" style="display:none;">
                         <div class="gym-info-block">
                             <h4 class="gym-info-heading" data-i18n="gym.aboutGym"></h4>
                             <div id="user-gym-detail-about" class="gym-about-content"></div>
@@ -1570,7 +1635,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, startAfter, serverTimestamp, collectionGroup, increment, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
@@ -1585,6 +1650,7 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        auth.languageCode = "it";
         const db = getFirestore(app);
         const storage = getStorage(app);
 
@@ -1592,6 +1658,8 @@
         let isLogin = false, currentMode = 'user', userRole = 'user', tempPos, tempNorm, selectedStars = 0;
         let superadminKpiUnsub = null;
         let userFavouriteGyms = [];
+        let followedGymNotifications = new Set();
+        let gymFollowersUnsubscriber = null;
         let lastUserGymsSnap = null;
         let profileUnsubscribers = [];
         let profileEntriesMap = new Map();
@@ -1649,6 +1717,15 @@
         let adminSectorSortState = 'avg';
         let adminFiltersOpen = false;
         let gymDetailUnsubscriber = null;
+        let gymLeaderboardUnsubscriber = null;
+        let notificationsUnsubscriber = null;
+        let userGymStatsUnsubscriber = null;
+        let userGymStatsState = [];
+        let profileStatsState = { loading: true, hasData: false, error: null, totalRoutes: 0, gymsCount: 0, activeDays: 0, maxGrade: '-', maxGradeOrder: -1, bestGymName: '-', normalized: [] };
+        let notificationsState = [];
+        const notificationActorCache = new Map();
+        let unreadNotificationsCount = 0;
+        const lastGymRankByGymId = new Map();
         let currentModelLoadToken = 0;
         let currentModelLoadCleanup = null;
         let currentModelLoadTimeout = null;
@@ -1683,20 +1760,20 @@
             it: {
                 landing: { tagline: "Esplora le pareti in 3D, scopri le vie e lascia il tuo feedback. La {{h}}community{{/h}} degli arrampicatori.", start: "Inizia", login: "Accedi", howItWorks: "Come funziona Climby", feature1Title: "Pareti in 3D", feature1Desc: "Esplora i settori della palestra in un viewer 3D interattivo: ruota, zoomma e muoviti sulla parete come dal vivo.", feature2Title: "Vie e gradi", feature2Desc: "Ogni via ha grado (5a–7a) e colore. Tocca gli hotspot sulla parete per vedere i dettagli e scegliere cosa provare.", feature3Title: "Voti e commenti", feature3Desc: "Valuta le vie con le stelle, leggi le recensioni della community e lascia il tuo feedback per aiutare gli altri." },
                 auth: { yourName: "Il tuo Nome", firstName: "Nome", lastName: "Cognome", username: "Username pubblico", birthDate: "Data di nascita", city: "Città", usernameHint: "3-20 caratteri: lettere, numeri, _, -, . (gli spazi diventano _)", usernameAvailable: "Username disponibile", usernameChecking: "Verifica username...", usernameTaken: "Username già in uso", usernameInvalid: "Username non valido", gymName: "Nome della Palestra", email: "Email", password: "Password", hasAccount: "Hai già un account? Accedi", login: "Accedi", register: "Registrati", roleUser: "Scalatore", roleAdmin: "Gestore Palestra (Admin)" },
-                common: { close: "Chiudi", noData: "Nessun dato disponibile." }, ownerRequest: { cta: "Sono il proprietario di una palestra", enterGymName: "Inserisci il nome della palestra.", sentSuccess: "Richiesta inviata con successo.", title: "Richiesta accesso proprietario", hint: "Inserisci i dati per richiedere l'accesso come proprietario palestra.", gymName: "Nome palestra", submit: "Invia richiesta" }, superadmin: { title: "Superadmin Dashboard", subtitle: "KPI globali aggregati (senza confrontare gradi assoluti tra palestre diverse).", performanceTitle: "KPI performance (grading-safe)", performanceHint: "Le metriche di performance sono calcolate internamente a ciascuna palestra e poi aggregate.", behaviorTitle: "KPI comportamentali", cityTitle: "Distribuzione difficoltà per città (percentuali interne)", city: "Città", internalDistribution: "Distribuzione interna", noData: "Nessun dato disponibile.", totalUsers: "Utenti totali", active7d: "Attivi ultimi 7 giorni", active30d: "Attivi ultimi 30 giorni", activeGyms: "Palestre attive", sectorsLoaded: "Settori caricati", routesRegistered: "Vie registrate", avgRoutesPerUser: "Media vie per utente", monthlyGrowth: "Crescita mensile utenti", monthlyRetention: "Retention mensile", activeVsRegistered: "% attivi / registrati", avgProgressUser: "Progressione media utente", improvement3m: "Miglioramento medio (3 mesi)", avgTimeNextLevel: "Tempo medio livello successivo", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Tentativi medi per via", weeklyFrequency: "Frequenza settimanale media", topDays: "Giorni più frequentati", topHours: "Fasce orarie attive", returnRate: "Tasso di ritorno" }, dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", tabProfileShort: "Profilo", usersTab: "Utenti", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Storico personale e crescita community-driven", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
+                common: { close: "Chiudi", noData: "Nessun dato disponibile." }, ownerRequest: { cta: "Sono il proprietario di una palestra", enterGymName: "Inserisci il nome della palestra.", sentSuccess: "Richiesta inviata con successo.", title: "Richiesta accesso proprietario", hint: "Inserisci i dati per richiedere l'accesso come proprietario palestra.", gymName: "Nome palestra", submit: "Invia richiesta" }, superadmin: { title: "Superadmin Dashboard", subtitle: "KPI globali aggregati (senza confrontare gradi assoluti tra palestre diverse).", performanceTitle: "KPI performance (grading-safe)", performanceHint: "Le metriche di performance sono calcolate internamente a ciascuna palestra e poi aggregate.", behaviorTitle: "KPI comportamentali", cityTitle: "Distribuzione difficoltà per città (percentuali interne)", city: "Città", internalDistribution: "Distribuzione interna", noData: "Nessun dato disponibile.", totalUsers: "Utenti totali", active7d: "Attivi ultimi 7 giorni", active30d: "Attivi ultimi 30 giorni", activeGyms: "Palestre attive", sectorsLoaded: "Settori caricati", routesRegistered: "Vie registrate", avgRoutesPerUser: "Media vie per utente", monthlyGrowth: "Crescita mensile utenti", monthlyRetention: "Retention mensile", activeVsRegistered: "% attivi / registrati", avgProgressUser: "Progressione media utente", improvement3m: "Miglioramento medio (3 mesi)", avgTimeNextLevel: "Tempo medio livello successivo", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Tentativi medi per via", weeklyFrequency: "Frequenza settimanale media", topDays: "Giorni più frequentati", topHours: "Fasce orarie attive", returnRate: "Tasso di ritorno" }, dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", tabProfileShort: "Profilo", usersTab: "Utenti", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Le tue statistiche di arrampicata", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
                 admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", filters: "🔎 Filtri", customPeriod: "Personalizzato", allSectors: "Tutti i settori", allGrades: "Tutti i gradi", onlyActiveRoutes: "Solo vie attive", onlyReviewedRoutes: "Solo vie recensite", sortSectorAvg: "Ordina settore: media", sortSectorReviews: "Ordina settore: recensioni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo.", navDashboard: "1️⃣ Dashboard", navSectorsRoutes: "2️⃣ Settori & Vie", navUsers: "3️⃣ Utenti", navSettings: "4️⃣ Impostazioni", navDashboardSimple: "Dashboard", navSectorsRoutesSimple: "Settori & Vie", navUsersSimple: "Utenti", navSettingsSimple: "Impostazioni", activityLast30: "📈 Attività ultimi 30 giorni", sectorPerformance: "🧱 Performance settori", sortBy: "Ordina per", sortMost: "Più attivo", sortLeast: "Meno attivo", routesRegistered30d: "Vie registrate 30g", sector: "Settore", activeUsers: "Utenti attivi", routesRegistered: "Vie registrate", coveragePercent: "% Copertura", totalUsers: "Totale utenti", activeLast30: "Attivi ultimi 30 giorni", top10Users: "Top 10 utenti", feedbackAnalyticsUsers: "💬 Analytics Feedback Utenti", loadingFeedback: "Caricamento analytics feedback...", reviewsLast30: "Recensioni ultimi 30 giorni", feedbackLoadError: "Errore nel caricamento analytics feedback.", sectorsTitle: "Settori", sectorsSubtitle: "Gestisci i settori e i modelli 3D della tua palestra", createSectorCta: "➕ Crea nuovo settore", select3dModel: "Seleziona modello 3D", noModelSelected: "Nessun modello selezionato", modelLoaded: "Modello caricato", no3dModel: "Nessun modello 3D", replaceModel3d: "Sostituisci modello 3D", deleteSector: "Elimina settore", deleteSectorTitle: "🗑 Elimina settore", deleteSectorConfirmText: "Sei sicuro di voler eliminare questo settore? Tutte le vie associate verranno rimosse definitivamente.", cancel: "Annulla", deleteForever: "Elimina definitivamente", sectorAnalysis: "Analisi per settore", replaceModelConfirm: "Confermi la sostituzione del modello 3D di questo settore? Le vie esistenti manterranno i loro routeId e lo storico utenti non verrà cancellato.", replaceModelDone: "Modello sostituito con successo." },
                 viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", publicCommentPlaceholder: "Com'è la beta? È morfologica? Divertente?", submitReview: "INVIA VALUTAZIONE", publishFeedback: "PUBBLICA FEEDBACK", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", proposedGradeOptional: "Grado proposto (opzionale)", proposedGradeShortPlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", myClimbTab: "La mia scalata", rateRouteTab: "Valuta la via", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", projectStateHint: "La sto lavorando", climbedStateHint: "L'ho completata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", saveClimb: "SALVA SCALATA", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate", startGuideTitle: "📍 Crea lo start della via", startGuideText: "Tocca nel modello 3D il punto di inizio della via per impostare lo START.", startGuideAcknowledge: "Ho capito", startGuideDontShow: "Non mostrare più", moveGuideTitle: "🎯 Suggerimento navigazione", moveGuideHeader: "Muovi la parete", moveGuideText: "Trascina con un dito per ruotare.\nUsa due dita per spostare la vista.\nPizzica per zoommare.", moveGuideClose: "Ho capito" },
-                gym: { tabInfo: "Informazioni", tabSectors: "Settori", tabDetails: "Dettagli palestra", aboutGym: "Card Contatti", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori disponibili", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Apri i settori della palestra e scegli il settore da esplorare in 3D." },
+                gym: { tabInfo: "Informazioni", tabSectors: "Settori", tabDetails: "Dettagli palestra", aboutGym: "Card Contatti", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori della palestra", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Seleziona un settore per vedere le vie attuali o aprilo direttamente in 3D.", leaderboardTitle: "Classifica palestra", leaderboardHint: "Classifica mensile basata sul numero di vie scalate in questa palestra.", routesClimbed: "vie", uploadLogo: "Carica logo palestra", removeLogo: "Rimuovi logo", uploadFloorMap: "Carica pianta palestra", removeFloorMap: "Rimuovi pianta", floorMap: "Pianta palestra", noFloorMap: "Pianta non disponibile" },
                 loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D...", retry: "Riprova" },
                 errors: { completeData: "Inserisci dati completi", firstNameRequired: "Il nome è obbligatorio.", lastNameRequired: "Il cognome è obbligatorio.", firstNameInvalid: "Nome non valido: solo lettere, almeno 2 caratteri.", lastNameInvalid: "Cognome non valido: solo lettere, almeno 2 caratteri.", birthDateRequired: "La data di nascita è obbligatoria.", cityRequired: "La città è obbligatoria.", profileLoad: "Errore durante il caricamento del profilo.", adminGymMissing: "Profilo admin senza palestra associata.", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore", authRequired: "Devi accedere per completare questa azione.", permissionDenied: "Permessi insufficienti su Firestore: controlla le regole di sicurezza.", saveFailed: "Salvataggio non riuscito. Riprova.", sectorExists: "Il settore esiste già: usa \"Sostituisci modello 3D\" per mantenerne lo storico." }
             },
             en: {
                 landing: { tagline: "Explore walls in 3D, discover routes and leave your feedback. The climbers' {{h}}community{{/h}}.", start: "Get started", login: "Log in", howItWorks: "How Climby works", feature1Title: "3D walls", feature1Desc: "Explore gym sectors in an interactive 3D viewer: rotate, zoom and move on the wall as in real life.", feature2Title: "Routes & grades", feature2Desc: "Each route has a grade (5a–7a) and color. Tap hotspots on the wall to see details and choose what to try.", feature3Title: "Ratings & comments", feature3Desc: "Rate routes with stars, read community reviews and leave your feedback to help others." },
                 auth: { yourName: "Your name", username: "Public username", birthDate: "Birth date", city: "City", usernameHint: "3-20 chars: letters, numbers, _, -, . (spaces become _)", usernameAvailable: "Username available", usernameChecking: "Checking username...", usernameTaken: "Username already in use", usernameInvalid: "Invalid username", gymName: "Gym name", email: "Email", password: "Password", hasAccount: "Already have an account? Log in", login: "Log in", register: "Sign up", roleUser: "Climber", roleAdmin: "Gym manager (Admin)" },
-                common: { close: "Close", noData: "No data available." }, ownerRequest: { cta: "I own a gym", enterGymName: "Enter gym name.", sentSuccess: "Request sent successfully.", title: "Gym owner access request", hint: "Enter details to request gym owner access.", gymName: "Gym name", submit: "Submit request" }, superadmin: { title: "Superadmin Dashboard", subtitle: "Global aggregated KPIs (without comparing absolute grades across different gyms).", performanceTitle: "Performance KPIs (grading-safe)", performanceHint: "Performance metrics are computed within each gym and then aggregated.", behaviorTitle: "Behavioral KPIs", cityTitle: "Difficulty distribution by city (internal percentages)", city: "City", internalDistribution: "Internal distribution", noData: "No data available.", totalUsers: "Total users", active7d: "Active last 7 days", active30d: "Active last 30 days", activeGyms: "Active gyms", sectorsLoaded: "Loaded sectors", routesRegistered: "Registered routes", avgRoutesPerUser: "Avg routes per user", monthlyGrowth: "Monthly user growth", monthlyRetention: "Monthly retention", activeVsRegistered: "% active / registered", avgProgressUser: "Avg user progression", improvement3m: "Avg improvement (3 months)", avgTimeNextLevel: "Avg time to next level", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Avg attempts per route", weeklyFrequency: "Avg weekly frequency", topDays: "Most active days", topHours: "Most active time slots", returnRate: "Return rate" }, dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabChallenges: "Challenges", tabSocial: "Social", tabProfileShort: "Profile", usersTab: "Users", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Personal history and community-driven growth", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
+                common: { close: "Close", noData: "No data available." }, ownerRequest: { cta: "I own a gym", enterGymName: "Enter gym name.", sentSuccess: "Request sent successfully.", title: "Gym owner access request", hint: "Enter details to request gym owner access.", gymName: "Gym name", submit: "Submit request" }, superadmin: { title: "Superadmin Dashboard", subtitle: "Global aggregated KPIs (without comparing absolute grades across different gyms).", performanceTitle: "Performance KPIs (grading-safe)", performanceHint: "Performance metrics are computed within each gym and then aggregated.", behaviorTitle: "Behavioral KPIs", cityTitle: "Difficulty distribution by city (internal percentages)", city: "City", internalDistribution: "Internal distribution", noData: "No data available.", totalUsers: "Total users", active7d: "Active last 7 days", active30d: "Active last 30 days", activeGyms: "Active gyms", sectorsLoaded: "Loaded sectors", routesRegistered: "Registered routes", avgRoutesPerUser: "Avg routes per user", monthlyGrowth: "Monthly user growth", monthlyRetention: "Monthly retention", activeVsRegistered: "% active / registered", avgProgressUser: "Avg user progression", improvement3m: "Avg improvement (3 months)", avgTimeNextLevel: "Avg time to next level", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Avg attempts per route", weeklyFrequency: "Avg weekly frequency", topDays: "Most active days", topHours: "Most active time slots", returnRate: "Return rate" }, dash: { switchView: "SWITCH VIEW", logout: "LOGOUT", exploreGyms: "Find your next session", searchGyms: "Search for a gym...", favouriteGyms: "Your favourite gyms", discoverGyms: "Discover all gyms", addToFavourites: "Add to favourites", removeFromFavourites: "Remove from favourites", sectors: "Sectors", back: "← Back", manageRoutes: "MANAGE ROUTES", replace3d: "REPLACE 3D", exploreSectors: "Explore sectors", gymPresentation: "About", noGymDescription: "Gym on Climby. Explore sectors in 3D and discover routes.", profileTitle: "Your profile", tabExplore: "Explore gyms", tabProfile: "User profile", tabChallenges: "Challenges", tabSocial: "Social", tabProfileShort: "Profile", usersTab: "Users", findUsers: "Find users", searchUsers: "Search username...", follow: "Follow", unfollow: "Following", followingProgress: "Social feed", noFollowingProgress: "Follow users and ask them to share progress to see your feed.", searchStart: "Type a username to search users", noUserResults: "No users found", socialPublicProfile: "Public profile", followers: "Followers", followingCount: "Following", publicContent: "Public posts", publicRoutes: "Public routes", publicFeedbacks: "Public feedback", noPublicContent: "No public content available.",  maxGrade: "Top grade", totalSends: "Routes climbed", activeDays: "Active days", reviewedGyms: "Gyms", latestProgress: "Latest progress", noProgress: "No progress yet: start rating and commenting routes.", recentCommunity: "Gym progress", profileSubtitle: "Your climbing statistics", maxLevelReached: "Highest level reached", nextLevel: "Next level", progressionToNext: "Progress to next level", progressionTitle: "Growth over time", progressionHint: "Highest level is historical: it never regresses on lighter sessions.", projectsActive: "Active projects", maxMilestone: "Historical milestone", levelMastery: "Level consistency", noMilestones: "No milestones yet: keep logging climbs.", latestActivities: "Latest activities", globalMaxLevel: "Global max level", normalizedLevel: "Normalized level", localMaxByGym: "Max per gym", globalProgressHint: "Global progression based on internal normalized level", openGymProgress: "Show progress", hideGymProgress: "Hide progress", communityEmpty: "No progress in this gym yet.", available3d: "Available in 3D", preparing3d: "3D coming soon", explore3dCta: "Explore in 3D", gym3dTitle: "Immersive 3D sectors", gym3dDesc: "Open the gym 3D model and jump directly into the sector you want to explore." },
                 admin: { createSector: "Create new sector", sectorNamePlaceholder: "Name (e.g. Boulder room)", publish: "PUBLISH", gymProfileTitle: "Gym profile", gymDescription: "Gym description", saveGymProfile: "SAVE INFO", boulderingHeight: "Bouldering height (m)", boulderingArea: "Bouldering area (m²)", leadHeight: "Lead height (m)", leadArea: "Lead area (m²)", outdoorHeight: "Outdoor height (m)", outdoorArea: "Outdoor area (m²)", speedHeight: "Speed height (m)", speedArea: "Speed area (m²)", liveData: "Live route data", userCoverageTitle: "User coverage", periodFilter: "Period", last7Days: "Last 7 days", last30Days: "Last 30 days", last90Days: "Last 90 days", filters: "🔎 Filters", customPeriod: "Custom", allSectors: "All sectors", allGrades: "All grades", onlyActiveRoutes: "Only active routes", onlyReviewedRoutes: "Only reviewed routes", sortSectorAvg: "Sort sector: average", sortSectorReviews: "Sort sector: reviews", totalUsersGym: "Total gym users", activeUsersLast30Days: "Active last 30 days", selectedCoverage: "Period coverage", trendActivity: "Activity trend", topUsersSector: "Top 3 sector users", yourSectors: "Your sectors", sector: "Sector", route: "Route", votes: "Votes", average: "Avg", gradeSystemTitle: "Gym grade system", gradeSystemHint: "Add one grade per line, from easiest to hardest. A numeric order is stored too.", gradeSystemPlaceholder: "E.g.\nGreen\nBlue\nPurple\nRed", saveGradeSystem: "SAVE GRADE SYSTEM", gradeSetupRequiredTitle: "Set up your gym grades", gradeSetupRequiredHint: "Before using the admin panel, configure your gym grade system from easiest to hardest.", gradeSystemSaved: "Grade system saved successfully.", navDashboard: "1️⃣ Dashboard", navSectorsRoutes: "2️⃣ Sectors & Routes", navUsers: "3️⃣ Users", navSettings: "4️⃣ Settings", navDashboardSimple: "Dashboard", navSectorsRoutesSimple: "Sectors & Routes", navUsersSimple: "Users", navSettingsSimple: "Settings", activityLast30: "📈 Last 30 days activity", sectorPerformance: "🧱 Sector performance", sortBy: "Sort by", sortMost: "Most active", sortLeast: "Least active", routesRegistered30d: "Routes logged (30d)", activeUsers: "Active users", routesRegistered: "Registered routes", coveragePercent: "% coverage", totalUsers: "Total users", activeLast30: "Active last 30 days", top10Users: "Top 10 users", feedbackAnalyticsUsers: "💬 User feedback analytics", loadingFeedback: "Loading feedback analytics...", reviewsLast30: "Reviews last 30 days", feedbackLoadError: "Error loading feedback analytics.", sectorsTitle: "Sectors", sectorsSubtitle: "Manage your gym sectors and 3D models", createSectorCta: "➕ Create new sector", select3dModel: "Select 3D model", noModelSelected: "No model selected", modelLoaded: "Model uploaded", no3dModel: "No 3D model", replaceModel3d: "Replace 3D model", deleteSector: "Delete sector", deleteSectorTitle: "🗑 Delete sector", deleteSectorConfirmText: "Are you sure you want to delete this sector? All linked routes will be permanently removed.", cancel: "Cancel", deleteForever: "Delete permanently", sectorAnalysis: "Sector Analysis", replaceModelConfirm: "Confirm replacing this sector 3D model? Existing routes keep their routeId and user history is not deleted.", replaceModelDone: "Model replaced successfully." },
                 viewer: { close: "CLOSE", configureRoute: "Configure route", save: "SAVE", delete: "DELETE", comment: "Comment", commentPlaceholder: "Beta, memories, anything goes here...", publicCommentPlaceholder: "How is the beta? Morpho? Fun?", submitReview: "SUBMIT RATING", publishFeedback: "PUBLISH FEEDBACK", grade: "Grade", rating: "Rating", avgRating: "Average", noVotesYet: "No ratings yet", noComment: "(No comment)", selectStar: "Please select at least one star!", reviewSuccess: "Review submitted successfully!", reviewAlreadySent: "You already reviewed this route.", confirmDelete: "Delete?", sendDate: "Date", tries: "Tries", proposeGrade: "Propose grade", proposeGradePlaceholder: "Same grade", proposedGrade: "Proposed grade", proposedGradePlaceholder: "E.g. 6c+", proposedGradeOptional: "Proposed grade (optional)", proposedGradeShortPlaceholder: "E.g. 6c+", routeGradePlaceholder: "E.g. 6c+", today: "Today", yesterday: "Yesterday", lastSaturday: "Last Saturday", lastSunday: "Last Sunday", ascentType: "Result", climbed: "Climbed", project: "Project", publicFeedback: "Public feedback", progressTracker: "Progress tracker", myClimbTab: "My climb", rateRouteTab: "Rate the route", yourProgressState: "Personal state", addToProject: "Add to project", markAsClimbed: "Mark as climbed", projectStateHint: "I'm projecting it", climbedStateHint: "I completed it", saveProject: "Update project", saveClimbed: "Update climbed", saveClimb: "SAVE CLIMB", firstAttemptDate: "First attempt", completionDate: "Completion date", finalGrade: "Final grade", personalNotes: "Personal notes", personalNotesPlaceholder: "Private notes about beta, feelings, goals...", shareOnFeed: "Share update on feed", trackerSaved: "Progress tracker updated", trackerNone: "Route not yet added to your tracker.", sortProgress: "Progress filter", filterAll: "All", filterProject: "Projects", filterClimbed: "Climbed", startGuideTitle: "📍 Set the route start", startGuideText: "Tap the route start point directly on the 3D model to set START.", startGuideAcknowledge: "Got it", startGuideDontShow: "Do not show again", moveGuideTitle: "🎯 Navigation tip", moveGuideHeader: "Move the wall", moveGuideText: "Drag with one finger to rotate.\nUse two fingers to move the view.\nPinch to zoom.", moveGuideClose: "Got it" },
-                gym: { tabInfo: "Information", tabSectors: "Sectors", tabDetails: "Gym details", aboutGym: "Contact details", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Available sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Open the gym sectors and choose which sector to explore in 3D." },
+                gym: { tabInfo: "Information", tabSectors: "Sectors", tabDetails: "Gym details", aboutGym: "Contact details", address: "Address", phone: "Phone", emailLabel: "Email", website: "Website", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Height", area: "Area", noValue: "-", sectorsAvailable: "Gym sectors", userCoverage: "User coverage", totalGymUsers: "Gym users", active30dUsers: "Active last 30 days", coveragePercent: "Coverage", coverageLegend: "{{active}} active users out of {{total}} gym users", sectorsHint: "Select a sector to see current routes or open it in 3D.", leaderboardTitle: "Gym leaderboard", leaderboardHint: "Monthly leaderboard based on routes climbed in this gym.", routesClimbed: "routes", uploadLogo: "Upload gym logo", removeLogo: "Remove logo", uploadFloorMap: "Upload floor map", removeFloorMap: "Remove floor map", floorMap: "Gym floor map", noFloorMap: "Floor map not available" },
                 loading: { init: "Loading...", verifying: "Verifying...", updatingMesh: "Updating mesh...", loading3d: "Loading 3D...", retry: "Retry" },
                 errors: { completeData: "Please enter all required fields", firstNameRequired: "First name is required.", lastNameRequired: "Last name is required.", firstNameInvalid: "Invalid first name: letters only, at least 2 characters.", lastNameInvalid: "Invalid last name: letters only, at least 2 characters.", selectFile: "Select a file", usernameRequired: "Please enter a username", usernameInvalid: "Invalid username: use 3-20 chars (letters, numbers, _, -, .)", usernameTaken: "Username already in use", modelLoadFailed: "Error loading 3D model", modelLoadTimeout: "Loading took too long. Please retry.", modelMeshMissing: "3D model not available for this sector", authRequired: "You must be signed in to complete this action.", permissionDenied: "Insufficient Firestore permissions: check your security rules.", saveFailed: "Save failed. Please retry.", sectorExists: "Sector already exists: use \"Replace 3D model\" to keep route history." }
             }
@@ -1744,7 +1821,6 @@
             profileBestResults: { it: 'I tuoi migliori risultati', en: 'Your best results' },
             profileActivitySnapshot: { it: 'Snapshot attività', en: 'Activity snapshot' },
             profileHeatmap30d: { it: 'Heatmap ultimi 30 giorni', en: 'Last 30 days heatmap' },
-            profileGradeProgression: { it: 'Progressione grado', en: 'Grade progression' },
             editProfile: { it: 'Modifica profilo', en: 'Edit profile' },
             settings: { it: 'Impostazioni', en: 'Settings' },
             avgGymRating: { it: 'Media voti palestra', en: 'Average gym rating' },
@@ -1821,13 +1897,56 @@
             yourChallenges: { it: 'Le tue Sfide', en: 'Your Challenges' },
             monthlyChallengesNote: { it: 'Sfide mensili: progressi azzerati a inizio mese. I badge restano nello storico.', en: 'Monthly challenges: progress resets at the beginning of each month. Badges stay in your history.' },
             maxLevelReachedLabel: { it: 'Livello massimo raggiunto', en: 'Highest level reached' },
-            sectorOverview: { it: '📊 Panoramica Settore', en: '📊 Sector Overview' }
+            gradeProgressionTitle: { it: 'Progressione grado', en: 'Grade progression' },
+            yourLevel: { it: 'Il tuo livello', en: 'Your level' },
+            noGradeProgress: { it: 'Nessuna via completata: registra una scalata per vedere la progressione.', en: 'No completed routes yet: log a climb to see your progression.' },
+            profileNotificationsTitle: { it: 'Notifiche', en: 'Notifications' },
+            profileNotificationsSubtitle: { it: 'Le tue notifiche più recenti', en: 'Your latest notifications' },
+            sectorOverview: { it: '📊 Panoramica Settore', en: '📊 Sector Overview' }, profilePhoto: { it: 'Foto profilo', en: 'Profile photo' }, changePhoto: { it: 'Cambia foto', en: 'Change photo' }, removePhoto: { it: 'Rimuovi foto', en: 'Remove photo' }, photoUpdated: { it: 'Foto profilo aggiornata.', en: 'Profile photo updated.' }, photoRemoved: { it: 'Foto profilo rimossa.', en: 'Profile photo removed.' }
         };
         for (const lang of ['it', 'en']) {
             translations[lang] = translations[lang] || {};
             translations[lang].ui = translations[lang].ui || {};
             for (const [k, values] of Object.entries(uiLabelFallbacks)) {
                 if (!translations[lang].ui[k]) translations[lang].ui[k] = values[lang];
+            }
+        }
+
+        const emailVerificationFallbacks = {
+            title: { it: 'Verifica la tua email', en: 'Verify your email' },
+            description: { it: "Devi verificare la tua email prima di usare Climby. Controlla la posta (anche la cartella Spam) e clicca il link di verifica.", en: 'You must verify your email before using Climby. Check your inbox (including Spam/Junk) and click the verification link.' },
+            sentAfterSignup: { it: "Controlla la tua email per verificare l'account (controlla anche nella cartella Spam).", en: 'Check your email to verify your account (also check Spam/Junk folder).' },
+            resend: { it: 'Reinvia email di verifica', en: 'Resend verification email' },
+            resent: { it: 'Email di verifica inviata nuovamente. Controlla anche nello Spam.', en: 'Verification email sent again. Please check Spam/Junk too.' },
+            refresh: { it: 'Ho verificato, aggiorna stato', en: 'I verified it, refresh status' },
+            stillUnverified: { it: 'Email non ancora verificata.', en: 'Email is not verified yet.' }
+        };
+        for (const lang of ['it', 'en']) {
+            translations[lang] = translations[lang] || {};
+            translations[lang].emailVerification = translations[lang].emailVerification || {};
+            for (const [k, values] of Object.entries(emailVerificationFallbacks)) {
+                if (!translations[lang].emailVerification[k]) translations[lang].emailVerification[k] = values[lang];
+            }
+        }
+
+        const notificationsFallbacks = {
+            title: { it: 'Notifiche', en: 'Notifications' },
+            empty: { it: 'Nessuna notifica disponibile', en: 'No notifications available' }, loading: { it: 'Caricamento notifiche...', en: 'Loading notifications...' }, loadError: { it: 'Errore caricamento notifiche. Riprova tra poco.', en: 'Error loading notifications. Please retry later.' },
+            unread: { it: 'Non letta', en: 'Unread' },
+            read: { it: 'Letta', en: 'Read' },
+            POST_LIKE: { it: 'Ha messo like alla tua pubblicazione.', en: 'Liked your post.' },
+            POST_COMMENT: { it: 'Ha commentato la tua pubblicazione.', en: 'Commented on your post.' },
+            NEW_SECTOR: { it: 'Nuovo settore disponibile nella palestra.', en: 'New sector available in the gym.' },
+            SECTOR_RESET: { it: 'Nuova tracciatura in un settore della palestra.', en: 'New route setting in a gym sector.' },
+            TOP10_ENTER: { it: 'Sei entrato nella Top 10 della palestra.', en: 'You entered the gym Top 10.' },
+            RANK_OVERTAKEN: { it: 'Qualcuno ti ha superato in classifica.', en: 'Someone overtook you in leaderboard.' },
+            WELCOME: { it: 'Benvenuto su Climby! Inizia ad esplorare le palestre.', en: 'Welcome to Climby! Start exploring gyms.' }, gymFollowEnabled: { it: 'Riceverai notifiche da questa palestra', en: 'You will receive notifications from this gym' }, gymFollowDisabled: { it: 'Notifiche disattivate per questa palestra', en: 'Notifications disabled for this gym' }, gymFollowOnShort: { it: 'Notifiche ON', en: 'Alerts ON' }, gymFollowOffShort: { it: 'Notifiche OFF', en: 'Alerts OFF' }
+        };
+        for (const lang of ['it', 'en']) {
+            translations[lang] = translations[lang] || {};
+            translations[lang].notifications = translations[lang].notifications || {};
+            for (const [k, values] of Object.entries(notificationsFallbacks)) {
+                if (!translations[lang].notifications[k]) translations[lang].notifications[k] = values[lang];
             }
         }
         let currentLang = localStorage.getItem(LANG_KEY) || 'it';
@@ -1857,7 +1976,7 @@
             }
             const lt = document.getElementById('loading-text'); if (lt) lt.innerText = t('loading.init');
         }
-        window.setLang = (lang) => { currentLang = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); populateAdminColorOptions(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderChallengesHub === 'function') renderChallengesHub(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (typeof renderActivePublicProfile === 'function') renderActivePublicProfile(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) renderAdminCoverage(); };
+        window.setLang = (lang) => { currentLang = lang; auth.languageCode = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); populateAdminColorOptions(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderChallengesHub === 'function') renderChallengesHub(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (typeof renderActivePublicProfile === 'function') renderActivePublicProfile(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) renderAdminCoverage(); };
 
         const showLoading = (msg, showRetry = false) => {
             document.getElementById('loading-text').innerText = msg;
@@ -2109,7 +2228,8 @@
                 createdAt: existingCreatedAt || serverTimestamp(),
                 totalClimbsInGym: climbs,
                 lastActivityInGym: lastTs || new Date().toISOString(),
-                status: 'active'
+                status: 'active',
+                avatarUrl: userData.avatarUrl || extras.avatarUrl || null
             }, { merge: true });
         }
 
@@ -2142,14 +2262,18 @@
             });
         }
 
-        window.toggleAuthMode = () => {
-            isLogin = !isLogin;
+        function setAuthMode(loginMode) {
+            isLogin = !!loginMode;
             document.getElementById('auth-btn').innerText = isLogin ? t('auth.login').toUpperCase() : t('auth.register').toUpperCase();
             document.getElementById('reg-fields').style.display = isLogin ? 'none' : 'block';
             setUsernameStatus(isLogin ? '' : t('auth.usernameHint'));
-        };
+        }
 
-        document.getElementById('auth-btn').onclick = async () => {
+        window.toggleAuthMode = () => setAuthMode(!isLogin);
+
+                setAuthMode(true);
+
+document.getElementById('auth-btn').onclick = async () => {
             const email = document.getElementById('email').value, pass = document.getElementById('pass').value;
             showLoading(t('loading.verifying'));
             try {
@@ -2176,34 +2300,29 @@
                     if (!city) throw new Error(t('errors.cityRequired'));
                     const lower = usernameLower(username);
                     const res = await createUserWithEmailAndPassword(auth, email, pass);
+                    await sendEmailVerification(res.user);
+                    alert(t('emailVerification.sentAfterSignup'));
                     try {
                         const authUid = res.user.uid;
-                        const qRef = query(collection(db, 'users'), where('usernameLower', '==', lower), limit(1));
-                        const existsSnap = await getDocs(qRef);
-                        const taken = existsSnap.docs.some(d => (d.data()?.authUid || d.id) !== authUid);
-                        if (taken) throw new Error('USERNAME_TAKEN');
                         const userRef = doc(db, "users", authUid);
-                        const userSnap = await getDoc(userRef);
-                        const existingData = userSnap.exists() ? (userSnap.data() || {}) : {};
                         const userProfile = {
                             authUid,
-                            role: existingData.role || 'user',
-                            gymManaged: existingData.gymManaged || null,
+                            role: 'user',
+                            gymManaged: null,
                             username,
                             usernameLower: lower,
                             firstName,
                             lastName,
-                            email: res.user.email || email || existingData.email || null,
+                            email: res.user.email || email || null,
                             birthDate,
                             city,
-                            following: Array.isArray(existingData.following) ? existingData.following : [],
-                            favouriteGyms: Array.isArray(existingData.favouriteGyms) ? existingData.favouriteGyms : [],
-                            createdAt: existingData.createdAt || serverTimestamp()
+                            following: [],
+                            favouriteGyms: [],
+                            createdAt: serverTimestamp()
                         };
                         await setDoc(userRef, userProfile, { merge: true });
+                        await createNotification({ userId: authUid, type: 'WELCOME' }).catch(() => {});
                     } catch (e) {
-                        try { await deleteUser(res.user); } catch (_) {}
-                        if (e?.message === 'USERNAME_TAKEN') throw new Error(t('errors.usernameTaken'));
                         if (e?.code === 'permission-denied' || /insufficient permissions/i.test(String(e?.message || ''))) {
                             throw new Error('Permessi Firestore insufficienti: abilita lettura/scrittura su users per utenti autenticati.');
                         }
@@ -2262,18 +2381,235 @@
             return 'user';
         }
 
+        async function createNotification({ userId, type, message = '', actorId = null, postId = null, gymId = null, sectorId = null }) {
+            if (!userId || !type) return;
+            try {
+                await addDoc(collection(db, 'notifications'), {
+                    userId,
+                    type,
+                    message: message || t(`notifications.${type}`),
+                    actorId: actorId || null,
+                    postId: postId || null,
+                    gymId: gymId || null,
+                    sectorId: sectorId || null,
+                    createdAt: serverTimestamp(),
+                    read: false
+                });
+            } catch (err) {
+                console.error('createNotification failed', { userId, type, gymId, actorId, postId, err });
+                throw err;
+            }
+        }
+
+        function formatRelativeTime(value) {
+            const dt = value?.toDate ? value.toDate() : (value ? new Date(value) : null);
+            if (!dt || Number.isNaN(dt.getTime())) return '-';
+            const diffSec = Math.max(0, Math.floor((Date.now() - dt.getTime()) / 1000));
+            if (diffSec < 60) return currentLang === 'it' ? 'ora' : 'now';
+            const mins = Math.floor(diffSec / 60);
+            if (mins < 60) return currentLang === 'it' ? `${mins}m fa` : `${mins}m ago`;
+            const hours = Math.floor(mins / 60);
+            if (hours < 24) return currentLang === 'it' ? `${hours}h fa` : `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return currentLang === 'it' ? `${days}g fa` : `${days}d ago`;
+        }
+
+        async function prefetchNotificationActors(items = []) {
+            const actorIds = Array.from(new Set(items.map(n => n.actorId).filter(Boolean))).filter(uid => !notificationActorCache.has(uid));
+            if (!actorIds.length) return;
+            await Promise.all(actorIds.map(async (uid) => {
+                try {
+                    const snap = await getDoc(doc(db, 'users', uid));
+                    const row = snap.exists() ? (snap.data() || {}) : {};
+                    notificationActorCache.set(uid, {
+                        username: row.username || row.displayName || 'Climber',
+                        avatarUrl: row.avatarUrl || row.photoURL || null
+                    });
+                } catch (_) {
+                    notificationActorCache.set(uid, { username: 'Climber', avatarUrl: null });
+                }
+            }));
+        }
+
+        async function openNotificationTarget(notification) {
+            if (!notification) return;
+            const type = String(notification.type || '');
+            if (type === 'POST_LIKE' || type === 'POST_COMMENT') {
+                setUserMainTab('social');
+                setSocialSubView('main');
+                renderFollowingSection();
+                if (notification.postId) await openSocialCommentsModal(notification.postId).catch(() => {});
+                return;
+            }
+            if (type === 'SECTOR_RESET') {
+                if (notification.gymId && notification.sectorId) {
+                    setUserMainTab('explore');
+                    open3D(notification.gymId, notification.sectorId);
+                } else if (notification.gymId) {
+                    setUserMainTab('explore');
+                    openGymDetail(notification.gymId);
+                }
+                return;
+            }
+            if (type === 'NEW_SECTOR' && notification.gymId) {
+                setUserMainTab('explore');
+                openGymDetail(notification.gymId);
+            }
+        }
+
+        async function notifyGymMembers(gymId, type, message = '', extra = {}) {
+            if (!gymId || !type) return;
+            try {
+                const followersSnap = await getDocs(query(collection(db, 'gymFollowers'), where('gymId', '==', gymId), limit(1000)));
+                let sent = 0;
+                for (const f of followersSnap.docs) {
+                    const row = f.data() || {};
+                    const enabled = row.notificationsEnabled !== false;
+                    const uid = row.userId || null;
+                    if (!enabled || !uid) continue;
+                    try {
+                        await createNotification({ userId: uid, type, message, gymId, sectorId: extra.sectorId || null });
+                        sent += 1;
+                    } catch (err) {
+                        console.error('Notification delivery error for follower', uid, err);
+                    }
+                }
+                console.info('Gym notifications sent', { gymId, type, sent });
+            } catch (err) {
+                console.error('notifyGymMembers failed', { gymId, type, err });
+            }
+        }
+
+        function stopNotificationsSubscription() {
+            if (typeof notificationsUnsubscriber === 'function') notificationsUnsubscriber();
+            notificationsUnsubscriber = null;
+            notificationsState = [];
+            unreadNotificationsCount = 0;
+            const badge = document.getElementById('notifications-badge');
+            if (badge) badge.style.display = 'none';
+        }
+
+        function renderNotificationsPanel() {
+            const list = document.getElementById('notifications-list');
+            if (!list) return;
+            console.info('[notifications] renderNotificationsPanel', { count: notificationsState.length });
+            if (!notificationsState.length) {
+                console.info('[notifications] render empty state');
+                list.innerHTML = `<p class="profile-empty">${t('notifications.empty')}</p>`;
+                return;
+            }
+            list.innerHTML = notificationsState.map(n => {
+                const actor = n.actorId ? (notificationActorCache.get(n.actorId) || null) : null;
+                const actorLabel = actor?.username ? actor.username.slice(0, 2).toUpperCase() : '👤';
+                const status = n.read ? t('notifications.read') : t('notifications.unread');
+                const msg = n.message || t(`notifications.${n.type}`);
+                const actorAvatar = actor?.avatarUrl
+                    ? `<img class="notif-avatar" src="${escapeHtml(actor.avatarUrl)}" alt="">`
+                    : `<div class="notif-avatar">${escapeHtml(actorLabel)}</div>`;
+                return `<div class="notif-item ${n.read ? '' : 'unread'}" data-id="${n.id}">${actorAvatar}<div class="notif-content"><div>${escapeHtml(msg)}</div><div class="notif-meta"><span>${escapeHtml(formatRelativeTime(n.createdAt))}</span><span>${escapeHtml(status)}</span></div></div></div>`;
+            }).join('');
+            list.querySelectorAll('.notif-item').forEach(el => {
+                el.onclick = async () => {
+                    const id = el.dataset.id;
+                    if (!id) return;
+                    const notification = notificationsState.find(n => n.id === id) || null;
+                    try { await updateDoc(doc(db, 'notifications', id), { read: true }); } catch (_) {}
+                    closeNotificationsPanel();
+                    await openNotificationTarget(notification);
+                };
+            });
+        }
+
+        function startNotificationsSubscription() {
+            if (!activeUser?.uid) {
+                console.warn('[notifications] skipped subscription: missing current user uid');
+                return;
+            }
+            console.info('[notifications] currentUser.uid', activeUser.uid);
+            stopNotificationsSubscription();
+            console.info('[notifications] starting query on notifications', { userId: activeUser.uid, orderBy: 'createdAt desc' });
+            const qRef = query(collection(db, 'notifications'), where('userId', '==', activeUser.uid), orderBy('createdAt', 'desc'), limit(200));
+            notificationsUnsubscriber = onSnapshot(qRef, async (snap) => {
+                notificationsState = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                console.info('[notifications] docs received', snap.size);
+                notificationsState.forEach((n, idx) => console.info(`[notifications] doc ${idx + 1}`, n));
+                await prefetchNotificationActors(notificationsState);
+                unreadNotificationsCount = notificationsState.filter(n => !n.read).length;
+                const badge = document.getElementById('notifications-badge');
+                if (badge) {
+                    badge.textContent = String(unreadNotificationsCount);
+                    badge.style.display = unreadNotificationsCount > 0 ? 'flex' : 'none';
+                }
+                renderNotificationsPanel();
+                renderProfileDashboard();
+            }, (err) => {
+                console.error('Notifications subscription error:', err);
+                const fallbackQuery = query(collection(db, 'notifications'), where('userId', '==', activeUser.uid), limit(200));
+                notificationsUnsubscriber = onSnapshot(fallbackQuery, async (snap) => {
+                    notificationsState = snap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }))
+                        .sort((a, b) => (b.createdAt?.toMillis?.() || new Date(b.createdAt || 0).getTime() || 0) - (a.createdAt?.toMillis?.() || new Date(a.createdAt || 0).getTime() || 0));
+                    console.info('[notifications] fallback docs received', snap.size);
+                    notificationsState.forEach((n, idx) => console.info(`[notifications] fallback doc ${idx + 1}`, n));
+                    await prefetchNotificationActors(notificationsState);
+                    unreadNotificationsCount = notificationsState.filter(n => !n.read).length;
+                    const badge = document.getElementById('notifications-badge');
+                    if (badge) {
+                        badge.textContent = String(unreadNotificationsCount);
+                        badge.style.display = unreadNotificationsCount > 0 ? 'flex' : 'none';
+                    }
+                    renderNotificationsPanel();
+                    renderProfileDashboard();
+                }, (fallbackErr) => {
+                    console.error('Notifications fallback subscription error:', fallbackErr);
+                    const list = document.getElementById('notifications-list');
+                    if (list) list.innerHTML = `<p class="profile-empty">${t('notifications.loadError')}</p>`;
+                });
+            });
+        }
+
+        async function markAllNotificationsRead() {
+            const unread = notificationsState.filter(n => !n.read);
+            for (const n of unread) {
+                try { await updateDoc(doc(db, 'notifications', n.id), { read: true }); } catch (_) {}
+            }
+        }
+
+        async function isUserEmailVerified(user) {
+            if (!user) return false;
+            await user.reload();
+            return !!user.emailVerified;
+        }
+
+        async function enforceVerifiedEmailOrBlock(user) {
+            const verified = await isUserEmailVerified(user);
+            if (verified) return true;
+            activeUser = user;
+            showView('view-email-verification');
+            hideLoading();
+            return false;
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
+                stopNotificationsSubscription();
+                stopGymFollowersSubscription();
+                stopUserGymStatsSubscription();
                 showView('view-landing');
                 hideLoading();
                 return;
             }
             try {
+                if (!(await enforceVerifiedEmailOrBlock(user))) return;
+                console.info('[profile] start fetch user document', user.uid);
                 const profile = await getUserProfileByAuthUid(user.uid);
+                console.info('[profile] user document fetch success', profile?.data || null);
                 currentUserProfileRef = profile.ref;
                 const data = profile.data || {};
+                console.info('[profile] currentUser.uid', user.uid);
+                console.info('[profile] user document loaded', data);
                 await ensureUidProfileMirror(user.uid, data);
                 activeUser = user;
+                if (data.avatarUrl) { try { activeUser.photoURL = data.avatarUrl; } catch (_) {} }
                 currentUserName = data.username || 'Climber';
                 userFollowingIds = data.following || [];
                 activePublicProfileUid = null;
@@ -2286,6 +2622,8 @@
                 document.getElementById('btn-mode-toggle').style.display = (userRole === 'admin' || userRole === 'superadmin') ? 'block' : 'none';
                 document.getElementById('btn-gym-owner-request').style.display = userRole === 'user' ? 'block' : 'none';
                 await initDashboard();
+                startNotificationsSubscription();
+                startUserGymStatsSubscription();
                 await handlePublicProfileRoute();
             } catch (e) {
                 console.error('Auth bootstrap error:', e);
@@ -2296,6 +2634,53 @@
             }
         });
 
+
+        document.getElementById('btn-resend-verification').onclick = async () => {
+            const currentUser = auth.currentUser;
+            if (!currentUser) return alert(t('errors.authRequired'));
+            try {
+                await sendEmailVerification(currentUser);
+                alert(t('emailVerification.resent'));
+            } catch (e) {
+                alert(e.message || String(e));
+            }
+        };
+
+        document.getElementById('btn-refresh-verification').onclick = async () => {
+            const currentUser = auth.currentUser;
+            if (!currentUser) return alert(t('errors.authRequired'));
+            try {
+                const verified = await isUserEmailVerified(currentUser);
+                if (!verified) return alert(t('emailVerification.stillUnverified'));
+                await initDashboard();
+                startNotificationsSubscription();
+                startUserGymStatsSubscription();
+                await handlePublicProfileRoute();
+            } catch (e) {
+                alert(e.message || String(e));
+            }
+        };
+
+        function closeNotificationsPanel() {
+            const modal = document.getElementById('notifications-modal');
+            if (!modal) return;
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+        }
+
+        const notificationsBtn = document.getElementById('btn-notifications');
+        if (notificationsBtn) notificationsBtn.onclick = async () => {
+            const modal = document.getElementById('notifications-modal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            modal.classList.add('active');
+            renderNotificationsPanel();
+            await markAllNotificationsRead();
+        };
+        const notificationsClose = document.getElementById('notifications-close');
+        if (notificationsClose) notificationsClose.onclick = () => {
+            closeNotificationsPanel();
+        };
 
         window.openGymOwnerRequest = () => {
             if (!activeUser) return alert(t('errors.authRequired'));
@@ -2502,6 +2887,7 @@
                 const followingSearch = document.getElementById('following-search');
                 if (followingSearch) followingSearch.oninput = () => renderFollowingSection();
                 startFollowsSubscription();
+                startGymFollowersSubscription();
                 renderProfileDashboard();
                 renderFollowingSection();
             }
@@ -2539,12 +2925,13 @@
                 <div class="user-gym-card">
                     <div class="gym-3d-overlay"></div>
                     <div class="gym-3d-head">
-                        <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>
+                        <span class="user-gym-name"><b>${escapeHtml(g.name)}</b></span>${g.logoUrl ? `<img class="gym-card-logo" src="${escapeHtml(g.logoUrl)}" alt="">` : ""}
                         <span class="${badgeClass}">◈ ${badgeLabel}</span>
                     </div>
                     <div class="gym-3d-surface" aria-hidden="true"></div>
                     <div class="gym-3d-actions">
                         <button type="button" class="gym-3d-cta" data-action="open-3d">${t('dash.explore3dCta')}</button>
+                        <button type="button" class="btn-fav btn-bell ${followedGymNotifications.has(g.id) ? 'on' : ''}" title="Notifiche" onclick="event.stopPropagation(); window.toggleGymNotifications('${g.id}')">${followedGymNotifications.has(g.id) ? '🔔' : '🔕'}</button>
                         <button type="button" class="btn-fav ${isFav ? 'fav' : ''}" title="${favTitle}" onclick="event.stopPropagation(); window.toggleFavourite('${g.id}')">${favSymbol}</button>
                     </div>
                 </div>`;
@@ -2603,18 +2990,29 @@
             else alert(t('errors.saveFailed'));
         }
 
+        function toSafeDate(value) {
+            if (!value) return null;
+            if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+            if (typeof value?.toDate === 'function') {
+                const d = value.toDate();
+                return d instanceof Date && !Number.isNaN(d.getTime()) ? d : null;
+            }
+            const d = new Date(value);
+            return Number.isNaN(d.getTime()) ? null : d;
+        }
+
         function formatProfileDate(v) {
             if (!v) return '';
-            const d = new Date(v);
-            if (Number.isNaN(d.getTime())) return v;
+            const d = toSafeDate(v);
+            if (!d) return String(v || '');
             return d.toLocaleDateString(currentLang === 'it' ? 'it-IT' : 'en-US');
         }
 
         function socialDateKeyFromValue(v) {
             if (!v) return toYYYYMMDD(new Date());
             if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
-            const d = new Date(v);
-            if (Number.isNaN(d.getTime())) return toYYYYMMDD(new Date());
+            const d = toSafeDate(v);
+            if (!d) return toYYYYMMDD(new Date());
             return toYYYYMMDD(d);
         }
 
@@ -3393,29 +3791,120 @@
             if (moreBtn) moreBtn.onclick = () => loadMoreProfileProgressDetail();
         }
 
+        function currentUserInitials() {
+            return String(currentUserName || 'U').slice(0, 2).toUpperCase();
+        }
+
+        function computeProfileStatsFromGymStats(rows = []) {
+            const list = Array.isArray(rows) ? rows : [];
+            const normalized = list.map((row) => ({
+                gymId: row.gym_id || row.gymId || row.id || null,
+                gymName: row.gym_name || row.gymName || row.gym_id || row.gymId || '-',
+                totalRoutes: Number(row.total_routes ?? row.totalRoutes ?? 0),
+                activeDays: Number(row.active_days ?? row.activeDays ?? 0),
+                maxGrade: row.max_grade || row.maxGrade || '-',
+                maxGradeOrder: Number(row.max_grade_order ?? row.maxGradeOrder ?? -1),
+                streakDays: Number(row.streak_days ?? row.streakDays ?? 0)
+            }));
+            const gymsUnique = new Set(normalized.map((r) => r.gymId).filter(Boolean));
+            const totalRoutes = normalized.reduce((sum, r) => sum + r.totalRoutes, 0);
+            const activeDays = normalized.reduce((sum, r) => sum + r.activeDays, 0);
+            const bestRow = normalized.reduce((best, row) => row.maxGradeOrder > (best?.maxGradeOrder ?? -1) ? row : best, null);
+            const nextState = {
+                loading: false,
+                hasData: normalized.length > 0,
+                error: null,
+                totalRoutes,
+                gymsCount: gymsUnique.size || normalized.length,
+                activeDays,
+                maxGrade: bestRow?.maxGrade || '-',
+                maxGradeOrder: bestRow?.maxGradeOrder ?? -1,
+                bestGymName: bestRow?.gymName || '-',
+                normalized
+            };
+            return nextState;
+        }
+
+        async function syncAvatarOnMemberDocs(avatarUrl = null) {
+            if (!activeUser?.uid) return;
+            try {
+                const memberSnap = await getDocs(query(collectionGroup(db, 'members'), where('uid', '==', activeUser.uid), limit(200)));
+                for (const d of memberSnap.docs) {
+                    await setDoc(d.ref, { avatarUrl: avatarUrl || null }, { merge: true });
+                }
+            } catch (_) {}
+        }
+
+        async function uploadProfileAvatar(file) {
+            if (!activeUser || !file) return;
+            const isImage = String(file.type || '').startsWith('image/');
+            if (!isImage) throw new Error('Seleziona un file immagine valido.');
+            const cleanName = String(file.name || 'avatar').replace(/[^a-zA-Z0-9_.-]/g, '_');
+            const objectPath = `avatars/${activeUser.uid}/${Date.now()}_${cleanName}`;
+            const avatarRef = ref(storage, objectPath);
+            await uploadBytes(avatarRef, file, { contentType: file.type || 'image/jpeg' });
+            const avatarUrl = await getDownloadURL(avatarRef);
+            await mergeUserProfileByAuthUid(activeUser.uid, { avatarUrl, avatarPath: objectPath });
+            try { activeUser.photoURL = avatarUrl; } catch (_) {}
+            await syncAvatarOnMemberDocs(avatarUrl);
+            renderProfileDashboard();
+            renderFollowingSection();
+            renderActivePublicProfile();
+            alert(t('ui.photoUpdated'));
+        }
+
+        async function removeProfileAvatar() {
+            if (!activeUser) return;
+            try {
+                const profile = await getUserProfileByAuthUid(activeUser.uid);
+                const data = profile?.data || {};
+                if (data.avatarPath) {
+                    try { await deleteObject(ref(storage, data.avatarPath)); } catch (_) {}
+                }
+                await mergeUserProfileByAuthUid(activeUser.uid, { avatarUrl: null, avatarPath: null });
+                try { activeUser.photoURL = null; } catch (_) {}
+                await syncAvatarOnMemberDocs(null);
+                renderProfileDashboard();
+                renderFollowingSection();
+                renderActivePublicProfile();
+                alert(t('ui.photoRemoved'));
+            } catch (e) {
+                alert(e.message || String(e));
+            }
+        }
+
         function renderProfileDashboard() {
             const box = document.getElementById('profile-dashboard');
             if (!box || !activeUser) return;
-            const mine = Array.from(profileEntriesMap.values()).filter(e => e.userId === activeUser.uid);
-            const mineData = computeProfileData(mine);
             const trackerAll = Array.from(routeProgressMap.values()).sort((a,b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
             const activeProjects = trackerAll.filter(v => v.state === 'project').length;
+            const normalizedGymStats = profileStatsState?.normalized || [];
+            const profileSubtitle = currentLang === 'it' ? 'Le tue statistiche di arrampicata' : 'Your climbing statistics';
 
-            const bestByGymCards = mineData.byGym.map(g => `
+            const totalRoutes = profileStatsState.loading ? '…' : profileStatsState.totalRoutes;
+            const totalActiveDays = profileStatsState.loading ? '…' : profileStatsState.activeDays;
+            const reviewedGyms = profileStatsState.loading ? '…' : profileStatsState.gymsCount;
+
+            const bestSorted = normalizedGymStats.slice().sort((a, b) => b.maxGradeOrder - a.maxGradeOrder || b.totalRoutes - a.totalRoutes);
+            const bestOverall = bestSorted[0] || null;
+            const bestOverallLine = bestOverall
+                ? `<div class="profile-subcopy" style="margin-top:8px;">${currentLang === 'it' ? 'Miglior risultato:' : 'Best result:'} <b>${escapeHtml(bestOverall.maxGrade || '-')}</b> · ${escapeHtml(bestOverall.gymName || '-')}</div>`
+                : '';
+            const bestByGymCards = bestSorted.map(g => `
                 <div class="profile-best-card">
                     <b>${escapeHtml(g.gymName)}</b>
-                    <div class="profile-best-grade">${escapeHtml(g.localMax)}</div>
-                    <div class="profile-best-label">${t('ui.maxLevelReachedLabel')}</div>
+                    <div class="profile-best-grade">${escapeHtml(g.maxGrade || '-')}</div>
+                    <div class="profile-best-label">${g.totalRoutes} ${currentLang === 'it' ? 'vie completate' : 'completed routes'}</div>
                 </div>`).join('');
 
             const snapshot = [
-                { icon: '🧗', label: t('dash.totalSends'), value: mineData.totalSends },
-                { icon: '📅', label: t('dash.activeDays'), value: mineData.activeDays },
-                { icon: '🏟️', label: t('dash.reviewedGyms'), value: mineData.reviewedGyms },
+                { icon: '🧗', label: t('dash.totalSends'), value: totalRoutes },
+                { icon: '📅', label: t('dash.activeDays'), value: totalActiveDays },
+                { icon: '🏟️', label: t('dash.reviewedGyms'), value: reviewedGyms },
                 { icon: '🎯', label: t('dash.projectsActive'), value: activeProjects }
             ].map(k => `<div class="profile-snap"><div class="profile-snap-top"><span>${k.icon}</span><span>${escapeHtml(k.label)}</span></div><div class="profile-snap-num">${k.value}</div></div>`).join('');
 
-            const activityDays = new Set(mineData.sorted.map(e => e.sendDate).filter(Boolean));
+            const activityDays = new Set(trackerAll.map(e => toYYYYMMDD(e.updatedAt || e.completionDate || e.createdAt || '')).filter(Boolean));
             const heatCells = [];
             for (let i = 29; i >= 0; i--) {
                 const d = new Date();
@@ -3424,33 +3913,31 @@
                 heatCells.push(`<div class="profile-heat ${activityDays.has(key) ? 'on' : ''}" title="${key}"></div>`);
             }
 
-            const points = (mineData.milestones || []).slice(-12).map((m, idx, arr) => {
-                const x = arr.length <= 1 ? 0 : Math.round((idx / (arr.length - 1)) * 100);
-                const y = 100 - Math.max(0, Math.min(100, m.normPct || 0));
-                return `${x},${y}`;
-            }).join(' ');
-            const spark = points ? `<svg class="profile-sparkline" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline fill="none" stroke="var(--primary)" stroke-width="3" points="${points}" /></svg>` : `<p class="profile-empty">${t('dash.noMilestones')}</p>`;
-
-            const groupedLatest = profileActivitiesState.grouped.slice(0, profileActivitiesState.visibleCount);
-            const latest = groupedLatest.map(e => {
-                const state = e.outcome === 'project' ? t('viewer.project') : t('viewer.climbed');
-                const countLabel = e.count > 1 ? ` · ${e.count} volte` : '';
-                const dot = resolveRouteColorFromStores(e);
-                const sectorLabel = resolveSectorLabelForProfile(e);
-                return `<div class="profile-activity-card"><div class="profile-activity-top"><div class="profile-activity-grade">${escapeHtml(e.grade || '-')} <span class="color-dot" style="background:${escapeHtml(dot)}"></span></div><span class="profile-activity-state">${escapeHtml(state)}${countLabel}</span></div><div class="profile-activity-meta">${escapeHtml(formatSectorGymLine(sectorLabel, e.gymName || e.gymId || ''))}</div><div class="profile-activity-meta">${escapeHtml(formatProfileDate(e.day || e.timestamp || e.sendDate || ''))}</div></div>`;
-            }).join('');
-
+            const normalizeTitle = (txt = '') => String(txt || '').toLowerCase().replace(/\b\w/g, (m) => m.toUpperCase());
             const trackerSummary = computeTrackerSummary(trackerAll);
-            const distHtml = (trackerSummary.distributionByGym || []).map(g => `<div class="profile-tracker-col"><h5>${escapeHtml(g.gym)}</h5>${g.rows.map(([label,count]) => `<div class="admin-feedback-compact-item"><span>${escapeHtml(label)}</span><b>${count}</b></div>`).join('')}</div>`).join('') || `<p class="profile-empty">-</p>`;
-            const topHardHtml = trackerSummary.topHard.map(v => { const c = resolveRouteColorFromStores(v); const sectorLabel = resolveSectorLabelForProfile(v); return `<div class="profile-log"><b>${escapeHtml(v.finalGrade || '-')}</b><div><span class="color-dot" style="background:${escapeHtml(c)}"></span> ${escapeHtml(getColorLabel(c))}</div><small>${escapeHtml(formatSectorGymLine(sectorLabel, v.gymName || v.gymId || ''))}</small></div>`; }).join('') || `<p class="profile-empty">-</p>`;
+            const distHtml = (trackerSummary.distributionByGym || []).map(g => `<div class="profile-tracker-col"><h5>${escapeHtml(g.gym)}</h5>${g.rows.map(([label,count]) => `<div class="admin-feedback-compact-item"><span>${escapeHtml(label)} → ${count} ${currentLang === 'it' ? 'vie' : 'routes'}</span></div>`).join('')}</div>`).join('') || `<p class="profile-empty">-</p>`;
+            const topHardHtml = trackerSummary.topHard.map(v => {
+                const c = resolveRouteColorFromStores(v);
+                const sectorLabel = normalizeTitle(resolveSectorLabelForProfile(v) || '-');
+                const gymLabel = normalizeTitle(v.gymName || v.gymId || '-');
+                return `<div class="profile-log"><b>${escapeHtml(v.finalGrade || '-')} <span class="color-dot" style="background:${escapeHtml(c)}"></span></b><small>${escapeHtml(sectorLabel)} · ${escapeHtml(gymLabel)}</small></div>`;
+            }).join('') || `<p class="profile-empty">-</p>`;
 
             box.innerHTML = `
                 <div class="profile-shell">
                     <div class="profile-header-main">
                         <div class="profile-header-top">
-                            <div>
-                                <h3 class="profile-username">@${escapeHtml(currentUserName || 'climber')}</h3>
-                                <p class="profile-subcopy">${t('dash.profileSubtitle')}</p>
+                            <div class="profile-avatar-wrap">
+                                ${activeUser?.photoURL ? `<img class="profile-avatar-large" src="${escapeHtml(activeUser.photoURL)}" alt="">` : `<div class="profile-avatar-large">${escapeHtml(currentUserInitials())}</div>`}
+                                <div>
+                                    <h3 class="profile-username">@${escapeHtml(currentUserName || 'climber')}</h3>
+                                    <p class="profile-subcopy">${profileSubtitle}</p>
+                                    <div class="profile-avatar-actions">
+                                        <label class="btn-sec" for="profile-avatar-input">${t('ui.changePhoto')}</label>
+                                        <input id="profile-avatar-input" type="file" accept="image/*" style="display:none;">
+                                        <button type="button" class="btn-sec" id="profile-avatar-remove">${t('ui.removePhoto')}</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="profile-header-actions">
                                 <button type="button" class="profile-icon-btn" aria-label="${t('ui.editProfile')}">✎</button>
@@ -3461,7 +3948,8 @@
 
                     <div class="profile-section-card">
                         <b>${t('ui.profileBestResults')}</b>
-                        <div class="profile-best-grid" style="margin-top:10px;">${bestByGymCards || `<p class="profile-empty">${t('dash.noMilestones')}</p>`}</div>
+                        ${bestOverallLine}
+                        <div class="profile-best-grid" style="margin-top:10px;">${profileStatsState.loading ? `<p class="profile-empty">Caricamento statistiche...</p>` : (profileStatsState.error ? `<p class="profile-empty">Errore caricamento statistiche.</p>` : (bestByGymCards || `<p class="profile-empty">${t('dash.noMilestones')}</p>`))}</div>
                     </div>
 
                     <div class="profile-section-card">
@@ -3474,39 +3962,32 @@
                         <div class="profile-heatmap" style="margin-top:10px;">${heatCells.join('')}</div>
                     </div>
 
-                    <div class="profile-progress-tech">
-                        <b>${t('ui.profileGradeProgression')}</b>
-                        ${spark}
-                        <div class="profile-subcopy" style="margin-top:8px;">${mineData.globalMaxNormPct}% · ${mineData.atMaxCount}/${mineData.targetAtMax}</div>
-                    </div>
-
-                    <div class="profile-section-card">
-                        <b>${t('dash.latestActivities')}</b>
-                        <div class="profile-activity-list" style="margin-top:10px;">${latest || `<p class="profile-empty">${t('dash.noProgress')}</p>`}</div>
-                        <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-activities-more">${t('ui.loadMore')}</button></div>
-                    </div>
-
                     <div class="profile-section-card">
                         <b>${t('viewer.progressTracker')}</b>
                         <div class="profile-tracker-grid" style="margin-top:10px;">
-                            <div class="profile-tracker-col"><h5>📊 Distribuzione gradi</h5>${distHtml}</div>
-                            <div class="profile-tracker-col"><h5>🏔 Top 5 vie più difficili</h5>${topHardHtml}</div>
+                            <div class="profile-tracker-col"><h5>📊 ${currentLang === 'it' ? 'Distribuzione gradi' : 'Grade distribution'}</h5>${distHtml}</div>
+                            <div class="profile-tracker-col"><h5>🏔 ${currentLang === 'it' ? 'Top 5 vie più difficili' : 'Top 5 hardest routes'}</h5>${topHardHtml}</div>
                         </div>
                         <div style="margin-top:10px;"><button type="button" class="btn-sec" id="profile-progress-open">${t('ui.seeAllClimbs')}</button></div>
                     </div>
                 </div>
             `;
-            const moreBtn = document.getElementById('profile-activities-more');
-            if (moreBtn) {
-                moreBtn.style.display = (profileActivitiesState.hasMore || profileActivitiesState.grouped.length > profileActivitiesState.visibleCount) ? 'inline-flex' : 'none';
-                moreBtn.onclick = async () => {
-                    profileActivitiesState.visibleCount += 5;
-                    if (profileActivitiesState.grouped.length < profileActivitiesState.visibleCount && profileActivitiesState.hasMore) await fetchProfileActivitiesPage(false);
-                    renderProfileDashboard();
-                };
-            }
             const openProgressBtn = document.getElementById('profile-progress-open');
             if (openProgressBtn) openProgressBtn.onclick = () => openProfileProgressModal();
+            const avatarInput = document.getElementById('profile-avatar-input');
+            if (avatarInput) avatarInput.onchange = async (ev) => {
+                const file = ev?.target?.files?.[0];
+                if (!file) return;
+                try {
+                    await uploadProfileAvatar(file);
+                } catch (e) {
+                    alert(e.message || String(e));
+                } finally {
+                    avatarInput.value = '';
+                }
+            };
+            const removeBtn = document.getElementById('profile-avatar-remove');
+            if (removeBtn) removeBtn.onclick = () => removeProfileAvatar();
         }
         function followDocId(followerId, followingId) { return `${followerId}__${followingId}`; }
 
@@ -3514,6 +3995,123 @@
             if (typeof followsUnsubscriber === 'function') followsUnsubscriber();
             followsUnsubscriber = null;
         }
+
+        function gymFollowerDocId(userId, gymId) {
+            return `${userId}__${gymId}`;
+        }
+
+        function stopGymFollowersSubscription() {
+            if (typeof gymFollowersUnsubscriber === 'function') gymFollowersUnsubscriber();
+            gymFollowersUnsubscriber = null;
+            followedGymNotifications = new Set();
+        }
+
+        function stopUserGymStatsSubscription() {
+            if (typeof userGymStatsUnsubscriber === 'function') userGymStatsUnsubscriber();
+            userGymStatsUnsubscriber = null;
+            userGymStatsState = [];
+            profileStatsState = { loading: true, hasData: false, error: null, totalRoutes: 0, gymsCount: 0, activeDays: 0, maxGrade: '-', maxGradeOrder: -1, bestGymName: '-', normalized: [] };
+        }
+
+        function startUserGymStatsSubscription() {
+            if (!activeUser?.uid) {
+                console.warn('[profile] skipped gymStats subscription: missing currentUser.uid');
+                return;
+            }
+            stopUserGymStatsSubscription();
+            profileStatsState = { ...profileStatsState, loading: true, error: null };
+            renderProfileDashboard();
+            console.info('[profile] currentUser.uid', activeUser.uid);
+            const gymStatsPath = `users/${activeUser.uid}/gymStats`;
+            console.info('[profile] reading path', gymStatsPath);
+            const statsRef = query(collection(db, 'users', activeUser.uid, 'gymStats'), limit(100));
+
+            const loadingTimeout = setTimeout(() => {
+                if (profileStatsState.loading) {
+                    console.error('[profile] gymStats loading timeout');
+                    profileStatsState = { ...profileStatsState, loading: false, error: 'timeout' };
+                    console.info('[profile] final state for UI', profileStatsState);
+                    renderProfileDashboard();
+                }
+            }, 10000);
+
+            getDocs(statsRef).then((snap) => {
+                userGymStatsState = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+                console.info('[profile] gymStats docs found', snap.size);
+                userGymStatsState.forEach((row, idx) => console.info(`[profile] gymStats doc ${idx + 1}`, row));
+                profileStatsState = computeProfileStatsFromGymStats(userGymStatsState);
+                console.info('[profile] calculated total routes', profileStatsState.totalRoutes);
+                console.info('[profile] calculated gyms count', profileStatsState.gymsCount);
+                console.info('[profile] calculated max grade', profileStatsState.maxGrade);
+                console.info('[profile] calculated active days', profileStatsState.activeDays);
+                console.info('[profile] final state for UI', profileStatsState);
+                renderProfileDashboard();
+            }).catch((err) => {
+                console.error('[profile] gymStats getDocs error', err);
+                profileStatsState = { ...profileStatsState, loading: false, error: err?.message || 'error' };
+                console.info('[profile] final state for UI', profileStatsState);
+                renderProfileDashboard();
+            }).finally(() => {
+                clearTimeout(loadingTimeout);
+            });
+
+            userGymStatsUnsubscriber = onSnapshot(statsRef, (snap) => {
+                userGymStatsState = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+                profileStatsState = computeProfileStatsFromGymStats(userGymStatsState);
+                console.info('[profile] gymStats realtime update count', snap.size);
+                console.info('[profile] final state for UI', profileStatsState);
+                renderProfileDashboard();
+            }, (err) => {
+                console.error('[profile] gymStats subscription error', err);
+            });
+        }
+
+        function startGymFollowersSubscription() {
+            if (!activeUser?.uid) return;
+            stopGymFollowersSubscription();
+            const qRef = query(collection(db, 'gymFollowers'), where('userId', '==', activeUser.uid), where('notificationsEnabled', '==', true));
+            gymFollowersUnsubscriber = onSnapshot(qRef, (snap) => {
+                followedGymNotifications = new Set(snap.docs.map(d => d.data()?.gymId).filter(Boolean));
+                renderUserGymList();
+                const btn = document.getElementById('user-gym-detail-notif-toggle');
+                if (btn && activeGymDetailId) {
+                    const on = followedGymNotifications.has(activeGymDetailId);
+                    btn.classList.toggle('on', on);
+                    btn.textContent = on ? `🔔 ${t('notifications.gymFollowOnShort')}` : `🔕 ${t('notifications.gymFollowOffShort')}`;
+                }
+            });
+        }
+
+        async function toggleGymNotifications(gymId) {
+            if (!activeUser || !gymId) { alert(t('errors.authRequired')); return; }
+            const docRef = doc(db, 'gymFollowers', gymFollowerDocId(activeUser.uid, gymId));
+            const enabled = followedGymNotifications.has(gymId);
+            try {
+                if (enabled) {
+                    await deleteDoc(docRef);
+                    followedGymNotifications.delete(gymId);
+                    alert(t('notifications.gymFollowDisabled'));
+                } else {
+                    await setDoc(docRef, {
+                        userId: activeUser.uid,
+                        gymId,
+                        notificationsEnabled: true,
+                        createdAt: serverTimestamp()
+                    }, { merge: true });
+                    followedGymNotifications.add(gymId);
+                    alert(t('notifications.gymFollowEnabled'));
+                }
+                renderUserGymList();
+                const btn = document.getElementById('user-gym-detail-notif-toggle');
+                if (btn && activeGymDetailId === gymId) {
+                    const on = followedGymNotifications.has(gymId);
+                    btn.classList.toggle('on', on);
+                    btn.textContent = on ? `🔔 ${t('notifications.gymFollowOnShort')}` : `🔕 ${t('notifications.gymFollowOffShort')}`;
+                }
+            } catch (e) { alertWriteError(e); }
+        }
+
+        window.toggleGymNotifications = toggleGymNotifications;
 
         function startFollowsSubscription() {
             if (!activeUser) return;
@@ -3743,6 +4341,21 @@
             return Number(socialFeedInteractionState.get(activityId)?.applause_count ?? socialFeedById.get(activityId)?.applause_count ?? fallback ?? 0);
         }
 
+        async function resolveSocialActivityOwnerId(activityId) {
+            if (!activityId) return null;
+            const cached = socialFeedById.get(activityId) || {};
+            const cachedOwner = cached.user_id || cached.userId || null;
+            if (cachedOwner) return cachedOwner;
+            try {
+                const snap = await getDoc(doc(db, 'socialActivities', activityId));
+                if (!snap.exists()) return null;
+                const row = snap.data() || {};
+                return row.user_id || row.userId || null;
+            } catch (_) {
+                return null;
+            }
+        }
+
         async function toggleActivityApplause(activityId) {
             if (!activeUser || !activityId) return;
             const activityRef = await ensureSocialActivityDoc(activityId);
@@ -3768,6 +4381,20 @@
                 } else {
                     await setDoc(ref, { user_id: activeUser.uid, timestamp: new Date().toISOString() }, { merge: true });
                     await updateDoc(activityRef, { applause_count: increment(1), applauseCount: increment(1), last_interaction_at: new Date().toISOString() });
+                    const ownerId = await resolveSocialActivityOwnerId(activityId);
+                    if (ownerId && ownerId !== activeUser.uid) {
+                        try {
+                            await createNotification({
+                                userId: ownerId,
+                                type: 'POST_LIKE',
+                                actorId: activeUser.uid,
+                                postId: activityId,
+                                message: `${currentUserName || 'Un utente'} ha messo like alla tua pubblicazione`
+                            });
+                        } catch (err) {
+                            console.error('POST_LIKE notification failed', err);
+                        }
+                    }
                 }
             } catch (e) {
                 socialApplauseByActivity.set(activityId, wasApplauded);
@@ -3791,6 +4418,20 @@
                 timestamp: nowIso
             });
             await updateDoc(activityRef, { comment_count: increment(1), commentCount: increment(1), last_interaction_at: nowIso });
+            const ownerId = await resolveSocialActivityOwnerId(activityId);
+            if (ownerId && ownerId !== activeUser.uid) {
+                try {
+                    await createNotification({
+                        userId: ownerId,
+                        type: 'POST_COMMENT',
+                        actorId: activeUser.uid,
+                        postId: activityId,
+                        message: `${currentUserName || 'Un utente'} ha commentato la tua pubblicazione`
+                    });
+                } catch (err) {
+                    console.error('POST_COMMENT notification failed', err);
+                }
+            }
             const currentComments = Number(socialFeedById.get(activityId)?.comment_count || socialFeedInteractionState.get(activityId)?.comment_count || 0);
             updateLocalInteractionState(activityId, { comment_count: currentComments + 1 });
             socialMyPostsInteractionMeta.delete(activityId);
@@ -4526,14 +5167,22 @@
                     [t('gym.website')]: '🌐'
                 };
                 const aboutHtml = detailsRows.map(([label, value]) => `<div class="gym-about-row"><span class="gym-about-label">${contactIcons[label] || '•'} ${label}</span><span class="gym-about-value">${value}</span></div>`).join('');
-                const highlights = `<div class="gym-meta-chip"><b>${sectorsSnap.size}</b><span>${t('gym.sectorsAvailable')}</span></div><div class="gym-meta-chip"><b>${sectorsSnap.size > 0 ? t('dash.available3d') : t('dash.preparing3d')}</b><span>${t('dash.gym3dTitle')}</span></div>`;
+                const highlights = `<div class="gym-meta-chip"><b>${sectorsSnap.size}</b><span>${currentLang === 'it' ? 'settori disponibili' : 'sectors available'}</span></div>`;
 
                 document.getElementById('user-gym-detail-name').textContent = name;
                 document.getElementById('user-gym-detail-desc').textContent = desc;
+                const coverEl = document.getElementById('user-gym-detail-cover');
+                if (coverEl) {
+                    coverEl.src = data.logoUrl || '';
+                    coverEl.style.display = data.logoUrl ? 'block' : 'none';
+                }
+                const floorEl = document.getElementById('user-gym-detail-floor-map');
+                if (floorEl) {
+                    floorEl.src = data.floorMapUrl || '';
+                    floorEl.style.display = data.floorMapUrl ? 'block' : 'none';
+                    floorEl.alt = data.floorMapUrl ? (name + ' floor map') : t('gym.noFloorMap');
+                }
                 document.getElementById('user-gym-detail-highlights').innerHTML = highlights;
-                const sectorsSummary = document.getElementById('user-gym-detail-sectors-summary');
-                if (sectorsSummary) sectorsSummary.innerHTML = `<b>${sectorsSnap.size}</b><span>${t('gym.sectorsAvailable')}</span>`;
-
                 const aboutBlock = document.getElementById('user-gym-detail-about').closest('.gym-info-block');
                 const climbingBlock = document.getElementById('user-gym-detail-climbing').closest('.gym-info-block');
                 document.getElementById('user-gym-detail-about').innerHTML = aboutHtml;
@@ -4548,25 +5197,94 @@
             document.getElementById('user-list-view').classList.remove('active');
             document.getElementById('user-profile-view').classList.remove('active');
             document.getElementById('user-following-view').classList.remove('active');
-            document.getElementById('user-gym-detail').style.display = 'block';
-            const firstGymSnap = await getDoc(doc(db, "gyms", gId));
-            renderGymDetailInfo(firstGymSnap.data() || {});
             stopGymDetailListener();
+            document.getElementById('user-gym-detail').style.display = 'block';
+            subscribeGymLeaderboard(gId);
+            const firstGymSnap = await getDoc(doc(db, "gyms", gId));
+            const firstGymData = firstGymSnap.data() || {};
+            renderGymDetailInfo(firstGymData);
             gymDetailUnsubscriber = onSnapshot(doc(db, "gyms", gId), (snap) => renderGymDetailInfo(snap.data() || {}));
+
+            const activeModelVersionId = firstGymData.activeModelVersionId || firstGymData.modelVersion || null;
+            let activeRouteIdsBySector = new Map();
+            if (activeModelVersionId) {
+                try {
+                    const modelSnap = await getDoc(doc(db, `gyms/${gId}/models/${activeModelVersionId}`));
+                    const modelData = modelSnap.exists() ? (modelSnap.data() || {}) : {};
+                    const sectors = Array.isArray(modelData.sectors) ? modelData.sectors : [];
+                    sectors.forEach((sec) => {
+                        const secId = sec?.sectorId || null;
+                        const routes = Array.isArray(sec?.routes) ? sec.routes : [];
+                        if (!secId) return;
+                        activeRouteIdsBySector.set(secId, new Set(routes.filter((r) => r?.active !== false && r?.routeId).map((r) => String(r.routeId))));
+                    });
+                    console.info('[gym-sectors] active model loaded', { gymId: gId, activeModelVersionId, sectors: sectors.length });
+                } catch (err) {
+                    console.error('[gym-sectors] active model lookup failed', { gymId: gId, activeModelVersionId, err });
+                }
+            } else {
+                console.info('[gym-sectors] no active model version found on gym doc', { gymId: gId });
+            }
+
             const sectorsList = document.getElementById('user-gym-detail-sectors-list');
             sectorsList.innerHTML = '';
-            sectorsSnap.forEach(d => {
-                const card = document.createElement('button'); card.type = 'button'; card.className = 'gym-sector-item';
-                card.innerHTML = `<div><b>${escapeHtml(d.data().name)}</b><span>${t('dash.explore3dCta')}</span></div><i>→</i>`;
-                card.onclick = () => open3D(gId, d.id);
+            const sectorsRows = await Promise.all(sectorsSnap.docs.map(async (d) => {
+                const sectorId = d.id;
+                const rawSectorName = (d.data()?.name || sectorId || '').toString().trim();
+                const sectorName = (rawSectorName || (currentLang === 'it' ? 'Settore' : 'Sector')).toLowerCase().replace(/\b\w/g, (m) => m.toUpperCase());
+                const routesSnap = await getDocs(collection(db, 'gyms', gId, 'Sectors', sectorId, 'routes'));
+                const allRoutes = routesSnap.docs.map((rDoc) => ({ id: rDoc.id, ...(rDoc.data() || {}) }));
+                const activeRouteIds = activeRouteIdsBySector.get(sectorId) || null;
+                console.info('[gym-sectors] routes fetched', { gymId: gId, sectorId, sectorName, total: allRoutes.length, activeModelVersionId, activeRouteIds: activeRouteIds ? Array.from(activeRouteIds) : null });
+
+                const routes = allRoutes.filter((row) => {
+                    const routeId = String(row.id || '');
+                    if (activeRouteIds && activeRouteIds.size > 0) {
+                        const keep = activeRouteIds.has(routeId);
+                        if (!keep) console.info('[gym-sectors] route excluded (not in active model)', { gymId: gId, sectorId, routeId });
+                        return keep;
+                    }
+                    const keep = row.active !== false;
+                    if (!keep) console.info('[gym-sectors] route excluded (inactive fallback)', { gymId: gId, sectorId, routeId });
+                    return keep;
+                }).map((row) => {
+                    const progressKey = `${gId}__${sectorId}__${row.id}`;
+                    const progress = routeProgressMap.get(progressKey) || {};
+                    const completed = String(progress.state || '').toLowerCase() === 'climbed' || String(progress.state || '').toLowerCase() === 'completed';
+                    return {
+                        color: row.color || null,
+                        grade: row.grade || '-',
+                        completed
+                    };
+                });
+                console.info('[gym-sectors] routes kept', { gymId: gId, sectorId, kept: routes.length });
+                return { sectorId, sectorName, routes };
+            }));
+            sectorsRows.forEach(({ sectorId, sectorName, routes }) => {
+                const card = document.createElement('details');
+                card.className = 'gym-sector-item';
+                const routesHtml = routes.length
+                    ? routes.map((r) => `<div class="profile-log"><b><span class="color-dot" style="background:${escapeHtml(r.color || '#999')}"></span>${escapeHtml(r.grade || '-')}</b><span>${r.completed ? (currentLang === 'it' ? '✅ Completata' : '✅ Completed') : (currentLang === 'it' ? '⭕ Non completata' : '⭕ Not completed')}</span></div>`).join('')
+                    : `<p class="profile-empty">${t('common.noData')}</p>`;
+                card.innerHTML = `<summary style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;"><div><b>${escapeHtml(sectorName)}</b><span>${routes.length} ${currentLang === 'it' ? 'vie' : 'routes'}</span></div><div style="display:flex;gap:6px;"><button type="button" class="btn-sec" data-open3d="${escapeHtml(sectorId)}">${t('dash.explore3dCta')}</button><button type="button" class="btn-sec" data-expand="1">${currentLang === 'it' ? 'Vedi vie' : 'View routes'}</button></div></summary><div class="profile-activity-list" style="margin-top:8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;">${routesHtml}</div>`;
+                const openBtn = card.querySelector('[data-open3d]');
+                if (openBtn) openBtn.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); open3D(gId, sectorId); };
+                const expandBtn = card.querySelector('[data-expand]');
+                if (expandBtn) expandBtn.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); card.open = !card.open; };
                 sectorsList.appendChild(card);
             });
             if (!sectorsSnap.size) {
                 sectorsList.innerHTML = `<p class="profile-empty">${t('gym.noValue')}</p>`;
             }
-            document.getElementById('user-gym-detail-explore').onclick = () => loadGymSectorsForUser(gId);
             const top3dBtn = document.getElementById('user-gym-detail-explore-top');
             if (top3dBtn) top3dBtn.onclick = () => loadGymSectorsForUser(gId);
+            const detailBellBtn = document.getElementById('user-gym-detail-notif-toggle');
+            if (detailBellBtn) {
+                const bellOn = followedGymNotifications.has(gId);
+                detailBellBtn.classList.toggle('on', bellOn);
+                detailBellBtn.textContent = bellOn ? `🔔 ${t('notifications.gymFollowOnShort')}` : `🔕 ${t('notifications.gymFollowOffShort')}`;
+                detailBellBtn.onclick = () => toggleGymNotifications(gId);
+            }
             document.getElementById('user-gym-detail-back').onclick = () => {
                 stopGymDetailListener();
                 activeGymDetailId = null;
@@ -4580,15 +5298,13 @@
                 setUserMainTab('explore');
                 renderUserGymList();
             };
-            document.getElementById('gym-tab-info').textContent = t('gym.tabInfo');
-            document.getElementById('gym-tab-sectors').textContent = t('gym.tabSectors');
+            document.getElementById('gym-tab-leaderboard').textContent = t('gym.leaderboardTitle');
             document.getElementById('gym-tab-details').textContent = t('gym.tabDetails');
             const gymTabs = {
-                info: { btn: document.getElementById('gym-tab-info'), panel: document.getElementById('gym-tab-info-panel') },
-                sectors: { btn: document.getElementById('gym-tab-sectors'), panel: document.getElementById('gym-tab-sectors-panel') },
+                leaderboard: { btn: document.getElementById('gym-tab-leaderboard'), panel: document.getElementById('gym-tab-leaderboard-panel') },
                 details: { btn: document.getElementById('gym-tab-details'), panel: document.getElementById('gym-tab-details-panel') }
             };
-            const setGymTab = (tabKey = 'info') => {
+            const setGymTab = (tabKey = 'leaderboard') => {
                 Object.entries(gymTabs).forEach(([key, item]) => {
                     if (!item.btn || !item.panel) return;
                     const active = key === tabKey;
@@ -4596,7 +5312,7 @@
                     item.panel.style.display = active ? 'block' : 'none';
                 });
             };
-            setGymTab('info');
+            setGymTab('leaderboard');
             Object.entries(gymTabs).forEach(([key, item]) => {
                 if (item.btn) item.btn.onclick = () => setGymTab(key);
             });
@@ -4643,11 +5359,17 @@
             setVal('admin-outdoor-area', data.outdoorArea);
             setVal('admin-speed-height', data.speedHeight);
             setVal('admin-speed-area', data.speedArea);
+            const logoPrev = document.getElementById('admin-gym-logo-preview');
+            if (logoPrev) { logoPrev.src = data.logoUrl || ''; logoPrev.style.display = data.logoUrl ? 'block' : 'none'; }
+            const floorPrev = document.getElementById('admin-gym-floor-preview');
+            if (floorPrev) { floorPrev.src = data.floorMapUrl || ''; floorPrev.style.display = data.floorMapUrl ? 'block' : 'none'; }
         }
 
         function stopGymDetailListener() {
             if (typeof gymDetailUnsubscriber === 'function') gymDetailUnsubscriber();
             gymDetailUnsubscriber = null;
+            if (typeof gymLeaderboardUnsubscriber === 'function') gymLeaderboardUnsubscriber();
+            gymLeaderboardUnsubscriber = null;
         }
 
         function numberOrNull(v) {
@@ -4659,6 +5381,30 @@
         function normalizeText(v) {
             const t = (v || '').trim();
             return t || null;
+        }
+
+        async function uploadGymMediaAsset(file, kind) {
+            if (!realUserGymId || !file) return null;
+            if (!String(file.type || '').startsWith('image/')) throw new Error('Seleziona un file immagine valido.');
+            const safeName = String(file.name || `${kind}.jpg`).replace(/[^a-zA-Z0-9_.-]/g, '_');
+            const path = `gymMedia/${realUserGymId}/${kind}_${Date.now()}_${safeName}`;
+            const mediaRef = ref(storage, path);
+            await uploadBytes(mediaRef, file, { contentType: file.type || 'image/jpeg' });
+            const url = await getDownloadURL(mediaRef);
+            return { url, path };
+        }
+
+        async function removeGymMediaAsset(kind) {
+            if (!realUserGymId) return;
+            const gymRef = doc(db, 'gyms', realUserGymId);
+            const snap = await getDoc(gymRef);
+            if (!snap.exists()) return;
+            const data = snap.data() || {};
+            const pathKey = kind === 'logo' ? 'logoPath' : 'floorMapPath';
+            const urlKey = kind === 'logo' ? 'logoUrl' : 'floorMapUrl';
+            const oldPath = data[pathKey];
+            if (oldPath) { try { await deleteObject(ref(storage, oldPath)); } catch (_) {} }
+            await setDoc(gymRef, { [pathKey]: null, [urlKey]: null }, { merge: true });
         }
 
         async function saveAdminGymProfile() {
@@ -4689,6 +5435,30 @@
             const saveBtn = document.getElementById('admin-save-gym-profile');
             const saveGradesBtn = document.getElementById('admin-save-grade-system');
             if (saveBtn) saveBtn.onclick = () => saveAdminGymProfile().catch(e => alert(e.message));
+            const logoInput = document.getElementById('admin-gym-logo-file');
+            if (logoInput) logoInput.onchange = async (ev) => {
+                const file = ev?.target?.files?.[0];
+                if (!file || !realUserGymId) return;
+                try {
+                    const uploaded = await uploadGymMediaAsset(file, 'logo');
+                    if (uploaded) await setDoc(doc(db, 'gyms', realUserGymId), { logoUrl: uploaded.url, logoPath: uploaded.path }, { merge: true });
+                } catch (e) { alert(e.message || String(e)); }
+                logoInput.value = '';
+            };
+            const floorInput = document.getElementById('admin-gym-floor-file');
+            if (floorInput) floorInput.onchange = async (ev) => {
+                const file = ev?.target?.files?.[0];
+                if (!file || !realUserGymId) return;
+                try {
+                    const uploaded = await uploadGymMediaAsset(file, 'floor');
+                    if (uploaded) await setDoc(doc(db, 'gyms', realUserGymId), { floorMapUrl: uploaded.url, floorMapPath: uploaded.path }, { merge: true });
+                } catch (e) { alert(e.message || String(e)); }
+                floorInput.value = '';
+            };
+            const logoRemove = document.getElementById('admin-gym-logo-remove');
+            if (logoRemove) logoRemove.onclick = () => removeGymMediaAsset('logo').catch(e => alert(e.message || String(e)));
+            const floorRemove = document.getElementById('admin-gym-floor-remove');
+            if (floorRemove) floorRemove.onclick = () => removeGymMediaAsset('floor').catch(e => alert(e.message || String(e)));
             if (saveGradesBtn) saveGradesBtn.onclick = async () => {
                 try {
                     const txt = document.getElementById('admin-grade-setup-input')?.value || '';
@@ -5849,6 +6619,95 @@
             bindAdminGlobalFilters();
             refreshAdminFilterOptions();
         }
+        function getMonthKeyFromDateValue(value) {
+            const d = toSafeDate(value);
+            if (!d) return '';
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        async function buildMonthlyGymClimbsMap(gymId) {
+            const monthKey = getMonthKeyFromDateValue(new Date());
+            const sectorsSnap = await getDocs(collection(db, 'gyms', gymId, 'Sectors'));
+            const byUser = new Map();
+            for (const sec of sectorsSnap.docs) {
+                const routesSnap = await getDocs(collection(db, 'gyms', gymId, 'Sectors', sec.id, 'routes'));
+                for (const routeDoc of routesSnap.docs) {
+                    const reviewsSnap = await getDocs(collection(db, 'gyms', gymId, 'Sectors', sec.id, 'routes', routeDoc.id, 'reviews'));
+                    for (const rev of reviewsSnap.docs) {
+                        const row = rev.data() || {};
+                        const uid = row.userId || row.user_id || null;
+                        const outcome = String(row.outcome || 'climbed').toLowerCase();
+                        const dateRaw = row.date || row.timestamp || row.sendDate || null;
+                        const rowMonth = getMonthKeyFromDateValue(dateRaw);
+                        if (!uid || rowMonth !== monthKey) continue;
+                        if (!(outcome === 'climbed' || outcome === 'completed')) continue;
+                        byUser.set(uid, (byUser.get(uid) || 0) + 1);
+                    }
+                }
+            }
+            return byUser;
+        }
+
+        function renderGymLeaderboard(entries = []) {
+            const wrap = document.getElementById('user-gym-detail-leaderboard');
+            if (!wrap) return;
+            if (!entries.length) {
+                wrap.innerHTML = `<p class="profile-empty">${t('common.noData')}</p>`;
+                return;
+            }
+            const gymId = activeGymDetailId || activeGymId || null;
+            wrap.innerHTML = entries.map((entry, idx) => {
+                const rank = idx + 1;
+                if (gymId && activeUser?.uid && entry.uid === activeUser.uid) {
+                    const prevRank = lastGymRankByGymId.get(gymId);
+                    if ((prevRank == null || prevRank > 10) && rank <= 10) {
+                        createNotification({ userId: activeUser.uid, type: 'TOP10_ENTER', gymId });
+                    }
+                    lastGymRankByGymId.set(gymId, rank);
+                }
+                const initials = (entry.username || 'U').slice(0, 2).toUpperCase();
+                const avatar = entry.avatarUrl
+                    ? `<img class="gym-leaderboard-avatar" src="${escapeHtml(entry.avatarUrl)}" alt="">`
+                    : `<div class="gym-leaderboard-avatar">${escapeHtml(initials)}</div>`;
+                const climbs = Number(entry.totalClimbsInGym || 0);
+                return `<div class="gym-leaderboard-row ${rank <= 3 ? 'top3' : ''}"><div class="gym-leaderboard-pos">${rank}</div>${avatar}<div class="gym-leaderboard-meta"><b>${escapeHtml(entry.username || 'Climber')}</b></div><div class="gym-leaderboard-routes">${climbs} ${t('gym.routesClimbed')}</div></div>`;
+            }).join('');
+        }
+
+        function subscribeGymLeaderboard(gymId) {
+            if (typeof gymLeaderboardUnsubscriber === 'function') gymLeaderboardUnsubscriber();
+            gymLeaderboardUnsubscriber = null;
+            renderGymLeaderboard([]);
+            gymLeaderboardUnsubscriber = onSnapshot(query(collection(db, 'gyms', gymId, 'members'), limit(100)), async (snap) => {
+                try {
+                    const monthlyMap = await buildMonthlyGymClimbsMap(gymId);
+                    const members = snap.docs
+                        .map(d => ({ id: d.id, ...(d.data() || {}) }))
+                        .filter((row) => !!(row.uid || row.id));
+                    const monthlyRows = members
+                        .map((row) => ({ ...row, totalClimbsInGym: monthlyMap.get(row.uid || row.id) || 0 }))
+                        .filter((row) => Number(row.totalClimbsInGym || 0) > 0)
+                        .sort((a, b) => Number(b.totalClimbsInGym || 0) - Number(a.totalClimbsInGym || 0));
+                    const rows = monthlyRows.length
+                        ? monthlyRows
+                        : members
+                            .filter((row) => Number(row.totalClimbsInGym || 0) > 0)
+                            .sort((a, b) => Number(b.totalClimbsInGym || 0) - Number(a.totalClimbsInGym || 0));
+                    if (!monthlyRows.length && members.length) {
+                        console.info('[leaderboard] monthly rows empty, fallback to stored member totals', { gymId, members: members.length });
+                    }
+                    renderGymLeaderboard(rows);
+                } catch (err) {
+                    console.error('[leaderboard] monthly computation failed', { gymId, err });
+                    const rows = snap.docs
+                        .map(d => ({ id: d.id, ...(d.data() || {}) }))
+                        .filter((row) => Number(row.totalClimbsInGym || 0) > 0)
+                        .sort((a, b) => Number(b.totalClimbsInGym || 0) - Number(a.totalClimbsInGym || 0));
+                    renderGymLeaderboard(rows);
+                }
+            }, () => renderGymLeaderboard([]));
+        }
+
         async function loadGymSectorsForUser(gId) {
             activeGymId = gId;
             stopGymDetailListener();
@@ -6032,6 +6891,22 @@
             }
         }
 
+        async function deactivateSectorRoutes(gymId, sectorId) {
+            if (!gymId || !sectorId) return;
+            const routesSnap = await getDocs(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes`));
+            if (routesSnap.empty) return;
+            const chunkSize = 400;
+            const docs = routesSnap.docs;
+            for (let i = 0; i < docs.length; i += chunkSize) {
+                const batch = writeBatch(db);
+                docs.slice(i, i + chunkSize).forEach((routeDoc) => {
+                    batch.set(routeDoc.ref, { active: false, deactivatedAt: new Date().toISOString() }, { merge: true });
+                });
+                await batch.commit();
+            }
+            console.info('[gym-sectors] deactivated previous routes for sector', { gymId, sectorId, total: routesSnap.size });
+        }
+
         window.handleUpload = async (existingSId) => {
             if (!activeUser || !realUserGymId) { alert(t('errors.authRequired')); return; }
             let file, name, sId;
@@ -6073,7 +6948,17 @@
                     meshUrl: url,
                     analyticsResetAt: existingSId ? new Date().toISOString() : null
                 }, { merge: true });
+                const gymDocSnap = await getDoc(doc(db, 'gyms', realUserGymId));
+                const gymInfo = gymDocSnap.exists() ? (gymDocSnap.data() || {}) : (lastUserGymsSnap?.docs?.find(g => g.id === realUserGymId)?.data() || {});
+                const sectorDocSnap = await getDoc(doc(db, 'gyms', realUserGymId, 'Sectors', sId));
+                const sectorInfo = sectorDocSnap.exists() ? (sectorDocSnap.data() || {}) : {};
+                const gymLabel = gymInfo.name || gymInfo.gym_name || 'Palestra';
+                const sectorLabel = sectorInfo.name || name || 'Settore';
+                await notifyGymMembers(realUserGymId, existingSId ? 'SECTOR_RESET' : 'NEW_SECTOR', existingSId
+                    ? `Nella palestra ${gymLabel} nuova tracciatura nel settore ${sectorLabel}`
+                    : `Nuovo settore disponibile nella palestra ${gymLabel}`, { sectorId: sId });
                 if (existingSId) {
+                    await deactivateSectorRoutes(realUserGymId, sId);
                     await clearSectorRouteStartPoints(realUserGymId, sId);
                 }
                 const modelVersionId = await createGymModelVersion(realUserGymId, {
@@ -6298,7 +7183,14 @@
 
         window.closeSocialPanel = () => setSocialPanelVisible(false);
 
-        function toYYYYMMDD(d) { const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0'); return y + '-' + m + '-' + day; }
+        function toYYYYMMDD(d) {
+            const safe = toSafeDate(d);
+            if (!safe) return '';
+            const y = safe.getFullYear();
+            const m = String(safe.getMonth() + 1).padStart(2, '0');
+            const day = String(safe.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + day;
+        }
         function lastSaturday() { const d = new Date(); const day = d.getDay(); const diff = day === 6 ? 0 : day === 0 ? -1 : 6 - day; d.setDate(d.getDate() - 7 + diff); return d; }
         function lastSunday() { const d = new Date(); const day = d.getDay(); const diff = day === 0 ? -7 : -day; d.setDate(d.getDate() + diff); return d; }
 
@@ -6728,8 +7620,8 @@
 
         window.deleteRoute = async () => { if(confirm(t('viewer.confirmDelete'))) { await deleteDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId)); window.cancelAdminEdit(); } };
 
-        window.goToAuth = () => showView('view-auth');
-        window.logout = () => { if (typeof superadminKpiUnsub === 'function') superadminKpiUnsub(); stopFollowingProgressSubscriptions(); stopFollowsSubscription(); signOut(auth).then(() => location.reload()); };
+        window.goToAuth = (mode = 'login') => { showView('view-auth'); setAuthMode(mode !== 'register'); };
+        window.logout = () => { if (typeof superadminKpiUnsub === 'function') superadminKpiUnsub(); stopFollowingProgressSubscriptions(); stopFollowsSubscription(); stopGymFollowersSubscription(); stopNotificationsSubscription(); signOut(auth).then(() => location.reload()); };
         window.switchMode = async () => {
             if (userRole === 'superadmin') {
                 const nextModes = realUserGymId
