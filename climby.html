@@ -2749,6 +2749,35 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             setTimeout(() => openOnboardingFlow({ uid: activeUser?.uid || null, isAdmin: isGymAdmin }), 400);
         }
 
+        async function runAuthenticatedBootstrap(user) {
+            console.info('[profile] start fetch user document', user.uid);
+            const profile = await getUserProfileByAuthUid(user.uid);
+            console.info('[profile] user document fetch success', profile?.data || null);
+            currentUserProfileRef = profile.ref;
+            const data = profile.data || {};
+            console.info('[profile] currentUser.uid', user.uid);
+            console.info('[profile] user document loaded', data);
+            await ensureUidProfileMirror(user.uid, data);
+            activeUser = user;
+            if (data.avatarUrl) { try { activeUser.photoURL = data.avatarUrl; } catch (_) {} }
+            currentUserName = data.username || 'Climber';
+            userFollowingIds = data.following || [];
+            activePublicProfileUid = null;
+            userRole = normalizeUserRole(data.role);
+            realUserGymId = userRole === 'admin'
+                ? await resolveAdminGymId(user.uid, data.gymManaged)
+                : data.gymManaged;
+            currentMode = userRole === 'superadmin' ? 'superadmin' : userRole;
+            if (userRole === 'admin' && !realUserGymId) currentMode = 'user';
+            const modeBtn = document.getElementById('btn-mode-toggle');
+            if (modeBtn) modeBtn.style.display = (userRole === 'admin' || userRole === 'superadmin') ? 'block' : 'none';
+            await initDashboard();
+            maybeStartOnboarding(data || {});
+            startNotificationsSubscription();
+            startUserGymStatsSubscription();
+            await handlePublicProfileRoute();
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 stopNotificationsSubscription();
@@ -2760,31 +2789,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             }
             try {
                 if (!(await enforceVerifiedEmailOrBlock(user))) return;
-                console.info('[profile] start fetch user document', user.uid);
-                const profile = await getUserProfileByAuthUid(user.uid);
-                console.info('[profile] user document fetch success', profile?.data || null);
-                currentUserProfileRef = profile.ref;
-                const data = profile.data || {};
-                console.info('[profile] currentUser.uid', user.uid);
-                console.info('[profile] user document loaded', data);
-                await ensureUidProfileMirror(user.uid, data);
-                activeUser = user;
-                if (data.avatarUrl) { try { activeUser.photoURL = data.avatarUrl; } catch (_) {} }
-                currentUserName = data.username || 'Climber';
-                userFollowingIds = data.following || [];
-                activePublicProfileUid = null;
-                userRole = normalizeUserRole(data.role);
-                realUserGymId = userRole === 'admin'
-                    ? await resolveAdminGymId(user.uid, data.gymManaged)
-                    : data.gymManaged;
-                currentMode = userRole === 'superadmin' ? 'superadmin' : userRole;
-                if (userRole === 'admin' && !realUserGymId) currentMode = 'user';
-                document.getElementById('btn-mode-toggle').style.display = (userRole === 'admin' || userRole === 'superadmin') ? 'block' : 'none';
-                await initDashboard();
-                maybeStartOnboarding(data || {});
-                startNotificationsSubscription();
-                startUserGymStatsSubscription();
-                await handlePublicProfileRoute();
+                await runAuthenticatedBootstrap(user);
             } catch (e) {
                 console.error('Auth bootstrap error:', e);
                 alert(t('errors.profileLoad'));
@@ -2812,12 +2817,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             try {
                 const verified = await isUserEmailVerified(currentUser);
                 if (!verified) return alert(t('emailVerification.stillUnverified'));
-                await initDashboard();
-                const refreshedProfile = await getUserProfileByAuthUid(currentUser.uid);
-                maybeStartOnboarding(refreshedProfile.data || {});
-                startNotificationsSubscription();
-                startUserGymStatsSubscription();
-                await handlePublicProfileRoute();
+                await runAuthenticatedBootstrap(currentUser);
             } catch (e) {
                 alert(e.message || String(e));
             }
@@ -2860,6 +2860,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const gymName = (document.getElementById('gym-owner-request-name')?.value || '').trim();
             if (!gymName) return alert(t('ownerRequest.enterGymName'));
             try {
+                await activeUser.reload();
+                await activeUser.getIdToken(true);
+                const verified = await isUserEmailVerified(activeUser);
+                if (!verified) return alert(t('emailVerification.stillUnverified'));
                 await addDoc(collection(db, 'gymOwnerRequests'), {
                     userId: activeUser.uid,
                     gymName,
@@ -2870,7 +2874,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 window.closeGymOwnerRequest();
                 alert(t('ownerRequest.sentSuccess'));
             } catch (e) {
-                alert(e.message || String(e));
+                alertWriteError(e);
             }
         };
 
