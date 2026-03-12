@@ -748,6 +748,15 @@
         .social-modal { position:fixed; inset:0; z-index:1500; background:rgba(4,8,18,0.72); display:none; align-items:flex-end; }
         .social-modal.active { display:flex; }
         .social-modal-sheet { width:100%; max-height:74dvh; overflow:auto; background:var(--card); border-top:1px solid var(--border); border-radius:18px 18px 0 0; padding:16px; }
+        .onboarding-overlay { position:fixed; inset:0; z-index:2400; pointer-events:none; display:none; }
+        .onboarding-overlay.active { display:block; }
+        .onboarding-scrim { position:absolute; inset:0; background:rgba(3,8,18,0.45); }
+        .onboarding-panel { position:absolute; right:16px; bottom:16px; width:min(420px, calc(100% - 24px)); background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow:0 14px 30px rgba(0,0,0,0.35); pointer-events:auto; }
+        .onboarding-kicker { font-size:12px; color:var(--muted); margin:0 0 6px; }
+        .onboarding-title { margin:0 0 8px; font-size:1.05rem; }
+        .onboarding-body { margin:0; color:var(--muted); font-size:0.92rem; line-height:1.45; white-space:pre-line; }
+        .onboarding-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+        .onboarding-highlight { position:relative; z-index:2401 !important; outline:2px solid var(--primary); border-radius:10px; box-shadow:0 0 0 6px rgba(111,77,255,0.18); }
         .username-hint { margin: -2px 0 8px; min-height: 20px; font-size: 0.86rem; color: var(--muted); text-align: left; }
         .username-hint.ok { color: var(--primary); }
         .username-hint.error { color: var(--danger); }
@@ -769,7 +778,7 @@
         }
         .gym-3d-card:active { transform: translateY(1px) scale(0.995); box-shadow: 0 6px 14px rgba(7,14,30,0.3), inset 0 0 0 1px var(--border); }
         .gym-3d-overlay { position:absolute; inset:0; pointer-events:none; background: radial-gradient(circle at 88% 18%, rgba(43,224,125,0.12), transparent 44%), radial-gradient(circle at 14% 82%, rgba(43,224,125,0.1), transparent 46%); }
-        .gym-card-logo { width:52px; height:52px; border-radius:12px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.08); }
+        .gym-card-logo { width:56px; height:56px; border-radius:12px; object-fit:contain; object-position:center; border:1px solid var(--border); background:rgba(255,255,255,0.08); padding:4px; box-sizing:border-box; }
         .gym-3d-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; position:relative; z-index:1; }
         .user-gym-card .user-gym-name { flex:1; font-size:18px; font-weight:600; line-height:1.3; }
         .gym-3d-badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; border:1px solid var(--primary); padding:6px 10px; font-size:0.78rem; color:var(--primary); background:rgba(43,224,125,0.12); font-weight:600; }
@@ -792,10 +801,10 @@
             padding:16px;
         }
         .gym-detail-overview { box-shadow: 0 12px 24px rgba(7,14,30,0.18); }
-        .gym-detail-cover { width:100%; height:180px; border-radius:14px; object-fit:cover; border:1px solid var(--border); margin-bottom:12px; background:rgba(255,255,255,0.05); }
+        .gym-detail-cover { width:100%; height:180px; border-radius:14px; object-fit:contain; object-position:center; border:1px solid var(--border); margin-bottom:12px; background:rgba(255,255,255,0.05); padding:10px; box-sizing:border-box; }
         .gym-floor-map { width:100%; max-height:340px; object-fit:contain; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.03); }
         .gym-admin-media-row { display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; }
-        .gym-admin-media-preview { width:72px; height:72px; border-radius:10px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.06); }
+        .gym-admin-media-preview { width:96px; height:96px; border-radius:10px; object-fit:contain; object-position:center; border:1px solid var(--border); background:rgba(255,255,255,0.06); padding:6px; box-sizing:border-box; }
         .gym-detail-eyebrow { margin: 10px 0 8px; display:inline-flex; align-items:center; gap:8px; border:1px solid color-mix(in srgb, var(--primary) 40%, var(--border) 60%); background:rgba(111,77,255,0.12); color:var(--primary); border-radius:999px; padding:6px 12px; font-size:0.76rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
         .gym-detail-hero-cta { margin-top:14px; padding:14px; border-radius:14px; border:1px solid var(--primary); background:linear-gradient(160deg, rgba(111,77,255,0.14), rgba(255,255,255,0.85)); }
         .gym-detail-hero-cta b { display:block; font-size: 1rem; margin-bottom: 4px; }
@@ -810,6 +819,8 @@
             letter-spacing:-0.01em;
             margin: 0 0 8px 0;
         }
+.gym-detail-title-wrap { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+        .gym-detail-logo-icon { width:44px; height:44px; border-radius:999px; object-fit:contain; object-position:center; border:1px solid var(--border); background:rgba(255,255,255,0.08); display:none; flex-shrink:0; padding:4px; box-sizing:border-box; }
         .gym-detail-meta { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 0; }
         .gym-meta-chip { border:1px solid color-mix(in srgb, var(--border) 70%, var(--primary) 30%); background:var(--surface-elevated); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:2px; min-height:64px; justify-content:center; }
         .gym-meta-chip b { font-size: 1.15rem; color: var(--text); line-height:1.1; }
@@ -875,7 +886,10 @@
         .gym-coverage-fill { height: 100%; border-radius: 999px; background: var(--primary); transition: width 0.25s ease; }
         .gym-coverage-meta { margin-top: 8px; font-size: 0.86rem; color: var(--muted); }
         #user-gym-detail-sectors-list .card { min-height:56px; width:100%; }
-        .gym-sector-item { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; box-shadow:0 8px 16px rgba(63,80,124,0.08); }
+        .gym-sector-item { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); display:block; box-shadow:0 8px 16px rgba(63,80,124,0.08); }
+        .gym-sector-head { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; width:100%; }
+        .gym-sector-name { min-width:0; cursor:pointer; }
+        .gym-sector-cta { justify-self:end; white-space:nowrap; }
         .gym-sector-item b { display:block; font-size:0.98rem; }
         .gym-sector-item span { color:var(--muted); font-size:0.8rem; }
         .gym-sector-item i { font-style:normal; color:var(--primary); font-weight:700; }
@@ -924,7 +938,7 @@
         .profile-header-main { border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--card); }
         .profile-header-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
         .profile-avatar-wrap { display:flex; gap:12px; align-items:center; }
-        .profile-avatar-large { width:72px; height:72px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.08); display:grid; place-items:center; font-weight:700; color:var(--muted); font-size:1rem; }
+        .profile-avatar-large { width:88px; height:88px; border-radius:999px; object-fit:contain; object-position:center; border:1px solid var(--border); background:rgba(255,255,255,0.08); padding:6px; box-sizing:border-box; display:grid; place-items:center; font-weight:700; color:var(--muted); font-size:1rem; }
         .profile-avatar-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
         .profile-avatar-actions .btn-sec { min-height:38px; padding:8px 12px; }
         .profile-username { margin:0; font-size:28px; font-weight:600; color:var(--text); line-height:1.1; }
@@ -1230,6 +1244,19 @@
         </div>
     </div>
 
+    <div id="onboarding-overlay" class="onboarding-overlay" aria-live="polite">
+        <div class="onboarding-scrim"></div>
+        <div class="onboarding-panel">
+            <p id="onboarding-kicker" class="onboarding-kicker"></p>
+            <h4 id="onboarding-title" class="onboarding-title"></h4>
+            <p id="onboarding-body" class="onboarding-body"></p>
+            <div class="onboarding-actions">
+                <button type="button" class="btn-sec" id="onboarding-skip-btn">Salta</button>
+                <button type="button" class="btn-main" id="onboarding-next-btn">Avanti</button>
+            </div>
+        </div>
+    </div>
+
 <div id="view-auth" class="view">
         <div class="container">
             <div class="card" style="text-align:center; margin-top:50px; padding: 30px;">
@@ -1242,9 +1269,9 @@
                     <input type="text" id="f-first-name" data-i18n-placeholder="auth.firstName" autocomplete="given-name" autocapitalize="words" spellcheck="false">
                     <input type="text" id="f-last-name" data-i18n-placeholder="auth.lastName" autocomplete="family-name" autocapitalize="words" spellcheck="false">
                     <input type="text" id="f-name" data-i18n-placeholder="auth.username" autocomplete="off" autocapitalize="none" spellcheck="false">
+                    <p id="username-status" class="username-hint" aria-live="polite"></p>
                     <input type="date" id="f-birthdate" data-i18n-placeholder="auth.birthDate" max="2099-12-31">
                     <input type="text" id="f-city" data-i18n-placeholder="auth.city" autocomplete="address-level2">
-                    <p id="username-status" class="username-hint" aria-live="polite"></p>
                 </div>
                 <input type="email" id="email" data-i18n-placeholder="auth.email">
                 <input type="password" id="pass" data-i18n-placeholder="auth.password">
@@ -1488,7 +1515,7 @@
                     <p id="user-gym-detail-eyebrow" class="gym-detail-eyebrow" data-i18n="dash.gymPresentation"></p>
                     <div class="card gym-detail-overview">
                         <img id="user-gym-detail-cover" class="gym-detail-cover" alt="gym cover">
-                        <h2 id="user-gym-detail-name" class="gym-detail-title"></h2>
+                        <div class="gym-detail-title-wrap"><img id="user-gym-detail-logo-icon" class="gym-detail-logo-icon" alt="gym logo"><h2 id="user-gym-detail-name" class="gym-detail-title"></h2></div>
                         <p id="user-gym-detail-desc" class="user-gym-detail-desc"></p>
                         <div id="user-gym-detail-highlights" class="gym-detail-meta"></div>
                         <div class="gym-detail-hero-cta">
@@ -1735,6 +1762,9 @@
         let viewerMoveGuideShownThisSession = false;
         const SOCIAL_PROFILE_ROUTE_PREFIX = '#/social/user/';
 
+        const ONBOARDING_STORAGE_PREFIX = 'climby_onboarding_seen_v1_';
+        let onboardingState = { active: false, steps: [], index: 0, targetEl: null, uid: null };
+
         const START_GUIDE_PREF_KEY = 'has_seen_3d_start_instruction';
         const START_GUIDE_SECTOR_KEY = 'climby_seen_start_instruction_sectors';
 
@@ -1762,7 +1792,7 @@
                 common: { close: "Chiudi", noData: "Nessun dato disponibile." }, ownerRequest: { cta: "Sono il proprietario di una palestra", enterGymName: "Inserisci il nome della palestra.", sentSuccess: "Richiesta inviata con successo.", title: "Richiesta accesso proprietario", hint: "Inserisci i dati per richiedere l'accesso come proprietario palestra.", gymName: "Nome palestra", submit: "Invia richiesta" }, superadmin: { title: "Superadmin Dashboard", subtitle: "KPI globali aggregati (senza confrontare gradi assoluti tra palestre diverse).", performanceTitle: "KPI performance (grading-safe)", performanceHint: "Le metriche di performance sono calcolate internamente a ciascuna palestra e poi aggregate.", behaviorTitle: "KPI comportamentali", cityTitle: "Distribuzione difficoltà per città (percentuali interne)", city: "Città", internalDistribution: "Distribuzione interna", noData: "Nessun dato disponibile.", totalUsers: "Utenti totali", active7d: "Attivi ultimi 7 giorni", active30d: "Attivi ultimi 30 giorni", activeGyms: "Palestre attive", sectorsLoaded: "Settori caricati", routesRegistered: "Vie registrate", avgRoutesPerUser: "Media vie per utente", monthlyGrowth: "Crescita mensile utenti", monthlyRetention: "Retention mensile", activeVsRegistered: "% attivi / registrati", avgProgressUser: "Progressione media utente", improvement3m: "Miglioramento medio (3 mesi)", avgTimeNextLevel: "Tempo medio livello successivo", boulderVsLead: "% Boulder vs Lead", avgAttemptsPerRoute: "Tentativi medi per via", weeklyFrequency: "Frequenza settimanale media", topDays: "Giorni più frequentati", topHours: "Fasce orarie attive", returnRate: "Tasso di ritorno" }, dash: { switchView: "CAMBIA VISTA", logout: "ESCI", exploreGyms: "Trova la tua prossima sessione", searchGyms: "Cerca una palestra...", favouriteGyms: "Le tue palestre preferite", discoverGyms: "Scopri tutte le palestre", addToFavourites: "Aggiungi ai preferiti", removeFromFavourites: "Rimuovi dai preferiti", sectors: "Settori", back: "← Indietro", manageRoutes: "GESTISCI VIE", replace3d: "SOSTITUISCI 3D", exploreSectors: "Esplora i settori", gymPresentation: "Presentazione", noGymDescription: "Palestra su Climby. Esplora i settori in 3D e scopri le vie.", profileTitle: "Il tuo profilo", tabExplore: "Esplora palestre", tabProfile: "Profilo utente", tabChallenges: "Sfide", tabSocial: "Social", tabProfileShort: "Profilo", usersTab: "Utenti", findUsers: "Trova utenti", searchUsers: "Cerca username...", follow: "Segui", unfollow: "Seguito", followingProgress: "Feed Social", noFollowingProgress: "Segui utenti e chiedi di condividere i progressi per vedere il feed.", searchStart: "Digita uno username per cercare utenti", noUserResults: "Nessun utente trovato", socialPublicProfile: "Profilo pubblico", followers: "Follower", followingCount: "Seguiti", publicContent: "Contenuti pubblici", publicRoutes: "Percorsi pubblici", publicFeedbacks: "Feedback pubblici", noPublicContent: "Nessun contenuto pubblico disponibile.",  maxGrade: "Grado massimo", totalSends: "Vie scalate", activeDays: "Giorni attivi", reviewedGyms: "Palestre", latestProgress: "Ultimi progressi", noProgress: "Nessun progresso registrato: inizia a votare e commentare le vie.", recentCommunity: "Progressi palestra", profileSubtitle: "Le tue statistiche di arrampicata", maxLevelReached: "Livello massimo raggiunto", nextLevel: "Prossimo livello", progressionToNext: "Progressione verso il prossimo livello", progressionTitle: "Crescita nel tempo", progressionHint: "Il livello massimo è storico: non regredisce con sessioni leggere.", projectsActive: "Progetti attivi", maxMilestone: "Traguardo storico", levelMastery: "Consolidamento livello", noMilestones: "Nessun milestone ancora: continua a registrare salite.", latestActivities: "Ultime attività", globalMaxLevel: "Livello massimo globale", normalizedLevel: "Livello normalizzato", localMaxByGym: "Massimo per palestra", globalProgressHint: "Progressione globale basata su livello normalizzato interno", openGymProgress: "Mostra progressi", hideGymProgress: "Nascondi progressi", communityEmpty: "Nessun progresso in questa palestra.", available3d: "Disponibile in 3D", preparing3d: "3D in arrivo", explore3dCta: "Esplora in 3D", gym3dTitle: "Settori immersivi in 3D", gym3dDesc: "Apri il modello 3D della palestra e scegli subito il settore da esplorare." },
                 admin: { createSector: "Crea Nuovo Settore", sectorNamePlaceholder: "Nome (es. Sala Boulder)", publish: "PUBBLICA", gymProfileTitle: "Scheda anagrafica palestra", gymDescription: "Descrizione palestra", saveGymProfile: "SALVA INFORMAZIONI", boulderingHeight: "Bouldering altezza (m)", boulderingArea: "Bouldering superficie (m²)", leadHeight: "Lead altezza (m)", leadArea: "Lead superficie (m²)", outdoorHeight: "Outdoor altezza (m)", outdoorArea: "Outdoor superficie (m²)", speedHeight: "Speed altezza (m)", speedArea: "Speed superficie (m²)", liveData: "Dati Live Percorsi", userCoverageTitle: "Copertura Utenti", periodFilter: "Periodo", last7Days: "Ultimi 7 giorni", last30Days: "Ultimi 30 giorni", last90Days: "Ultimi 90 giorni", filters: "🔎 Filtri", customPeriod: "Personalizzato", allSectors: "Tutti i settori", allGrades: "Tutti i gradi", onlyActiveRoutes: "Solo vie attive", onlyReviewedRoutes: "Solo vie recensite", sortSectorAvg: "Ordina settore: media", sortSectorReviews: "Ordina settore: recensioni", totalUsersGym: "Utenti totali palestra", activeUsersLast30Days: "Attivi ultimi 30 giorni", selectedCoverage: "Copertura periodo", trendActivity: "Trend attività", topUsersSector: "Top 3 utenti settore", yourSectors: "I Tuoi Settori", sector: "Settore", route: "Via", votes: "Voti", average: "Media", gradeSystemTitle: "Sistema gradi palestra", gradeSystemHint: "Inserisci un grado per riga, dal più basso al più alto. Verrà salvato anche l'ordine numerico.", gradeSystemPlaceholder: "Es.\nVerde\nBlu\nViola\nRosso", saveGradeSystem: "SALVA SISTEMA GRADI", gradeSetupRequiredTitle: "Configura i gradi della palestra", gradeSetupRequiredHint: "Prima di usare il pannello admin devi configurare il sistema gradi in ordine crescente.", gradeSystemSaved: "Sistema gradi salvato con successo.", navDashboard: "1️⃣ Dashboard", navSectorsRoutes: "2️⃣ Settori & Vie", navUsers: "3️⃣ Utenti", navSettings: "4️⃣ Impostazioni", navDashboardSimple: "Dashboard", navSectorsRoutesSimple: "Settori & Vie", navUsersSimple: "Utenti", navSettingsSimple: "Impostazioni", activityLast30: "📈 Attività ultimi 30 giorni", sectorPerformance: "🧱 Performance settori", sortBy: "Ordina per", sortMost: "Più attivo", sortLeast: "Meno attivo", routesRegistered30d: "Vie registrate 30g", sector: "Settore", activeUsers: "Utenti attivi", routesRegistered: "Vie registrate", coveragePercent: "% Copertura", totalUsers: "Totale utenti", activeLast30: "Attivi ultimi 30 giorni", top10Users: "Top 10 utenti", feedbackAnalyticsUsers: "💬 Analytics Feedback Utenti", loadingFeedback: "Caricamento analytics feedback...", reviewsLast30: "Recensioni ultimi 30 giorni", feedbackLoadError: "Errore nel caricamento analytics feedback.", sectorsTitle: "Settori", sectorsSubtitle: "Gestisci i settori e i modelli 3D della tua palestra", createSectorCta: "➕ Crea nuovo settore", select3dModel: "Seleziona modello 3D", noModelSelected: "Nessun modello selezionato", modelLoaded: "Modello caricato", no3dModel: "Nessun modello 3D", replaceModel3d: "Sostituisci modello 3D", deleteSector: "Elimina settore", deleteSectorTitle: "🗑 Elimina settore", deleteSectorConfirmText: "Sei sicuro di voler eliminare questo settore? Tutte le vie associate verranno rimosse definitivamente.", cancel: "Annulla", deleteForever: "Elimina definitivamente", sectorAnalysis: "Analisi per settore", replaceModelConfirm: "Confermi la sostituzione del modello 3D di questo settore? Le vie esistenti manterranno i loro routeId e lo storico utenti non verrà cancellato.", replaceModelDone: "Modello sostituito con successo." },
                 viewer: { close: "CHIUDI", configureRoute: "Configura Via", save: "SALVA", delete: "ELIMINA", comment: "Commento", commentPlaceholder: "Beta, ricordi, tutto qui...", publicCommentPlaceholder: "Com'è la beta? È morfologica? Divertente?", submitReview: "INVIA VALUTAZIONE", publishFeedback: "PUBBLICA FEEDBACK", grade: "Grado", rating: "Valutazione", avgRating: "Media", noVotesYet: "Ancora nessun voto", noComment: "(Senza commento)", selectStar: "Per favore, seleziona almeno una stella!", reviewSuccess: "Feedback inviato con successo!", reviewAlreadySent: "Hai già lasciato una recensione per questa via.", confirmDelete: "Eliminare?", sendDate: "Data", tries: "Tentativi", proposeGrade: "Proponi un grado", proposeGradePlaceholder: "Stesso grado", proposedGrade: "Grado proposto", proposedGradePlaceholder: "Es. 6c+", proposedGradeOptional: "Grado proposto (opzionale)", proposedGradeShortPlaceholder: "Es. 6c+", routeGradePlaceholder: "Es. 6c+", today: "Oggi", yesterday: "Ieri", lastSaturday: "Sabato scorso", lastSunday: "Domenica scorsa", ascentType: "Esito", climbed: "Scalata", project: "Progetto", publicFeedback: "Feedback pubblico", progressTracker: "Progress tracker", myClimbTab: "La mia scalata", rateRouteTab: "Valuta la via", yourProgressState: "Stato personale", addToProject: "Aggiungi a progetto", markAsClimbed: "Segna come scalata", projectStateHint: "La sto lavorando", climbedStateHint: "L'ho completata", saveProject: "Aggiorna progetto", saveClimbed: "Aggiorna scalata", saveClimb: "SALVA SCALATA", firstAttemptDate: "Prima prova", completionDate: "Completamento", finalGrade: "Grado finale", personalNotes: "Note personali", personalNotesPlaceholder: "Appunti privati su beta, sensazioni, obiettivi...", shareOnFeed: "Condividi aggiornamento nel feed", trackerSaved: "Progress tracker aggiornato", trackerNone: "Via non ancora aggiunta al tuo tracker.", sortProgress: "Filtro progressi", filterAll: "Tutti", filterProject: "Progetti", filterClimbed: "Scalate", startGuideTitle: "📍 Crea lo start della via", startGuideText: "Tocca nel modello 3D il punto di inizio della via per impostare lo START.", startGuideAcknowledge: "Ho capito", startGuideDontShow: "Non mostrare più", moveGuideTitle: "🎯 Suggerimento navigazione", moveGuideHeader: "Muovi la parete", moveGuideText: "Trascina con un dito per ruotare.\nUsa due dita per spostare la vista.\nPizzica per zoommare.", moveGuideClose: "Ho capito" },
-                gym: { tabInfo: "Informazioni", tabSectors: "Settori", tabDetails: "Dettagli palestra", aboutGym: "Card Contatti", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori della palestra", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Seleziona un settore per vedere le vie attuali o aprilo direttamente in 3D.", leaderboardTitle: "Classifica palestra", leaderboardHint: "Classifica mensile basata sul numero di vie scalate in questa palestra.", routesClimbed: "vie", uploadLogo: "Carica logo palestra", removeLogo: "Rimuovi logo", uploadFloorMap: "Carica pianta palestra", removeFloorMap: "Rimuovi pianta", floorMap: "Piantina palestra", noFloorMap: "Pianta non disponibile" },
+                gym: { tabInfo: "Informazioni", tabSectors: "Settori", tabDetails: "Dettagli palestra", aboutGym: "Card Contatti", address: "Indirizzo", phone: "Telefono", emailLabel: "Email", website: "Sito web", climbingArea: "Climbing area", bouldering: "Bouldering", lead: "Lead", outdoor: "Outdoor", speed: "Speed", height: "Altezza", area: "Superficie", noValue: "-", sectorsAvailable: "Settori della palestra", userCoverage: "Copertura Utenti", totalGymUsers: "Utenti palestra", active30dUsers: "Attivi ultimi 30 giorni", coveragePercent: "Copertura", coverageLegend: "{{active}} utenti attivi su {{total}} frequentatori", sectorsHint: "Seleziona un settore per vedere le vie attuali o aprilo direttamente in 3D.", leaderboardTitle: "Classifica palestra", leaderboardHint: "Classifica mensile basata sul numero di vie scalate in questa palestra.", routesClimbed: "vie", uploadLogo: "Carica logo palestra", removeLogo: "Rimuovi logo", uploadFloorMap: "Carica piantina palestra", removeFloorMap: "Rimuovi piantina", floorMap: "Piantina palestra", noFloorMap: "Pianta non disponibile" },
                 loading: { init: "Inizializzazione...", verifying: "Verifica...", updatingMesh: "Aggiornamento Mesh...", loading3d: "Caricamento 3D...", retry: "Riprova" },
                 errors: { completeData: "Inserisci dati completi", firstNameRequired: "Il nome è obbligatorio.", lastNameRequired: "Il cognome è obbligatorio.", firstNameInvalid: "Nome non valido: solo lettere, almeno 2 caratteri.", lastNameInvalid: "Cognome non valido: solo lettere, almeno 2 caratteri.", birthDateRequired: "La data di nascita è obbligatoria.", cityRequired: "La città è obbligatoria.", profileLoad: "Errore durante il caricamento del profilo.", adminGymMissing: "Profilo admin senza palestra associata.", selectFile: "Seleziona file", usernameRequired: "Inserisci username", usernameInvalid: "Username non valido: usa 3-20 caratteri (lettere, numeri, _, -, .)", usernameTaken: "Username già in uso", modelLoadFailed: "Errore nel caricamento del modello", modelLoadTimeout: "Caricamento troppo lento. Riprova.", modelMeshMissing: "Modello 3D non disponibile per questo settore", authRequired: "Devi accedere per completare questa azione.", permissionDenied: "Permessi insufficienti su Firestore: controlla le regole di sicurezza.", saveFailed: "Salvataggio non riuscito. Riprova.", sectorExists: "Il settore esiste già: usa \"Sostituisci modello 3D\" per mantenerne lo storico." }
             },
@@ -2588,6 +2618,137 @@ document.getElementById('auth-btn').onclick = async () => {
             return false;
         }
 
+        function getOnboardingStorageKey(uid) {
+            return `${ONBOARDING_STORAGE_PREFIX}${uid || 'guest'}`;
+        }
+
+        function clearOnboardingHighlight() {
+            if (onboardingState.targetEl) onboardingState.targetEl.classList.remove('onboarding-highlight');
+            onboardingState.targetEl = null;
+        }
+
+        function resolveOnboardingTarget(selector) {
+            if (!selector) return null;
+            const el = document.querySelector(selector);
+            if (!el) return null;
+            const rect = el.getBoundingClientRect();
+            if (!rect.width || !rect.height) return null;
+            return el;
+        }
+
+        function getClimberOnboardingSteps() {
+            return [
+                { title: 'Benvenuto su Climby 🧗', text: 'Esplora le palestre, scopri le vie e tieni traccia delle tue scalate.', cta: 'Inizia' },
+                { title: 'Esplora palestre', text: `Qui trovi le palestre disponibili su Climby.
+Apri una palestra per vedere settori, vie e classifiche.`, target: '#tab-btn-explore' },
+                { title: 'Esplora i settori', text: `Ogni palestra è divisa in settori.
+Apri un settore per vedere tutte le vie disponibili.`, target: '#user-gym-detail-sectors-list, #main-list-user' },
+                { title: 'Segna una via scalata', text: `Quando completi una via puoi segnarla come scalata.
+Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, #main-list-user .card' },
+                { title: 'Profilo', text: `Nel tuo profilo puoi vedere:
+- vie scalate
+- progressione gradi
+- top vie più difficili
+- attività nelle palestre.`, target: '#tab-btn-profile', cta: 'Vai alle palestre' }
+            ];
+        }
+
+        function getAdminOnboardingSteps() {
+            return [
+                { title: 'Benvenuto su Climby Admin', text: 'Gestisci la tua palestra, i settori e le tracciature direttamente da Climby.', cta: 'Inizia' },
+                { title: 'Crea i settori', text: 'Crea i settori della palestra per organizzare le vie.', target: '#admin-tab-sectors .admin-create-sector-card', before: () => setAdminTab('sectors') },
+                { title: 'Carica il modello 3D', text: 'Carica il modello 3D della parete per permettere agli utenti di esplorare i settori.', target: '#file-mesh-new-label', before: () => setAdminTab('sectors') },
+                { title: 'Aggiungi le vie', text: 'Inserisci colore e grado delle vie per ogni settore.', target: '#main-list-admin', before: () => setAdminTab('sectors') },
+                { title: 'Notifiche agli utenti', text: 'Quando aggiorni un settore o carichi una nuova tracciatura, gli utenti che seguono la palestra riceveranno una notifica.', cta: 'Vai alla tua palestra' }
+            ];
+        }
+
+        function renderOnboardingStep() {
+            const overlay = document.getElementById('onboarding-overlay');
+            const titleEl = document.getElementById('onboarding-title');
+            const bodyEl = document.getElementById('onboarding-body');
+            const kickerEl = document.getElementById('onboarding-kicker');
+            const nextBtn = document.getElementById('onboarding-next-btn');
+            if (!overlay || !titleEl || !bodyEl || !kickerEl || !nextBtn) return;
+            clearOnboardingHighlight();
+            const step = onboardingState.steps[onboardingState.index];
+            if (!step) return;
+            if (typeof step.before === 'function') {
+                try { step.before(); } catch (err) { console.warn('[onboarding] step.before failed', err); }
+            }
+            titleEl.textContent = step.title || 'Guida rapida';
+            bodyEl.textContent = step.text || '';
+            kickerEl.textContent = `Step ${onboardingState.index + 1}/${onboardingState.steps.length}`;
+            nextBtn.textContent = step.cta || (currentLang === 'it' ? 'Avanti' : 'Next');
+            const target = resolveOnboardingTarget(step.target || null);
+            if (target) {
+                onboardingState.targetEl = target;
+                target.classList.add('onboarding-highlight');
+                try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+            }
+        }
+
+        async function completeOnboardingFlow() {
+            const overlay = document.getElementById('onboarding-overlay');
+            clearOnboardingHighlight();
+            onboardingState.active = false;
+            onboardingState.steps = [];
+            onboardingState.index = 0;
+            if (overlay) overlay.classList.remove('active');
+            const uid = onboardingState.uid || activeUser?.uid || null;
+            if (!uid) return;
+            try { localStorage.setItem(getOnboardingStorageKey(uid), 'true'); } catch (_) {}
+            try {
+                await mergeUserProfileByAuthUid(uid, { onboardingCompleted: true, onboardingCompletedAt: new Date().toISOString() });
+            } catch (err) {
+                console.warn('[onboarding] unable to persist completion', err);
+            }
+        }
+
+        function openOnboardingFlow({ uid, isAdmin }) {
+            const overlay = document.getElementById('onboarding-overlay');
+            const skipBtn = document.getElementById('onboarding-skip-btn');
+            const nextBtn = document.getElementById('onboarding-next-btn');
+            if (!overlay || !skipBtn || !nextBtn) return;
+            onboardingState.uid = uid;
+            onboardingState.active = true;
+            onboardingState.index = 0;
+            onboardingState.steps = isAdmin ? getAdminOnboardingSteps() : getClimberOnboardingSteps();
+            overlay.classList.add('active');
+            skipBtn.textContent = currentLang === 'it' ? 'Salta' : 'Skip';
+            skipBtn.onclick = () => { completeOnboardingFlow(); };
+            nextBtn.onclick = async () => {
+                if (onboardingState.index >= onboardingState.steps.length - 1) {
+                    await completeOnboardingFlow();
+                    return;
+                }
+                onboardingState.index += 1;
+                try {
+                    renderOnboardingStep();
+                } catch (err) {
+                    console.error('[onboarding] next step failed', err);
+                }
+            };
+            renderOnboardingStep();
+        }
+
+        function shouldShowOnboarding(profileData = {}) {
+            const uid = activeUser?.uid || null;
+            if (!uid) return false;
+            if (profileData?.onboardingCompleted) return false;
+            try {
+                if (localStorage.getItem(getOnboardingStorageKey(uid)) === 'true') return false;
+            } catch (_) {}
+            return true;
+        }
+
+        function maybeStartOnboarding(profileData = {}) {
+            if (!shouldShowOnboarding(profileData)) return;
+            if (userRole === 'superadmin') return;
+            const isGymAdmin = userRole === 'admin' || profileData?.role === 'gym_admin' || profileData?.isGymOwner === true;
+            setTimeout(() => openOnboardingFlow({ uid: activeUser?.uid || null, isAdmin: isGymAdmin }), 400);
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 stopNotificationsSubscription();
@@ -2620,6 +2781,7 @@ document.getElementById('auth-btn').onclick = async () => {
                 if (userRole === 'admin' && !realUserGymId) currentMode = 'user';
                 document.getElementById('btn-mode-toggle').style.display = (userRole === 'admin' || userRole === 'superadmin') ? 'block' : 'none';
                 await initDashboard();
+                maybeStartOnboarding(data || {});
                 startNotificationsSubscription();
                 startUserGymStatsSubscription();
                 await handlePublicProfileRoute();
@@ -2651,6 +2813,8 @@ document.getElementById('auth-btn').onclick = async () => {
                 const verified = await isUserEmailVerified(currentUser);
                 if (!verified) return alert(t('emailVerification.stillUnverified'));
                 await initDashboard();
+                const refreshedProfile = await getUserProfileByAuthUid(currentUser.uid);
+                maybeStartOnboarding(refreshedProfile.data || {});
                 startNotificationsSubscription();
                 startUserGymStatsSubscription();
                 await handlePublicProfileRoute();
@@ -5168,6 +5332,11 @@ document.getElementById('auth-btn').onclick = async () => {
 
                 document.getElementById('user-gym-detail-name').textContent = name;
                 document.getElementById('user-gym-detail-desc').textContent = desc;
+                const titleLogoEl = document.getElementById('user-gym-detail-logo-icon');
+                if (titleLogoEl) {
+                    titleLogoEl.src = data.logoUrl || '';
+                    titleLogoEl.style.display = data.logoUrl ? 'block' : 'none';
+                }
                 const coverEl = document.getElementById('user-gym-detail-cover');
                 if (coverEl) {
                     coverEl.src = data.logoUrl || '';
@@ -5266,7 +5435,7 @@ document.getElementById('auth-btn').onclick = async () => {
                 const routesHtml = routes.length
                     ? routes.map((r) => `<div class="profile-log"><b><span class="color-dot" style="background:${escapeHtml(r.color || '#999')}"></span>${escapeHtml(r.grade || '-')}</b><span>${r.completed ? (currentLang === 'it' ? '✅ Completata' : '✅ Completed') : (currentLang === 'it' ? '⭕ Non completata' : '⭕ Not completed')}</span></div>`).join('')
                     : `<p class="profile-empty">${t('common.noData')}</p>`;
-                card.innerHTML = `<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;"><div data-open3d="1" style="min-width:0;cursor:pointer;"><b>${escapeHtml(sectorName)}</b><span>${routes.length} ${currentLang === 'it' ? 'vie' : 'routes'}</span></div><button type="button" class="btn-sec" data-expand="1" style="justify-self:end;white-space:nowrap;">${currentLang === 'it' ? 'Vedi vie' : 'View routes'}</button></div><div class="profile-activity-list" data-routes-list="1" style="margin-top:10px;display:none;width:100%;">${routesHtml}</div>`;
+                card.innerHTML = `<div class="gym-sector-head"><div data-open3d="1" class="gym-sector-name"><b>${escapeHtml(sectorName)}</b><span>${routes.length} ${currentLang === 'it' ? 'vie' : 'routes'}</span></div><button type="button" class="btn-sec gym-sector-cta" data-expand="1">${currentLang === 'it' ? 'Vedi vie' : 'View routes'}</button></div><div class="profile-activity-list" data-routes-list="1" style="margin-top:10px;display:none;width:100%;">${routesHtml}</div>`;
                 const open3dWrap = card.querySelector('[data-open3d]');
                 if (open3dWrap) open3dWrap.onclick = () => open3D(gId, sectorId);
                 const routesList = card.querySelector('[data-routes-list]');
