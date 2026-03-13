@@ -760,6 +760,8 @@
         .username-hint { margin: -2px 0 8px; min-height: 20px; font-size: 0.86rem; color: var(--muted); text-align: left; }
         .username-hint.ok { color: var(--primary); }
         .username-hint.error { color: var(--danger); }
+        .auth-field-label { display:block; text-align:left; font-size:0.84rem; color:var(--muted); margin:2px 0 6px; font-weight:600; }
+        .auth-field-hint { text-align:left; font-size:0.8rem; color:var(--muted); margin:-2px 0 8px; }
          .user-section-title {
             font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 600;
@@ -787,8 +789,9 @@
         .gym-3d-actions { display:flex; align-items:center; justify-content:space-between; gap:10px; position:relative; z-index:1; }
         .gym-3d-cta { flex:1; min-height:48px; border:none; border-radius:12px; background: var(--primary); color: var(--text-on-primary); font-weight:600; letter-spacing:normal; box-shadow:0 4px 10px rgba(0,0,0,0.18); }
         .gym-3d-cta:active { transform: scale(0.99); }
-        .user-gym-card .btn-fav { background: rgba(9,16,31,0.5); border:1px solid var(--border); color: var(--muted); cursor: pointer; padding: 10px; min-width: 44px; min-height: 44px; font-size: 1.25rem; display:flex; align-items:center; justify-content:center; border-radius:12px; }
-        .user-gym-card .btn-fav.fav { color: var(--danger); border-color: var(--danger); }
+        .user-gym-card .btn-fav { background: linear-gradient(165deg, rgba(255,255,255,0.12), rgba(9,16,31,0.58)); border:1px solid color-mix(in srgb, var(--border) 65%, #ffffff 35%); color: color-mix(in srgb, var(--muted) 75%, #ffffff 25%); cursor: pointer; padding: 10px; min-width: 44px; min-height: 44px; font-size: 1.25rem; display:flex; align-items:center; justify-content:center; border-radius:12px; transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, color .2s ease; box-shadow: 0 6px 12px rgba(7,14,30,0.22); }
+        .user-gym-card .btn-fav:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--primary) 45%, var(--border) 55%); color: var(--text); }
+        .user-gym-card .btn-fav.fav { color: #ff4d7a; border-color: rgba(255,77,122,0.7); background: linear-gradient(165deg, rgba(255,77,122,0.22), rgba(9,16,31,0.7)); box-shadow: 0 0 0 2px rgba(255,77,122,0.2), 0 8px 16px rgba(255,77,122,0.2); }
         .user-gym-card .btn-bell.on { color: #fff; border-color: var(--primary); background: var(--primary); box-shadow: 0 0 0 2px rgba(111,77,255,0.24), 0 8px 14px rgba(111,77,255,0.28); transform: translateY(-1px); }
         #user-gym-detail-notif-toggle.on { color:#fff; border-color:var(--primary); background:var(--primary); box-shadow:0 0 0 2px rgba(111,77,255,0.24), 0 8px 14px rgba(111,77,255,0.28); }
         .user-detail-view { margin-top: 0; }
@@ -1270,7 +1273,9 @@
                     <input type="text" id="f-last-name" data-i18n-placeholder="auth.lastName" autocomplete="family-name" autocapitalize="words" spellcheck="false">
                     <input type="text" id="f-name" data-i18n-placeholder="auth.username" autocomplete="off" autocapitalize="none" spellcheck="false">
                     <p id="username-status" class="username-hint" aria-live="polite"></p>
-                    <input type="date" id="f-birthdate" data-i18n-placeholder="auth.birthDate" max="2099-12-31">
+                    <label for="f-birthdate" class="auth-field-label">📅 Data di nascita</label>
+                    <input type="date" id="f-birthdate" data-i18n-placeholder="auth.birthDate" max="2099-12-31" aria-describedby="birthdate-hint">
+                    <p id="birthdate-hint" class="auth-field-hint">Seleziona giorno, mese e anno.</p>
                     <input type="text" id="f-city" data-i18n-placeholder="auth.city" autocomplete="address-level2">
                 </div>
                 <input type="email" id="email" data-i18n-placeholder="auth.email">
@@ -1752,6 +1757,7 @@
         const notificationActorCache = new Map();
         let unreadNotificationsCount = 0;
         const lastGymRankByGymId = new Map();
+        let gymLeaderboardExpanded = false;
         let currentModelLoadToken = 0;
         let currentModelLoadCleanup = null;
         let currentModelLoadTimeout = null;
@@ -4112,7 +4118,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     <div class="profile-section-card">
                         <b>${t('ui.profileBestResults')}</b>
                         ${bestOverallLine}
-                        <div class="profile-best-grid" style="margin-top:10px;">${profileStatsState.loading ? `<p class="profile-empty">Caricamento statistiche...</p>` : (profileStatsState.error ? `<p class="profile-empty">Errore caricamento statistiche.</p>` : (bestByGymCards || `<p class="profile-empty">${t('dash.noMilestones')}</p>`))}</div>
+                        <div class="profile-best-grid" style="margin-top:10px;">${profileStatsState.loading ? `<p class="profile-empty">Caricamento statistiche...</p>` : (bestByGymCards || `<p class="profile-empty">${t('dash.noMilestones')}</p>`)}</div>
                     </div>
 
                     <div class="profile-section-card">
@@ -4193,8 +4199,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 
             const loadingTimeout = setTimeout(() => {
                 if (profileStatsState.loading) {
-                    console.error('[profile] gymStats loading timeout');
-                    profileStatsState = { ...profileStatsState, loading: false, error: 'timeout' };
+                    console.warn('[profile] gymStats loading timeout (soft fallback)');
+                    profileStatsState = { ...profileStatsState, loading: false, error: null };
                     console.info('[profile] final state for UI', profileStatsState);
                     renderProfileDashboard();
                 }
@@ -4212,8 +4218,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 console.info('[profile] final state for UI', profileStatsState);
                 renderProfileDashboard();
             }).catch((err) => {
-                console.error('[profile] gymStats getDocs error', err);
-                profileStatsState = { ...profileStatsState, loading: false, error: err?.message || 'error' };
+                console.warn('[profile] gymStats getDocs error (soft fallback)', err);
+                profileStatsState = { ...profileStatsState, loading: false, error: null };
                 console.info('[profile] final state for UI', profileStatsState);
                 renderProfileDashboard();
             }).finally(() => {
@@ -6810,23 +6816,18 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 
         async function buildMonthlyGymClimbsMap(gymId) {
             const monthKey = getMonthKeyFromDateValue(new Date());
-            const sectorsSnap = await getDocs(collection(db, 'gyms', gymId, 'Sectors'));
             const byUser = new Map();
-            for (const sec of sectorsSnap.docs) {
-                const routesSnap = await getDocs(collection(db, 'gyms', gymId, 'Sectors', sec.id, 'routes'));
-                for (const routeDoc of routesSnap.docs) {
-                    const reviewsSnap = await getDocs(collection(db, 'gyms', gymId, 'Sectors', sec.id, 'routes', routeDoc.id, 'reviews'));
-                    for (const rev of reviewsSnap.docs) {
-                        const row = rev.data() || {};
-                        const uid = row.userId || row.user_id || null;
-                        const outcome = String(row.outcome || 'climbed').toLowerCase();
-                        const dateRaw = row.date || row.timestamp || row.sendDate || null;
-                        const rowMonth = getMonthKeyFromDateValue(dateRaw);
-                        if (!uid || rowMonth !== monthKey) continue;
-                        if (!(outcome === 'climbed' || outcome === 'completed')) continue;
-                        byUser.set(uid, (byUser.get(uid) || 0) + 1);
-                    }
-                }
+            const progressSnap = await getDocs(query(collectionGroup(db, 'routeProgress'), where('gymId', '==', gymId)));
+            for (const rowDoc of progressSnap.docs) {
+                const row = rowDoc.data() || {};
+                const pathParts = String(rowDoc.ref.path || '').split('/');
+                const uidFromPath = pathParts.length >= 2 && pathParts[0] === 'users' ? pathParts[1] : null;
+                const uid = row.userId || row.user_id || row.userAuthUid || uidFromPath || null;
+                const state = String(row.state || row.outcome || '').toLowerCase();
+                const dateRaw = row.completionDate || row.eventDate || row.updatedAt || row.createdAt || null;
+                const rowMonth = getMonthKeyFromDateValue(dateRaw);
+                if (!uid || state !== 'climbed' || rowMonth !== monthKey) continue;
+                byUser.set(uid, (byUser.get(uid) || 0) + 1);
             }
             return byUser;
         }
@@ -6839,7 +6840,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 return;
             }
             const gymId = activeGymDetailId || activeGymId || null;
-            wrap.innerHTML = entries.map((entry, idx) => {
+            const visible = gymLeaderboardExpanded ? entries : entries.slice(0, 10);
+            const rowsHtml = visible.map((entry, idx) => {
                 const rank = idx + 1;
                 if (gymId && activeUser?.uid && entry.uid === activeUser.uid) {
                     const prevRank = lastGymRankByGymId.get(gymId);
@@ -6855,38 +6857,41 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 const climbs = Number(entry.totalClimbsInGym || 0);
                 return `<div class="gym-leaderboard-row ${rank <= 3 ? 'top3' : ''}"><div class="gym-leaderboard-pos">${rank}</div>${avatar}<div class="gym-leaderboard-meta"><b>${escapeHtml(entry.username || 'Climber')}</b></div><div class="gym-leaderboard-routes">${climbs} ${t('gym.routesClimbed')}</div></div>`;
             }).join('');
+            const toggleHtml = entries.length > 10
+                ? `<div style="margin-top:8px;"><button type="button" class="btn-sec" id="gym-leaderboard-toggle">${gymLeaderboardExpanded ? (currentLang === 'it' ? 'Mostra top 10' : 'Show top 10') : (currentLang === 'it' ? `Mostra tutti (${entries.length})` : `Show all (${entries.length})`)}</button></div>`
+                : '';
+            wrap.innerHTML = rowsHtml + toggleHtml;
+            const toggleBtn = document.getElementById('gym-leaderboard-toggle');
+            if (toggleBtn) toggleBtn.onclick = () => {
+                gymLeaderboardExpanded = !gymLeaderboardExpanded;
+                renderGymLeaderboard(entries);
+            };
         }
 
         function subscribeGymLeaderboard(gymId) {
             if (typeof gymLeaderboardUnsubscriber === 'function') gymLeaderboardUnsubscriber();
             gymLeaderboardUnsubscriber = null;
+            gymLeaderboardExpanded = false;
             renderGymLeaderboard([]);
-            gymLeaderboardUnsubscriber = onSnapshot(query(collection(db, 'gyms', gymId, 'members'), limit(100)), async (snap) => {
+            gymLeaderboardUnsubscriber = onSnapshot(collection(db, 'gyms', gymId, 'members'), async (snap) => {
                 try {
                     const monthlyMap = await buildMonthlyGymClimbsMap(gymId);
-                    const members = snap.docs
-                        .map(d => ({ id: d.id, ...(d.data() || {}) }))
-                        .filter((row) => !!(row.uid || row.id));
-                    const monthlyRows = members
-                        .map((row) => ({ ...row, totalClimbsInGym: monthlyMap.get(row.uid || row.id) || 0 }))
+                    const memberByUid = new Map();
+                    snap.docs.forEach((d) => {
+                        const row = d.data() || {};
+                        memberByUid.set(row.uid || d.id, { id: d.id, ...row });
+                    });
+                    const rows = Array.from(monthlyMap.entries())
+                        .map(([uid, climbs]) => {
+                            const base = memberByUid.get(uid) || {};
+                            return { uid, ...base, totalClimbsInGym: climbs };
+                        })
                         .filter((row) => Number(row.totalClimbsInGym || 0) > 0)
                         .sort((a, b) => Number(b.totalClimbsInGym || 0) - Number(a.totalClimbsInGym || 0));
-                    const rows = monthlyRows.length
-                        ? monthlyRows
-                        : members
-                            .filter((row) => Number(row.totalClimbsInGym || 0) > 0)
-                            .sort((a, b) => Number(b.totalClimbsInGym || 0) - Number(a.totalClimbsInGym || 0));
-                    if (!monthlyRows.length && members.length) {
-                        console.info('[leaderboard] monthly rows empty, fallback to stored member totals', { gymId, members: members.length });
-                    }
                     renderGymLeaderboard(rows);
                 } catch (err) {
                     console.error('[leaderboard] monthly computation failed', { gymId, err });
-                    const rows = snap.docs
-                        .map(d => ({ id: d.id, ...(d.data() || {}) }))
-                        .filter((row) => Number(row.totalClimbsInGym || 0) > 0)
-                        .sort((a, b) => Number(b.totalClimbsInGym || 0) - Number(a.totalClimbsInGym || 0));
-                    renderGymLeaderboard(rows);
+                    renderGymLeaderboard([]);
                 }
             }, () => renderGymLeaderboard([]));
         }
