@@ -13,22 +13,22 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
         :root {
-            --bg: #f4f6ff;
-            --bg-soft: radial-gradient(circle at 8% 4%, rgba(255, 106, 180, 0.12), transparent 34%), radial-gradient(circle at 94% 2%, rgba(122, 92, 255, 0.18), transparent 42%), radial-gradient(circle at 50% 100%, rgba(63, 151, 255, 0.14), transparent 45%), linear-gradient(160deg, #f7f2ff 0%, #f4f7ff 48%, #eff5ff 100%);
-            --card: rgba(255, 255, 255, 0.92);
-            --surface-elevated: rgba(255, 255, 255, 0.97);
-            --text: #1b2241;
-            --muted: #6d7694;
-            --text-disabled: #9ca3bc;
-            --border: rgba(120, 134, 175, 0.22);
-            --primary: #6f4dff;
-            --primary-hover: #5b3bdf;
-            --primary-dim: rgba(111, 77, 255, 0.14);
-            --accent: #4b6fff;
-            --danger: #ff5d85;
-            --yellow: #ffb245;
+            --bg: #070b16;
+            --bg-soft: radial-gradient(circle at 16% 12%, rgba(255, 93, 64, 0.15), transparent 34%), radial-gradient(circle at 84% 14%, rgba(255, 176, 52, 0.16), transparent 38%), radial-gradient(circle at 18% 86%, rgba(71, 201, 255, 0.18), transparent 40%), linear-gradient(165deg, #060912 0%, #0a1222 52%, #070b16 100%);
+            --card: rgba(17, 24, 39, 0.88);
+            --surface-elevated: rgba(24, 33, 52, 0.96);
+            --text: #eef5ff;
+            --muted: #9eb0cb;
+            --text-disabled: #6f819b;
+            --border: rgba(108, 141, 184, 0.32);
+            --primary: #ff8a1e;
+            --primary-hover: #e97812;
+            --primary-dim: rgba(255, 138, 30, 0.16);
+            --accent: #1396c8;
+            --danger: #ff4d78;
+            --yellow: #f5b23a;
             --text-on-primary: #ffffff;
-            --gradient-primary: linear-gradient(125deg, #ff63c2 0%, #7b54ff 48%, #4396ff 100%);
+            --gradient-primary: linear-gradient(125deg, #ff476f 0%, #ff8a1e 42%, #1e9dd6 100%);
             --touch: 44px;
             --radius: 16px;
             --radius-sm: 12px;
@@ -76,7 +76,7 @@
             border-radius: var(--radius);
             margin-bottom: 14px;
             border: 1px solid var(--border);
-            box-shadow: 0 10px 24px rgba(63, 80, 124, 0.09);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
             min-height: var(--touch);
             display: flex;
             align-items: center;
@@ -103,7 +103,7 @@
         .btn-sec {
             min-height: var(--touch);
             padding: 12px 18px;
-            background: rgba(255, 255, 255, 0.75);
+            background: var(--surface-elevated);
             border: 1px solid var(--border);
             color: var(--text);
             border-radius: var(--radius-sm);
@@ -119,7 +119,7 @@
             min-height: 52px;
             padding: 14px 18px;
             margin: 10px 0;
-            background: rgba(255,255,255,0.95);
+            background: var(--surface-elevated);
             border: 1px solid var(--border);
             color: var(--text);
             border-radius: var(--radius-sm);
@@ -675,6 +675,8 @@
         .social-feed-card { border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--card); margin-bottom:10px; }
         .social-feed-card.highlight { border-color: var(--primary); background: rgba(43,224,125,0.08); }
         .social-feed-head { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+        .social-feed-user { display:flex; align-items:center; gap:8px; min-width:0; }
+        .social-feed-avatar { width:30px; height:30px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.08); display:grid; place-items:center; font-size:0.7rem; font-weight:700; color:var(--muted); flex-shrink:0; }
         .social-feed-title { font-size:15px; font-weight:600; color:var(--text); }
         .social-feed-meta { margin-top:6px; font-size:13px; color:var(--muted); }
         .social-feed-grade { font-size:22px; font-weight:600; color:var(--primary); }
@@ -848,13 +850,13 @@
         .gym-tab.active { color:var(--primary); border-color:var(--primary); background:var(--surface-elevated); box-shadow:inset 0 0 0 1px rgba(111,77,255,0.22); }
         .gym-leaderboard-list { display:grid; gap:10px; margin-top:10px; }
         .gym-leaderboard-row { display:flex; align-items:center; gap:10px; border:1px solid var(--border); background:var(--surface-elevated); border-radius:12px; padding:10px; }
-        .gym-leaderboard-row.top3 { border-color: color-mix(in srgb, var(--primary) 60%, var(--border) 40%); background: linear-gradient(150deg, rgba(111,77,255,0.16), rgba(255,255,255,0.95)); }
+        .gym-leaderboard-row.top3 { border-color: color-mix(in srgb, var(--primary) 68%, var(--border) 32%); background: linear-gradient(150deg, rgba(255, 138, 30, 0.22), rgba(20, 33, 54, 0.96)); }
         .gym-leaderboard-pos { min-width:32px; font-weight:800; color:var(--muted); text-align:center; }
         .gym-leaderboard-row.top3 .gym-leaderboard-pos { color:var(--primary); }
         .gym-leaderboard-avatar { width:40px; height:40px; border-radius:999px; object-fit:cover; border:1px solid var(--border); background:rgba(255,255,255,0.08); display:grid; place-items:center; font-size:0.78rem; font-weight:700; color:var(--muted); }
         .gym-leaderboard-meta { flex:1; min-width:0; display:flex; flex-direction:column; }
         .gym-leaderboard-meta b { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .gym-leaderboard-routes { font-weight:700; color:var(--text); font-size:0.9rem; white-space:nowrap; }
+        .gym-leaderboard-routes { font-weight:700; color:color-mix(in srgb, var(--text) 94%, #ffffff 6%); font-size:0.9rem; white-space:nowrap; text-shadow:0 1px 0 rgba(0,0,0,0.25); }
         .gym-tab-panel { margin-bottom: 28px; }
         .user-gym-detail-desc { color: var(--muted); font-size: 1rem; line-height: 1.6; margin: 0 0 14px 0; }
         .gym-info-block { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface-elevated); padding: 14px; }
@@ -2187,6 +2189,17 @@
             return fallbackName;
         }
 
+        function resolveUserAvatarUrl(userId, fallbackUrl = null) {
+            if (userId && lastUsersSnap) {
+                const found = lastUsersSnap.docs.find(d => d.id === userId || d.data()?.authUid === userId);
+                if (found) {
+                    const data = found.data() || {};
+                    if (data.avatarUrl) return data.avatarUrl;
+                }
+            }
+            return fallbackUrl || null;
+        }
+
 
         async function getUserProfileByAuthUid(authUid) {
             if (!authUid) return { ref: null, id: null, data: {} };
@@ -2609,12 +2622,15 @@ document.getElementById('auth-btn').onclick = async () => {
             }
         }
 
-        async function isUserEmailVerified(user) {
+async function isUserEmailVerified(user) {
             if (!user) return false;
             await user.reload();
+            if (user.emailVerified) {
+                // Force token refresh so Firestore rules see email_verified=true immediately.
+                await user.getIdToken(true);
+            }
             return !!user.emailVerified;
         }
-
         async function enforceVerifiedEmailOrBlock(user) {
             const verified = await isUserEmailVerified(user);
             if (verified) return true;
@@ -4007,16 +4023,41 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             } catch (_) {}
         }
 
+        function storagePathFromUrl(url) {
+            if (!url || typeof url !== 'string') return null;
+            try {
+                const marker = '/o/';
+                const idx = url.indexOf(marker);
+                if (idx < 0) return null;
+                const encoded = url.slice(idx + marker.length).split('?')[0] || '';
+                const decoded = decodeURIComponent(encoded);
+                return decoded || null;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        async function deleteStorageObjectByPathOrUrl(pathOrUrl) {
+            if (!pathOrUrl) return;
+            const path = String(pathOrUrl || '').includes('/o/') ? storagePathFromUrl(pathOrUrl) : String(pathOrUrl || '');
+            if (!path) return;
+            try { await deleteObject(ref(storage, path)); } catch (_) {}
+        }
+
         async function uploadProfileAvatar(file) {
             if (!activeUser || !file) return;
             const isImage = String(file.type || '').startsWith('image/');
             if (!isImage) throw new Error('Seleziona un file immagine valido.');
+            const profile = await getUserProfileByAuthUid(activeUser.uid);
+            const prevData = profile?.data || {};
+            const prevAvatarPathOrUrl = prevData.avatarPath || prevData.avatarUrl || null;
             const cleanName = String(file.name || 'avatar').replace(/[^a-zA-Z0-9_.-]/g, '_');
             const objectPath = `avatars/${activeUser.uid}/${Date.now()}_${cleanName}`;
             const avatarRef = ref(storage, objectPath);
             await uploadBytes(avatarRef, file, { contentType: file.type || 'image/jpeg' });
             const avatarUrl = await getDownloadURL(avatarRef);
             await mergeUserProfileByAuthUid(activeUser.uid, { avatarUrl, avatarPath: objectPath });
+            if (prevAvatarPathOrUrl && prevAvatarPathOrUrl !== objectPath) await deleteStorageObjectByPathOrUrl(prevAvatarPathOrUrl);
             try { activeUser.photoURL = avatarUrl; } catch (_) {}
             await syncAvatarOnMemberDocs(avatarUrl);
             renderProfileDashboard();
@@ -4030,9 +4071,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             try {
                 const profile = await getUserProfileByAuthUid(activeUser.uid);
                 const data = profile?.data || {};
-                if (data.avatarPath) {
-                    try { await deleteObject(ref(storage, data.avatarPath)); } catch (_) {}
-                }
+                const avatarStored = data.avatarPath || data.avatarUrl || null;
+                if (avatarStored) await deleteStorageObjectByPathOrUrl(avatarStored);
                 await mergeUserProfileByAuthUid(activeUser.uid, { avatarUrl: null, avatarPath: null });
                 try { activeUser.photoURL = null; } catch (_) {}
                 await syncAvatarOnMemberDocs(null);
@@ -4627,8 +4667,14 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const hadStreak = (e.activityList || []).find(item => item.type === 'streak' && Number(item.streakDays || 0) > 1);
             const climbRows = climbs.map(item => { const dot = resolveRouteColorFromStores(item); const tries = Number(item.attempts || 1); const triesLabel = tries >= 3 ? '3+' : String(tries); return `<li><span class="color-dot" style="background:${escapeHtml(dot)}"></span>${escapeHtml(item.grade || '-')} <small>(${t('ui.attempts')}: ${triesLabel})</small></li>`; }).join('');
             const gymLabel = escapeHtml(e.gym_name || e.gym_id || '-');
+            const feedUsername = e.user_name || resolveUsername(e.user_id, 'Climber') || 'Climber';
+            const feedInitials = String(feedUsername || 'U').slice(0, 2).toUpperCase();
+            const feedAvatarUrl = resolveUserAvatarUrl(e.user_id, e.avatarUrl || null);
+            const feedAvatar = feedAvatarUrl
+                ? `<img class="social-feed-avatar" src="${escapeHtml(feedAvatarUrl)}" alt="">`
+                : `<div class="social-feed-avatar">${escapeHtml(feedInitials)}</div>`;
 
-            return `<div class="social-feed-card social-feed-card-compact"><div class="social-feed-head"><div class="social-feed-title">🔥 ${t('ui.dailyActivityTitle')}</div><small>${ts}</small></div><div class="social-feed-meta"><b>${escapeHtml(e.user_name || 'Climber')}${badgePillHtml(resolveUserHighestBadge(e.user_id))}</b> · 📍 ${gymLabel}</div>${climbs.length ? `<ul class="social-feed-activity-list">${climbRows}</ul>` : ''}${hadNewMax ? `<div class="social-feed-meta">🏆 ${t('ui.newPersonalBest')}</div>` : ''}${hadStreak ? `<div class="social-feed-meta">🔁 ${hadStreak.streakDays} ${t('ui.socialConsecutiveDays')}</div>` : ''}${actionButtons}</div>`;
+            return `<div class="social-feed-card social-feed-card-compact"><div class="social-feed-head"><div class="social-feed-title">🔥 ${t('ui.dailyActivityTitle')}</div><small>${ts}</small></div><div class="social-feed-meta"><span class="social-feed-user">${feedAvatar}<b>${escapeHtml(feedUsername)}${badgePillHtml(resolveUserHighestBadge(e.user_id))}</b></span> · 📍 ${gymLabel}</div>${climbs.length ? `<ul class="social-feed-activity-list">${climbRows}</ul>` : ''}${hadNewMax ? `<div class="social-feed-meta">🏆 ${t('ui.newPersonalBest')}</div>` : ''}${hadStreak ? `<div class="social-feed-meta">🔁 ${hadStreak.streakDays} ${t('ui.socialConsecutiveDays')}</div>` : ''}${actionButtons}</div>`;
         }
 
         function bindSocialFeedActions(root) {
@@ -5575,11 +5621,18 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
         async function uploadGymMediaAsset(file, kind) {
             if (!realUserGymId || !file) return null;
             if (!String(file.type || '').startsWith('image/')) throw new Error('Seleziona un file immagine valido.');
+            const gymRef = doc(db, 'gyms', realUserGymId);
+            const baseSnap = await getDoc(gymRef);
+            const baseData = baseSnap.exists() ? (baseSnap.data() || {}) : {};
+            const prevPathOrUrl = kind === 'logo'
+                ? (baseData.logoPath || baseData.logoUrl || null)
+                : (baseData.floorMapPath || baseData.floorMapUrl || null);
             const safeName = String(file.name || `${kind}.jpg`).replace(/[^a-zA-Z0-9_.-]/g, '_');
             const path = `gymMedia/${realUserGymId}/${kind}_${Date.now()}_${safeName}`;
             const mediaRef = ref(storage, path);
             await uploadBytes(mediaRef, file, { contentType: file.type || 'image/jpeg' });
             const url = await getDownloadURL(mediaRef);
+            if (prevPathOrUrl && prevPathOrUrl !== path) await deleteStorageObjectByPathOrUrl(prevPathOrUrl);
             return { url, path };
         }
 
@@ -5591,8 +5644,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const data = snap.data() || {};
             const pathKey = kind === 'logo' ? 'logoPath' : 'floorMapPath';
             const urlKey = kind === 'logo' ? 'logoUrl' : 'floorMapUrl';
-            const oldPath = data[pathKey];
-            if (oldPath) { try { await deleteObject(ref(storage, oldPath)); } catch (_) {} }
+            const oldPath = data[pathKey] || data[urlKey] || null;
+            if (oldPath) await deleteStorageObjectByPathOrUrl(oldPath);
             await setDoc(gymRef, { [pathKey]: null, [urlKey]: null }, { merge: true });
         }
 
@@ -6814,8 +6867,35 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         }
 
+        function buildMonthlyGymClimbsMapFromEventDocs(eventDocs = [], monthKey = getMonthKeyFromDateValue(new Date())) {
+            const byUser = new Map();
+            const uniqueByUser = new Map();
+            for (const rowDoc of eventDocs) {
+                const row = rowDoc?.data ? (rowDoc.data() || {}) : (rowDoc || {});
+                const pathParts = String(rowDoc?.ref?.path || '').split('/');
+                const uidFromPath = pathParts.length >= 2 && pathParts[0] === 'users' ? pathParts[1] : null;
+                const uid = row.userId || row.user_id || row.userAuthUid || uidFromPath || null;
+                const dateRaw = row.eventDate || row.completionDate || row.updatedAt || row.createdAt || null;
+                const rowMonth = getMonthKeyFromDateValue(dateRaw);
+                if (!uid || rowMonth !== monthKey) continue;
+                const sectorId = row.sectorId || null;
+                const routeId = row.routeId || null;
+                const routeKey = [sectorId || 'sector', routeId || (rowDoc?.id || 'route')].join('__');
+                if (!uniqueByUser.has(uid)) uniqueByUser.set(uid, new Set());
+                const routeSet = uniqueByUser.get(uid);
+                if (routeSet.has(routeKey)) continue;
+                routeSet.add(routeKey);
+                byUser.set(uid, (byUser.get(uid) || 0) + 1);
+            }
+            return byUser;
+        }
+
         async function buildMonthlyGymClimbsMap(gymId) {
             const monthKey = getMonthKeyFromDateValue(new Date());
+            const climbsEventsSnap = await getDocs(query(collectionGroup(db, 'climbEvents'), where('gymId', '==', gymId)));
+            if (climbsEventsSnap.size > 0) return buildMonthlyGymClimbsMapFromEventDocs(climbsEventsSnap.docs, monthKey);
+
+            // Fallback legacy (before climbEvents): current-state progress docs.
             const byUser = new Map();
             const progressSnap = await getDocs(query(collectionGroup(db, 'routeProgress'), where('gymId', '==', gymId)));
             for (const rowDoc of progressSnap.docs) {
@@ -6840,19 +6920,23 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 return;
             }
             const gymId = activeGymDetailId || activeGymId || null;
+            if (gymId && activeUser?.uid) {
+                const myFullRankIndex = entries.findIndex((entry) => entry.uid === activeUser.uid);
+                const myFullRank = myFullRankIndex >= 0 ? (myFullRankIndex + 1) : null;
+                const prevRank = lastGymRankByGymId.get(gymId);
+                if (Number.isFinite(prevRank) && prevRank > 10 && myFullRank != null && myFullRank <= 10) {
+                    createNotification({ userId: activeUser.uid, type: 'TOP10_ENTER', gymId });
+                }
+                if (myFullRank != null) lastGymRankByGymId.set(gymId, myFullRank);
+                else lastGymRankByGymId.delete(gymId);
+            }
             const visible = gymLeaderboardExpanded ? entries : entries.slice(0, 10);
             const rowsHtml = visible.map((entry, idx) => {
                 const rank = idx + 1;
-                if (gymId && activeUser?.uid && entry.uid === activeUser.uid) {
-                    const prevRank = lastGymRankByGymId.get(gymId);
-                    if ((prevRank == null || prevRank > 10) && rank <= 10) {
-                        createNotification({ userId: activeUser.uid, type: 'TOP10_ENTER', gymId });
-                    }
-                    lastGymRankByGymId.set(gymId, rank);
-                }
                 const initials = (entry.username || 'U').slice(0, 2).toUpperCase();
-                const avatar = entry.avatarUrl
-                    ? `<img class="gym-leaderboard-avatar" src="${escapeHtml(entry.avatarUrl)}" alt="">`
+                const avatarUrl = resolveUserAvatarUrl(entry.uid, entry.avatarUrl || null);
+                const avatar = avatarUrl
+                    ? `<img class="gym-leaderboard-avatar" src="${escapeHtml(avatarUrl)}" alt="">`
                     : `<div class="gym-leaderboard-avatar">${escapeHtml(initials)}</div>`;
                 const climbs = Number(entry.totalClimbsInGym || 0);
                 return `<div class="gym-leaderboard-row ${rank <= 3 ? 'top3' : ''}"><div class="gym-leaderboard-pos">${rank}</div>${avatar}<div class="gym-leaderboard-meta"><b>${escapeHtml(entry.username || 'Climber')}</b></div><div class="gym-leaderboard-routes">${climbs} ${t('gym.routesClimbed')}</div></div>`;
@@ -6868,24 +6952,42 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             };
         }
 
+        async function getUserMonthlyGymRoutesCount(uid, gymId, monthKey = getMonthKeyFromDateValue(new Date())) {
+            if (!uid || !gymId) return 0;
+            try {
+                const snap = await getDocs(query(collection(db, 'users', uid, 'routeProgress'), where('gymId', '==', gymId), where('state', '==', 'climbed')));
+                let count = 0;
+                snap.forEach((d) => {
+                    const row = d.data() || {};
+                    const rowMonth = getMonthKeyFromDateValue(row.eventDate || row.completionDate || row.updatedAt || row.createdAt || null);
+                    if (rowMonth === monthKey) count += 1;
+                });
+                return count;
+            } catch (err) {
+                console.warn('[leaderboard] monthly user route count failed', { uid, gymId, err });
+                return 0;
+            }
+        }
+
         function subscribeGymLeaderboard(gymId) {
             if (typeof gymLeaderboardUnsubscriber === 'function') gymLeaderboardUnsubscriber();
             gymLeaderboardUnsubscriber = null;
             gymLeaderboardExpanded = false;
             renderGymLeaderboard([]);
+
+            let recalcToken = 0;
             gymLeaderboardUnsubscriber = onSnapshot(collection(db, 'gyms', gymId, 'members'), async (snap) => {
+                const runToken = ++recalcToken;
                 try {
-                    const monthlyMap = await buildMonthlyGymClimbsMap(gymId);
-                    const memberByUid = new Map();
-                    snap.docs.forEach((d) => {
+                    const monthKey = getMonthKeyFromDateValue(new Date());
+                    const memberRows = snap.docs.map((d) => {
                         const row = d.data() || {};
-                        memberByUid.set(row.uid || d.id, { id: d.id, ...row });
-                    });
-                    const rows = Array.from(monthlyMap.entries())
-                        .map(([uid, climbs]) => {
-                            const base = memberByUid.get(uid) || {};
-                            return { uid, ...base, totalClimbsInGym: climbs };
-                        })
+                        return { uid: row.uid || d.id, id: d.id, ...row };
+                    }).filter((row) => !!row.uid);
+                    const counts = await Promise.all(memberRows.map((m) => getUserMonthlyGymRoutesCount(m.uid, gymId, monthKey)));
+                    if (runToken !== recalcToken) return;
+                    const rows = memberRows
+                        .map((row, idx) => ({ ...row, totalClimbsInGym: Number(counts[idx] || 0) }))
                         .filter((row) => Number(row.totalClimbsInGym || 0) > 0)
                         .sort((a, b) => Number(b.totalClimbsInGym || 0) - Number(a.totalClimbsInGym || 0));
                     renderGymLeaderboard(rows);
@@ -7612,6 +7714,13 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (hasRouteIdentity) {
                 const stableRecordId = `${gymId}__${sectorId}__${routeId}`;
                 await setDoc(doc(db, 'users', uid, 'progressHistory', stableRecordId), payload, { merge: true });
+                if (payload.type === 'climb') {
+                    await addDoc(collection(db, 'users', uid, 'climbEvents'), {
+                        ...payload,
+                        createdAt: nowIso,
+                        updatedAt: nowIso
+                    });
+                }
                 return;
             }
             await addDoc(collection(db, 'users', uid, 'progressHistory'), payload);
