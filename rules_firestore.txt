@@ -74,6 +74,16 @@ service cloud.firestore {
 
     }
 
+    match /usernames/{usernameLower} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && !exists(/databases/$(database)/documents/usernames/$(usernameLower))
+        && request.resource.data.keys().hasOnly(["uid", "createdAt"]);
+      allow update: if false;
+      allow delete: if isSuperadmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
     match /follows/{followId} {
       allow read: if verifiedEmail() || isSuperadmin();
       allow create: if isSuperadmin() || (verifiedEmail() && request.resource.data.followerId == request.auth.uid);
