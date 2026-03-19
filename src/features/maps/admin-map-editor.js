@@ -1,5 +1,6 @@
 import { getFloorMapVersion, getSectorMarkerPayload, isMarkerLinkedToVersion } from './map-model.js';
 import { isNormalizedMarker } from './map-validation.js';
+import { getRenderedImageContentRect, toRectLog } from './map-render-geometry.js';
 
 const ADMIN_OVERLAY_SELECTOR = '[data-admin-map-overlay="1"]';
 const ADMIN_CLICK_HANDLER_KEY = '__climbyAdminMapClickHandler';
@@ -11,34 +12,23 @@ function clamp01(value) {
   return Math.min(1, Math.max(0, numeric));
 }
 
-function toRectLog(rect) {
-  if (!rect) return null;
-  return {
-    left: Number(rect.left.toFixed(2)),
-    top: Number(rect.top.toFixed(2)),
-    width: Number(rect.width.toFixed(2)),
-    height: Number(rect.height.toFixed(2)),
-  };
-}
-
 function alignOverlayToImage({ overlayEl, containerEl, imageEl, debugLabel = 'admin', extra = {} } = {}) {
   if (!overlayEl || !containerEl || !imageEl) return null;
-  const containerRect = containerEl.getBoundingClientRect();
-  const imageRect = imageEl.getBoundingClientRect();
-  if (!imageRect.width || !imageRect.height) return null;
-  const left = imageRect.left - containerRect.left;
-  const top = imageRect.top - containerRect.top;
+  const geometry = getRenderedImageContentRect({ containerEl, imageEl });
+  if (!geometry) return null;
+  const { imageRect, renderedRect, overlayLeft: left, overlayTop: top, width, height } = geometry;
   overlayEl.style.left = `${left}px`;
   overlayEl.style.top = `${top}px`;
-  overlayEl.style.width = `${imageRect.width}px`;
-  overlayEl.style.height = `${imageRect.height}px`;
+  overlayEl.style.width = `${width}px`;
+  overlayEl.style.height = `${height}px`;
   const overlayRect = overlayEl.getBoundingClientRect();
   console.info(`[map-marker][${debugLabel}] overlay sync`, {
     imageRect: toRectLog(imageRect),
+    renderedRect: toRectLog(renderedRect),
     overlayRect: toRectLog(overlayRect),
     ...extra,
   });
-  return { imageRect, overlayRect, left, top, width: imageRect.width, height: imageRect.height };
+  return { imageRect, renderedRect, overlayRect, left, top, width, height };
 }
 
 function setupOverlaySync({ overlayEl, containerEl, imageEl, debugLabel = 'admin', getExtra = () => ({}) } = {}) {
@@ -237,9 +227,11 @@ export function renderAdminGymMapEditor({
   bindStageClick(stageEl, async (event) => {
     if (!hasFloorMap) return;
     if (!selectedSectorId) return;
-    const rect = floorMapEl.getBoundingClientRect();
+    const geometry = getRenderedImageContentRect({ containerEl: stageEl, imageEl: floorMapEl });
     const overlayRect = overlay.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+    const rect = geometry?.renderedRect;
+    const imageRect = geometry?.imageRect;
+    if (!rect?.width || !rect?.height) return;
     const rawX = (event.clientX - rect.left) / rect.width;
     const rawY = (event.clientY - rect.top) / rect.height;
     if (rawX < 0 || rawX > 1 || rawY < 0 || rawY > 1) return;
@@ -247,7 +239,8 @@ export function renderAdminGymMapEditor({
     const y = clamp01(rawY);
     console.info('[map-marker][admin] click normalized', {
       sectorId: selectedSectorId,
-      imageRect: toRectLog(rect),
+      imageRect: toRectLog(imageRect),
+      renderedRect: toRectLog(rect),
       overlayRect: toRectLog(overlayRect),
       normalized: { x, y },
       rendered: {
