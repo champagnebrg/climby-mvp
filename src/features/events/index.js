@@ -27,3 +27,14 @@ export {
   cancelEvent,
   endEvent,
 } from './event-repository.js';
+
+export {
+  EVENT_REGISTRATION_STATUS_REGISTERED,
+  EVENT_REGISTRATION_STATUS_CANCELLED,
+  EVENT_REGISTRATION_STATUSES,
+  registerUserToEvent,
+  cancelRegistration,
+  getCurrentUserRegistration,
+  listRegistrationsForEvent,
+  countActiveRegistrationsForEvent,
+} from './event-registration.js';

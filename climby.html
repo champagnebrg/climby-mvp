@@ -1789,7 +1789,7 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
-        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent } from "./src/features/events/index.js";
+        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, countActiveRegistrationsForEvent } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
         import { renderUserEventList } from "./src/features/events/event-user-list.js";
@@ -5380,6 +5380,90 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 gymId: gId,
             });
             let selectedGymEventId = visibleEvents[0]?.id || '';
+            let selectedGymEventRegistration = null;
+            let selectedGymEventParticipantCount = 0;
+            let selectedGymEventRegistrationLoading = false;
+            let selectedGymEventRegistrationSaving = false;
+            const loadSelectedGymEventRegistration = async () => {
+                const selectedEvent = visibleEvents.find((event) => event.id === selectedGymEventId) || null;
+                if (!selectedEvent || !activeUser?.uid) {
+                    selectedGymEventRegistration = null;
+                    selectedGymEventParticipantCount = 0;
+                    return;
+                }
+                selectedGymEventRegistrationLoading = true;
+                renderUserEventsPanel();
+                try {
+                    const [registration, participantCount] = await Promise.all([
+                        getCurrentUserRegistration({
+                            db,
+                            collection,
+                            doc,
+                            getDoc,
+                            getDocs,
+                            setDoc,
+                            gymId: gId,
+                            eventId: selectedEvent.id,
+                            userId: activeUser.uid,
+                        }),
+                        countActiveRegistrationsForEvent({
+                            db,
+                            collection,
+                            doc,
+                            getDoc,
+                            getDocs,
+                            setDoc,
+                            gymId: gId,
+                            eventId: selectedEvent.id,
+                        }),
+                    ]);
+                    selectedGymEventRegistration = registration;
+                    selectedGymEventParticipantCount = participantCount;
+                } catch (err) {
+                    console.error('[events] failed to load registration state', err);
+                    selectedGymEventRegistration = null;
+                    selectedGymEventParticipantCount = 0;
+                } finally {
+                    selectedGymEventRegistrationLoading = false;
+                    renderUserEventsPanel();
+                }
+            };
+            const handleUserEventRegistrationToggle = async (eventRecord, registration) => {
+                if (!activeUser?.uid || !eventRecord?.id || selectedGymEventRegistrationSaving) return;
+                selectedGymEventRegistrationSaving = true;
+                renderUserEventsPanel();
+                try {
+                    const baseOptions = {
+                        db,
+                        collection,
+                        doc,
+                        getDoc,
+                        getDocs,
+                        setDoc,
+                        gymId: gId,
+                        eventId: eventRecord.id,
+                        userId: activeUser.uid,
+                    };
+                    if (registration?.status === 'registered') {
+                        await cancelRegistration(baseOptions);
+                    } else {
+                        await registerUserToEvent({
+                            ...baseOptions,
+                            data: {
+                                displayName: currentUserName || activeUser.displayName || 'Climber',
+                                avatarUrl: activeUser.photoURL || null,
+                            },
+                        });
+                    }
+                    await loadSelectedGymEventRegistration();
+                } catch (err) {
+                    console.error('[events] failed to update registration', err);
+                    alert(err?.message || 'Unable to update registration.');
+                } finally {
+                    selectedGymEventRegistrationSaving = false;
+                    renderUserEventsPanel();
+                }
+            };
             const renderUserEventsPanel = () => {
                 renderUserEventList({
                     container: document.getElementById('user-gym-events-list'),
@@ -5387,6 +5471,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     selectedEventId: selectedGymEventId,
                     onSelect: (eventId) => {
                         selectedGymEventId = eventId;
+                        loadSelectedGymEventRegistration();
                         renderUserEventsPanel();
                     },
                     t,
@@ -5395,12 +5480,18 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 renderUserEventDetail({
                     container: document.getElementById('user-gym-event-detail'),
                     event: visibleEvents.find((event) => event.id === selectedGymEventId) || null,
+                    registration: selectedGymEventRegistration,
+                    participantCount: selectedGymEventParticipantCount,
+                    registrationLoading: selectedGymEventRegistrationLoading,
+                    registrationSaving: selectedGymEventRegistrationSaving,
+                    onToggleRegistration: handleUserEventRegistrationToggle,
                     t,
                     formatDateTime: (value) => formatProfileDate(value, toSafeDate, currentLang),
                 });
             };
             renderGymDetailInfo(firstGymData);
             renderUserEventsPanel();
+            loadSelectedGymEventRegistration();
             gymDetailUnsubscriber = onSnapshot(doc(db, "gyms", gId), (snap) => renderGymDetailInfo(snap.data() || {}));
 
             const activeModelVersionId = firstGymData.activeModelVersionId || firstGymData.modelVersion || null;

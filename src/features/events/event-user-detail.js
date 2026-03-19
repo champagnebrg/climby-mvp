@@ -1,6 +1,11 @@
 export function renderUserEventDetail({
   container,
   event = null,
+  registration = null,
+  participantCount = 0,
+  registrationLoading = false,
+  registrationSaving = false,
+  onToggleRegistration = null,
   t = (key) => key,
   formatDateTime = (value) => value || '-',
 } = {}) {
@@ -11,17 +16,36 @@ export function renderUserEventDetail({
     return;
   }
 
+  const isRegistered = registration?.status === 'registered';
+  const canToggleRegistration = Boolean(event.registrationEnabled) && event.status === 'published' && !registrationLoading && !registrationSaving;
+  const statusLabel = isRegistered
+    ? t('gym.eventsRegistrationRegistered')
+    : (registration?.status === 'cancelled' ? t('gym.eventsRegistrationCancelled') : t('gym.eventsRegistrationNotRegistered'));
+  const buttonLabel = isRegistered ? t('gym.eventsCancelRegistration') : t('gym.eventsRegister');
+
   container.innerHTML = `
     <div class="gym-info-block">
       <h4 class="gym-info-heading">${escapeHtml(event.title || t('gym.eventsUntitled'))}</h4>
       <div class="gym-about-content">
         <div class="gym-about-row"><span class="gym-about-label">🗓 ${escapeHtml(t('gym.eventsWhen'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(event.startsAt))} → ${escapeHtml(formatDateTime(event.endsAt))}</span></div>
         <div class="gym-about-row"><span class="gym-about-label">🏷 ${escapeHtml(t('gym.eventsStatusLabel'))}</span><span class="gym-about-value">${escapeHtml(t(`gym.eventsStatus${capitalize(event.status || 'published')}`))}</span></div>
+        <div class="gym-about-row"><span class="gym-about-label">👥 ${escapeHtml(t('gym.eventsParticipantsLabel'))}</span><span class="gym-about-value">${escapeHtml(String(participantCount || 0))}</span></div>
+        <div class="gym-about-row"><span class="gym-about-label">✍️ ${escapeHtml(t('gym.eventsRegistrationLabel'))}</span><span class="gym-about-value">${escapeHtml(statusLabel)}</span></div>
       </div>
       ${event.summary ? `<p class="profile-subtitle" style="margin-top:12px;">${escapeHtml(event.summary)}</p>` : ''}
       <div style="margin-top:10px; white-space:pre-wrap; line-height:1.5;">${escapeHtml(event.description || '')}</div>
+      ${event.registrationEnabled ? `
+        <div style="margin-top:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <button type="button" class="${isRegistered ? 'btn-sec' : 'btn-main'}" data-event-registration-toggle ${canToggleRegistration ? '' : 'disabled'}>${escapeHtml(registrationSaving ? t('gym.eventsRegistrationUpdating') : buttonLabel)}</button>
+        </div>
+      ` : `<div class="profile-subtitle" style="margin-top:16px;">${escapeHtml(t('gym.eventsRegistrationUnavailable'))}</div>`}
     </div>
   `;
+
+  container.querySelector('[data-event-registration-toggle]')?.addEventListener('click', () => {
+    if (!canToggleRegistration) return;
+    onToggleRegistration?.(event, registration);
+  });
 }
 
 function escapeHtml(value) {
