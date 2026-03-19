@@ -143,6 +143,21 @@ service cloud.firestore {
           && isVisibleGymEventStatus(resource.data.status)
         );
         allow create, update, delete: if canManageGym(gymId);
+
+        match /registrations/{uid} {
+          allow read: if canManageGym(gymId) || (verifiedEmail() && request.auth.uid == uid);
+          allow create: if verifiedEmail()
+            && request.auth.uid == uid
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.status in ['registered', 'cancelled'];
+          allow update: if (verifiedEmail()
+            && request.auth.uid == uid
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.status in ['registered', 'cancelled'])
+            || (canManageGym(gymId)
+              && request.resource.data.status in ['registered', 'cancelled']);
+          allow delete: if false;
+        }
       }
 
     }

@@ -184,7 +184,16 @@ const gymEventFallbacks = {
     eventsStatusLabel: { it: 'Stato', en: 'Status' },
     eventsStatusPublished: { it: 'Pubblicato', en: 'Published' },
     eventsStatusEnded: { it: 'Concluso', en: 'Ended' },
-    eventsStatusLive: { it: 'Live', en: 'Live' }
+    eventsStatusLive: { it: 'Live', en: 'Live' },
+    eventsParticipantsLabel: { it: 'Partecipanti', en: 'Participants' },
+    eventsRegistrationLabel: { it: 'Registrazione', en: 'Registration' },
+    eventsRegistrationNotRegistered: { it: 'Non registrato', en: 'Not registered' },
+    eventsRegistrationRegistered: { it: 'Registrato', en: 'Registered' },
+    eventsRegistrationCancelled: { it: 'Registrazione annullata', en: 'Cancelled' },
+    eventsRegister: { it: 'Registrati', en: 'Register' },
+    eventsCancelRegistration: { it: 'Annulla registrazione', en: 'Cancel registration' },
+    eventsRegistrationUnavailable: { it: 'Registrazioni non disponibili per questo evento.', en: 'Registrations are not available for this event.' },
+    eventsRegistrationUpdating: { it: 'Aggiornamento...', en: 'Updating...' }
 };
 
 export const emailVerificationFallbacks = {
