@@ -1,38 +1,28 @@
 import { getFloorMapVersion, getSectorMarkerPayload } from './map-model.js';
 import { isNormalizedMarker } from './map-validation.js';
 import { openSector3D } from './map-routing.js';
+import { getRenderedImageContentRect, toRectLog } from './map-render-geometry.js';
 
 const OVERLAY_SELECTOR = '[data-floor-map-overlay="1"]';
 const OVERLAY_CLEANUP_KEY = '__climbyUserMapOverlayCleanup';
 
-function toRectLog(rect) {
-  if (!rect) return null;
-  return {
-    left: Number(rect.left.toFixed(2)),
-    top: Number(rect.top.toFixed(2)),
-    width: Number(rect.width.toFixed(2)),
-    height: Number(rect.height.toFixed(2)),
-  };
-}
-
 function alignOverlayToImage({ overlayEl, containerEl, imageEl, debugLabel = 'user', extra = {} } = {}) {
   if (!overlayEl || !containerEl || !imageEl) return null;
-  const containerRect = containerEl.getBoundingClientRect();
-  const imageRect = imageEl.getBoundingClientRect();
-  if (!imageRect.width || !imageRect.height) return null;
-  const left = imageRect.left - containerRect.left;
-  const top = imageRect.top - containerRect.top;
+  const geometry = getRenderedImageContentRect({ containerEl, imageEl });
+  if (!geometry) return null;
+  const { imageRect, renderedRect, overlayLeft: left, overlayTop: top, width, height } = geometry;
   overlayEl.style.left = `${left}px`;
   overlayEl.style.top = `${top}px`;
-  overlayEl.style.width = `${imageRect.width}px`;
-  overlayEl.style.height = `${imageRect.height}px`;
+  overlayEl.style.width = `${width}px`;
+  overlayEl.style.height = `${height}px`;
   const overlayRect = overlayEl.getBoundingClientRect();
   console.info(`[map-marker][${debugLabel}] overlay sync`, {
     imageRect: toRectLog(imageRect),
+    renderedRect: toRectLog(renderedRect),
     overlayRect: toRectLog(overlayRect),
     ...extra,
   });
-  return { imageRect, overlayRect, left, top, width: imageRect.width, height: imageRect.height };
+  return { imageRect, renderedRect, overlayRect, left, top, width, height };
 }
 
 function setupOverlaySync({ overlayEl, containerEl, imageEl, debugLabel = 'user', getExtra = () => ({}) } = {}) {
