@@ -177,7 +177,12 @@ const adminEventFallbacks = {
     eventsRegistrationsLoading: { it: 'Caricamento registrazioni...', en: 'Loading registrations...' },
     eventsRegistrationsEmpty: { it: 'Nessuna registrazione per questo evento.', en: 'No registrations for this event.' },
     eventsRegistrationsStatus: { it: 'Stato', en: 'Status' },
-    eventsRegistrationsRegisteredAt: { it: 'Registrato il', en: 'Registered at' }
+    eventsRegistrationsRegisteredAt: { it: 'Registrato il', en: 'Registered at' },
+    eventsRegistrationCheckIn: { it: 'Check-in', en: 'Check in' },
+    eventsRegistrationUndoCheckIn: { it: 'Annulla check-in', en: 'Undo check-in' },
+    eventsCancelRegistration: { it: 'Annulla registrazione', en: 'Cancel registration' },
+    eventsFilterStatus: { it: 'Filtro stato', en: 'Status filter' },
+    eventsFilterAll: { it: 'Tutti', en: 'All' }
 };
 
 const gymEventFallbacks = {
@@ -196,11 +201,15 @@ const gymEventFallbacks = {
     eventsRegistrationLabel: { it: 'Registrazione', en: 'Registration' },
     eventsRegistrationNotRegistered: { it: 'Non registrato', en: 'Not registered' },
     eventsRegistrationRegistered: { it: 'Registrato', en: 'Registered' },
+    eventsRegistrationChecked_in: { it: 'Check-in effettuato', en: 'Checked in' },
     eventsRegistrationCancelled: { it: 'Registrazione annullata', en: 'Cancelled' },
     eventsRegister: { it: 'Registrati', en: 'Register' },
     eventsCancelRegistration: { it: 'Annulla registrazione', en: 'Cancel registration' },
     eventsRegistrationUnavailable: { it: 'Registrazioni non disponibili per questo evento.', en: 'Registrations are not available for this event.' },
-    eventsRegistrationUpdating: { it: 'Aggiornamento...', en: 'Updating...' }
+    eventsRegistrationUpdating: { it: 'Aggiornamento...', en: 'Updating...' },
+    eventsGroupLive: { it: 'Live / attivi', en: 'Live / active' },
+    eventsGroupUpcoming: { it: 'Prossimi', en: 'Upcoming / future' },
+    eventsGroupPast: { it: 'Passati', en: 'Past' }
 };
 
 export const emailVerificationFallbacks = {

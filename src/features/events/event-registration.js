@@ -2,10 +2,12 @@ import { toSafeDate } from '../../utils/format.js';
 import { normalizeNullableText, normalizeText } from '../../utils/normalize.js';
 
 export const EVENT_REGISTRATION_STATUS_REGISTERED = 'registered';
+export const EVENT_REGISTRATION_STATUS_CHECKED_IN = 'checked_in';
 export const EVENT_REGISTRATION_STATUS_CANCELLED = 'cancelled';
 
 export const EVENT_REGISTRATION_STATUSES = Object.freeze([
   EVENT_REGISTRATION_STATUS_REGISTERED,
+  EVENT_REGISTRATION_STATUS_CHECKED_IN,
   EVENT_REGISTRATION_STATUS_CANCELLED,
 ]);
 
@@ -157,6 +159,50 @@ export async function cancelRegistration(options = {}) {
   return payload;
 }
 
+
+
+export async function updateRegistrationStatus(options = {}) {
+  const { gymId, eventId, userId, status } = options;
+  if (!gymId || !eventId || !userId) {
+    throw new Error('updateRegistrationStatus requires gymId, eventId, and userId');
+  }
+
+  const nextStatus = normalizeRegistrationStatus(status);
+  if (!nextStatus) throw new Error('Invalid registration status');
+
+  ensureSetDoc(options);
+  const existing = await getCurrentUserRegistration(options);
+  if (!existing) throw new Error('Registration not found');
+
+  const allowedTransitions = {
+    [EVENT_REGISTRATION_STATUS_REGISTERED]: [EVENT_REGISTRATION_STATUS_CHECKED_IN, EVENT_REGISTRATION_STATUS_CANCELLED],
+    [EVENT_REGISTRATION_STATUS_CHECKED_IN]: [EVENT_REGISTRATION_STATUS_REGISTERED],
+  };
+
+  if (existing.status === nextStatus) return existing;
+  if (!(allowedTransitions[existing.status] || []).includes(nextStatus)) {
+    throw new Error(`Invalid registration status transition: ${existing.status} -> ${nextStatus}`);
+  }
+
+  const payload = buildRegistrationPayload({
+    ...existing,
+    ...options.data,
+    gymId,
+    eventId,
+    userId,
+    status: nextStatus,
+  }, {
+    existing,
+    gymId,
+    eventId,
+    userId,
+    now: options.now,
+  });
+
+  await options.setDoc(getRegistrationDocRef(options, gymId, eventId, userId), payload, { merge: true });
+  return payload;
+}
+
 export async function listRegistrationsForEvent(options = {}) {
   const { gymId, eventId } = options;
   if (!gymId || !eventId) return [];
@@ -174,5 +220,5 @@ export async function listRegistrationsForEvent(options = {}) {
 
 export async function countActiveRegistrationsForEvent(options = {}) {
   const registrations = await listRegistrationsForEvent(options);
-  return registrations.filter((registration) => registration.status === EVENT_REGISTRATION_STATUS_REGISTERED).length;
+  return registrations.filter((registration) => [EVENT_REGISTRATION_STATUS_REGISTERED, EVENT_REGISTRATION_STATUS_CHECKED_IN].includes(registration.status)).length;
 }

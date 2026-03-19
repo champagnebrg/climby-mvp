@@ -155,7 +155,7 @@ service cloud.firestore {
             && request.resource.data.userId == request.auth.uid
             && request.resource.data.status in ['registered', 'cancelled'])
             || (canManageGym(gymId)
-              && request.resource.data.status in ['registered', 'cancelled']);
+              && request.resource.data.status in ['registered', 'checked_in', 'cancelled']);
           allow delete: if false;
         }
       }
