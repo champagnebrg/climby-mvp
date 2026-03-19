@@ -3,6 +3,7 @@ import { isNormalizedMarker } from './map-validation.js';
 
 const ADMIN_OVERLAY_SELECTOR = '[data-admin-map-overlay="1"]';
 const ADMIN_CLICK_HANDLER_KEY = '__climbyAdminMapClickHandler';
+const ADMIN_OVERLAY_CLEANUP_KEY = '__climbyAdminMapOverlayCleanup';
 
 function clamp01(value) {
   const numeric = Number(value);
@@ -10,19 +11,66 @@ function clamp01(value) {
   return Math.min(1, Math.max(0, numeric));
 }
 
-function alignOverlayToImage({ overlayEl, containerEl, imageEl } = {}) {
-  if (!overlayEl || !containerEl || !imageEl) return;
+function toRectLog(rect) {
+  if (!rect) return null;
+  return {
+    left: Number(rect.left.toFixed(2)),
+    top: Number(rect.top.toFixed(2)),
+    width: Number(rect.width.toFixed(2)),
+    height: Number(rect.height.toFixed(2)),
+  };
+}
+
+function alignOverlayToImage({ overlayEl, containerEl, imageEl, debugLabel = 'admin', extra = {} } = {}) {
+  if (!overlayEl || !containerEl || !imageEl) return null;
   const containerRect = containerEl.getBoundingClientRect();
   const imageRect = imageEl.getBoundingClientRect();
-  if (!imageRect.width || !imageRect.height) return;
-  overlayEl.style.left = `${imageRect.left - containerRect.left}px`;
-  overlayEl.style.top = `${imageRect.top - containerRect.top}px`;
+  if (!imageRect.width || !imageRect.height) return null;
+  const left = imageRect.left - containerRect.left;
+  const top = imageRect.top - containerRect.top;
+  overlayEl.style.left = `${left}px`;
+  overlayEl.style.top = `${top}px`;
   overlayEl.style.width = `${imageRect.width}px`;
   overlayEl.style.height = `${imageRect.height}px`;
+  const overlayRect = overlayEl.getBoundingClientRect();
+  console.info(`[map-marker][${debugLabel}] overlay sync`, {
+    imageRect: toRectLog(imageRect),
+    overlayRect: toRectLog(overlayRect),
+    ...extra,
+  });
+  return { imageRect, overlayRect, left, top, width: imageRect.width, height: imageRect.height };
+}
+
+function setupOverlaySync({ overlayEl, containerEl, imageEl, debugLabel = 'admin', getExtra = () => ({}) } = {}) {
+  if (!overlayEl || !containerEl || !imageEl) return;
+  if (typeof containerEl[ADMIN_OVERLAY_CLEANUP_KEY] === 'function') {
+    containerEl[ADMIN_OVERLAY_CLEANUP_KEY]();
+  }
+  const sync = () => alignOverlayToImage({ overlayEl, containerEl, imageEl, debugLabel, extra: getExtra() });
+  const rafId = window.requestAnimationFrame(sync);
+  const handleLoad = () => sync();
+  imageEl.addEventListener('load', handleLoad);
+  window.addEventListener('resize', sync);
+  const resizeObserver = typeof ResizeObserver === 'function'
+    ? new ResizeObserver(() => sync())
+    : null;
+  resizeObserver?.observe(containerEl);
+  resizeObserver?.observe(imageEl);
+  sync();
+  containerEl[ADMIN_OVERLAY_CLEANUP_KEY] = () => {
+    window.cancelAnimationFrame(rafId);
+    imageEl.removeEventListener('load', handleLoad);
+    window.removeEventListener('resize', sync);
+    resizeObserver?.disconnect();
+    if (containerEl[ADMIN_OVERLAY_CLEANUP_KEY]) containerEl[ADMIN_OVERLAY_CLEANUP_KEY] = null;
+  };
 }
 
 function clearAdminOverlay(stageEl) {
   if (!stageEl) return;
+  if (typeof stageEl[ADMIN_OVERLAY_CLEANUP_KEY] === 'function') {
+    stageEl[ADMIN_OVERLAY_CLEANUP_KEY]();
+  }
   stageEl.querySelectorAll(ADMIN_OVERLAY_SELECTOR).forEach((node) => node.remove());
 }
 
@@ -71,14 +119,27 @@ export function renderAdminGymMapEditor({
   const overlay = document.createElement('div');
   overlay.className = 'gym-floor-map-overlay admin-floor-map-overlay';
   overlay.dataset.adminMapOverlay = '1';
-  alignOverlayToImage({ overlayEl: overlay, containerEl: stageEl, imageEl: floorMapEl });
-  floorMapEl.addEventListener('load', () => alignOverlayToImage({ overlayEl: overlay, containerEl: stageEl, imageEl: floorMapEl }), { once: true });
+  setupOverlaySync({
+    overlayEl: overlay,
+    containerEl: stageEl,
+    imageEl: floorMapEl,
+    debugLabel: 'admin',
+    getExtra: () => ({ gymId, selectedSectorId, floorMapVersion })
+  });
 
   sectors.forEach((sector) => {
     const sectorId = sector?.sectorId || null;
     const sectorName = sector?.sectorName || sector?.name || sectorId || '';
     const { marker } = getSectorMarkerPayload(sector);
     const linked = hasFloorMap && isNormalizedMarker(marker) && isMarkerLinkedToVersion(sector, floorMapVersion);
+
+    console.info('[map-marker][admin] marker data from DB', {
+      sectorId,
+      marker,
+      mapMarkerVersion: sector?.mapMarkerVersion,
+      floorMapVersion,
+      linked,
+    });
 
     if (linked) {
       const markerEl = document.createElement('button');
@@ -88,6 +149,14 @@ export function renderAdminGymMapEditor({
       markerEl.style.top = `${Number(marker.y) * 100}%`;
       markerEl.title = sectorName;
       markerEl.setAttribute('aria-label', sectorName);
+      console.info('[map-marker][admin] render marker', {
+        sectorId,
+        normalized: { x: Number(marker.x), y: Number(marker.y) },
+        rendered: {
+          leftPercent: `${Number(marker.x) * 100}%`,
+          topPercent: `${Number(marker.y) * 100}%`,
+        }
+      });
       markerEl.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -98,6 +167,23 @@ export function renderAdminGymMapEditor({
   });
 
   stageEl.appendChild(overlay);
+  window.requestAnimationFrame(() => {
+    const overlayRect = overlay.getBoundingClientRect();
+    overlay.querySelectorAll('.gym-floor-map-marker').forEach((markerEl) => {
+      const left = Number.parseFloat(markerEl.style.left || '0');
+      const top = Number.parseFloat(markerEl.style.top || '0');
+      console.info('[map-marker][admin] rendered marker final position', {
+        sectorId: markerEl.getAttribute('aria-label'),
+        rendered: {
+          leftPercent: markerEl.style.left,
+          topPercent: markerEl.style.top,
+          leftPx: Number(((left / 100) * overlayRect.width).toFixed(2)),
+          topPx: Number(((top / 100) * overlayRect.height).toFixed(2)),
+        },
+        overlayRect: toRectLog(overlayRect),
+      });
+    });
+  });
 
   sectorListEl.innerHTML = '';
   sectors.forEach((sector) => {
@@ -152,6 +238,7 @@ export function renderAdminGymMapEditor({
     if (!hasFloorMap) return;
     if (!selectedSectorId) return;
     const rect = floorMapEl.getBoundingClientRect();
+    const overlayRect = overlay.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const rawX = (event.clientX - rect.left) / rect.width;
     const rawY = (event.clientY - rect.top) / rect.height;
@@ -160,8 +247,13 @@ export function renderAdminGymMapEditor({
     const y = clamp01(rawY);
     console.info('[map-marker][admin] click normalized', {
       sectorId: selectedSectorId,
-      x,
-      y,
+      imageRect: toRectLog(rect),
+      overlayRect: toRectLog(overlayRect),
+      normalized: { x, y },
+      rendered: {
+        leftPx: Number((x * rect.width).toFixed(2)),
+        topPx: Number((y * rect.height).toFixed(2)),
+      },
       floorMapVersion
     });
     if (typeof onSaveMarker === 'function') {

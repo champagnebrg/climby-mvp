@@ -3,20 +3,68 @@ import { isNormalizedMarker } from './map-validation.js';
 import { openSector3D } from './map-routing.js';
 
 const OVERLAY_SELECTOR = '[data-floor-map-overlay="1"]';
+const OVERLAY_CLEANUP_KEY = '__climbyUserMapOverlayCleanup';
 
-function alignOverlayToImage({ overlayEl, containerEl, imageEl } = {}) {
-  if (!overlayEl || !containerEl || !imageEl) return;
+function toRectLog(rect) {
+  if (!rect) return null;
+  return {
+    left: Number(rect.left.toFixed(2)),
+    top: Number(rect.top.toFixed(2)),
+    width: Number(rect.width.toFixed(2)),
+    height: Number(rect.height.toFixed(2)),
+  };
+}
+
+function alignOverlayToImage({ overlayEl, containerEl, imageEl, debugLabel = 'user', extra = {} } = {}) {
+  if (!overlayEl || !containerEl || !imageEl) return null;
   const containerRect = containerEl.getBoundingClientRect();
   const imageRect = imageEl.getBoundingClientRect();
-  if (!imageRect.width || !imageRect.height) return;
-  overlayEl.style.left = `${imageRect.left - containerRect.left}px`;
-  overlayEl.style.top = `${imageRect.top - containerRect.top}px`;
+  if (!imageRect.width || !imageRect.height) return null;
+  const left = imageRect.left - containerRect.left;
+  const top = imageRect.top - containerRect.top;
+  overlayEl.style.left = `${left}px`;
+  overlayEl.style.top = `${top}px`;
   overlayEl.style.width = `${imageRect.width}px`;
   overlayEl.style.height = `${imageRect.height}px`;
+  const overlayRect = overlayEl.getBoundingClientRect();
+  console.info(`[map-marker][${debugLabel}] overlay sync`, {
+    imageRect: toRectLog(imageRect),
+    overlayRect: toRectLog(overlayRect),
+    ...extra,
+  });
+  return { imageRect, overlayRect, left, top, width: imageRect.width, height: imageRect.height };
+}
+
+function setupOverlaySync({ overlayEl, containerEl, imageEl, debugLabel = 'user', getExtra = () => ({}) } = {}) {
+  if (!overlayEl || !containerEl || !imageEl) return;
+  if (typeof containerEl[OVERLAY_CLEANUP_KEY] === 'function') {
+    containerEl[OVERLAY_CLEANUP_KEY]();
+  }
+  const sync = () => alignOverlayToImage({ overlayEl, containerEl, imageEl, debugLabel, extra: getExtra() });
+  const rafId = window.requestAnimationFrame(sync);
+  const handleLoad = () => sync();
+  imageEl.addEventListener('load', handleLoad);
+  window.addEventListener('resize', sync);
+  const resizeObserver = typeof ResizeObserver === 'function'
+    ? new ResizeObserver(() => sync())
+    : null;
+  resizeObserver?.observe(containerEl);
+  resizeObserver?.observe(imageEl);
+  sync();
+  containerEl[OVERLAY_CLEANUP_KEY] = () => {
+    window.cancelAnimationFrame(rafId);
+    imageEl.removeEventListener('load', handleLoad);
+    window.removeEventListener('resize', sync);
+    resizeObserver?.disconnect();
+    if (containerEl[OVERLAY_CLEANUP_KEY]) containerEl[OVERLAY_CLEANUP_KEY] = null;
+  };
 }
 
 function clearOverlay(floorMapLinkEl) {
   if (!floorMapLinkEl) return;
+  if (typeof floorMapLinkEl[OVERLAY_CLEANUP_KEY] === 'function') {
+    floorMapLinkEl[OVERLAY_CLEANUP_KEY]();
+  }
   floorMapLinkEl.querySelectorAll(OVERLAY_SELECTOR).forEach((node) => node.remove());
 }
 
@@ -40,6 +88,12 @@ export function renderUserGymFloorMapMarkers({
   const validMarkers = sectors
     .map((sector) => {
       const { marker, markerVersion } = getSectorMarkerPayload(sector);
+      console.info('[map-marker][user] marker data from DB', {
+        sectorId: sector?.sectorId,
+        marker,
+        markerVersion,
+        floorMapVersion,
+      });
       if (!isNormalizedMarker(marker)) return null;
       if (!Number.isFinite(markerVersion) || markerVersion !== floorMapVersion) return null;
       return {
@@ -56,8 +110,13 @@ export function renderUserGymFloorMapMarkers({
   const overlay = document.createElement('div');
   overlay.className = 'gym-floor-map-overlay';
   overlay.dataset.floorMapOverlay = '1';
-  alignOverlayToImage({ overlayEl: overlay, containerEl: floorMapLinkEl, imageEl: floorMapEl });
-  floorMapEl.addEventListener('load', () => alignOverlayToImage({ overlayEl: overlay, containerEl: floorMapLinkEl, imageEl: floorMapEl }), { once: true });
+  setupOverlaySync({
+    overlayEl: overlay,
+    containerEl: floorMapLinkEl,
+    imageEl: floorMapEl,
+    debugLabel: 'user',
+    getExtra: () => ({ gymId, floorMapVersion, markerCount: validMarkers.length })
+  });
 
   validMarkers.forEach((marker) => {
     const button = document.createElement('button');
@@ -67,8 +126,11 @@ export function renderUserGymFloorMapMarkers({
     button.style.top = `${marker.y * 100}%`;
     console.info('[map-marker][user] render marker', {
       sectorId: marker.sectorId,
-      x: marker.x,
-      y: marker.y
+      normalized: { x: marker.x, y: marker.y },
+      rendered: {
+        leftPercent: `${marker.x * 100}%`,
+        topPercent: `${marker.y * 100}%`,
+      }
     });
     const markerLabel = typeof markerLabelBuilder === 'function'
       ? markerLabelBuilder(marker)
@@ -76,6 +138,7 @@ export function renderUserGymFloorMapMarkers({
     const safeLabel = String(markerLabel || marker.sectorId || '').trim() || marker.sectorId;
     button.title = safeLabel;
     button.setAttribute('aria-label', safeLabel);
+    button.dataset.sectorId = marker.sectorId;
     button.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -85,4 +148,21 @@ export function renderUserGymFloorMapMarkers({
   });
 
   floorMapLinkEl.appendChild(overlay);
+  window.requestAnimationFrame(() => {
+    const overlayRect = overlay.getBoundingClientRect();
+    overlay.querySelectorAll('.gym-floor-map-marker').forEach((markerEl) => {
+      const left = Number.parseFloat(markerEl.style.left || '0');
+      const top = Number.parseFloat(markerEl.style.top || '0');
+      console.info('[map-marker][user] rendered marker final position', {
+        sectorId: markerEl.dataset.sectorId,
+        rendered: {
+          leftPercent: markerEl.style.left,
+          topPercent: markerEl.style.top,
+          leftPx: Number(((left / 100) * overlayRect.width).toFixed(2)),
+          topPx: Number(((top / 100) * overlayRect.height).toFixed(2)),
+        },
+        overlayRect: toRectLog(overlayRect),
+      });
+    });
+  });
 }
