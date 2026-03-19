@@ -1,0 +1,23 @@
+[
+  {
+    "origin": [
+      "http://127.0.0.1:5500",
+      "http://localhost:5500",
+      "https://climby-dev-1.web.app",
+      "https://climby-dev-1.firebaseapp.com"
+    ],
+    "method": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "responseHeader": [
+      "Content-Type",
+      "Content-Length",
+      "Accept-Ranges",
+      "Content-Range",
+      "x-goog-resumable"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]
