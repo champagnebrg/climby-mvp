@@ -160,7 +160,7 @@ const adminEventFallbacks = {
     eventsSave: { it: 'Salva evento', en: 'Save event' },
     eventsEnd: { it: 'Segna come concluso', en: 'Mark as ended' },
     eventsCancel: { it: 'Annulla evento', en: 'Cancel event' },
-    eventsEmpty: { it: 'Nessun evento presente. Crea il primo evento della palestra.', en: 'No events yet. Create the gym's first event.' },
+    eventsEmpty: { it: 'Nessun evento presente. Crea il primo evento della palestra.', en: "No events yet. Create the gym's first event." },
     eventsUntitled: { it: 'Evento senza titolo', en: 'Untitled event' },
     eventsSaved: { it: 'Evento salvato.', en: 'Event saved.' },
     eventsPublished: { it: 'Evento pubblicato.', en: 'Event published.' },
