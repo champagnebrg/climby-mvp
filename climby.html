@@ -1789,7 +1789,7 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
-        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, listRegistrationsForEvent, countActiveRegistrationsForEvent } from "./src/features/events/index.js";
+        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, countActiveRegistrationsForEvent } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
         import { renderUserEventList } from "./src/features/events/event-user-list.js";
@@ -1837,7 +1837,7 @@
         let activePublicProfileUid = null;
         let gym3DStatusMap = new Map();
         let gym3DUnsubscribers = [];
-        let adminEventsState = { events: [], selectedEventId: '', draft: null, registrationsByEventId: {}, registrationsLoading: {} };
+        let adminEventsState = { events: [], selectedEventId: '', draft: null, registrationsByEventId: {}, registrationsLoading: {}, registrationStatusSavingUserId: '', statusFilter: 'all' };
         let lastUsersSnap = null;
         let followingFeedMap = new Map();
         let followingProgressUnsubscribers = [];
@@ -5380,6 +5380,11 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 gymId: gId,
             });
             let selectedGymEventId = visibleEvents[0]?.id || '';
+            const syncSelectedGymEvent = () => {
+                if (selectedGymEventId && visibleEvents.some((event) => event.id === selectedGymEventId)) return;
+                selectedGymEventId = visibleEvents[0]?.id || '';
+            };
+            syncSelectedGymEvent();
             let selectedGymEventRegistration = null;
             let selectedGymEventParticipantCount = 0;
             let selectedGymEventRegistrationLoading = false;
@@ -6123,6 +6128,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 .filter(([eventId]) => events.some((event) => event.id === eventId)));
             adminEventsState.registrationsLoading = Object.fromEntries(Object.entries(adminEventsState.registrationsLoading || {})
                 .filter(([eventId]) => events.some((event) => event.id === eventId)));
+            adminEventsState.registrationStatusSavingUserId = '';
             renderAdminEventsPanel();
         }
 
@@ -6145,6 +6151,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 adminEventsState.registrationsByEventId = { ...adminEventsState.registrationsByEventId, [eventId]: [] };
             } finally {
                 adminEventsState.registrationsLoading = { ...adminEventsState.registrationsLoading, [eventId]: false };
+                adminEventsState.registrationStatusSavingUserId = '';
                 renderAdminEventsPanel();
             }
         }
@@ -6194,6 +6201,11 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 },
                 t,
                 formatDateTime: (value) => formatProfileDate(value, toSafeDate, currentLang),
+                statusFilter: adminEventsState.statusFilter || 'all',
+                onStatusFilterChange: (value) => {
+                    adminEventsState.statusFilter = value || 'all';
+                    renderAdminEventsPanel();
+                },
             });
 
             renderAdminEventEditor({
@@ -6202,8 +6214,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 draft: draftEvent,
                 t,
                 registrations: eventRegistrations,
-                registrationCount: eventRegistrations.filter((registration) => registration.status === 'registered').length,
+                registrationCount: eventRegistrations.filter((registration) => ['registered', 'checked_in'].includes(registration.status)).length,
                 registrationsLoading,
+                registrationStatusSavingUserId: adminEventsState.registrationStatusSavingUserId || '',
                 formatDateTime: (value) => formatProfileDate(value, toSafeDate, currentLang),
                 onSave: async (payload) => {
                     try {
@@ -6262,6 +6275,26 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     } catch (err) {
                         console.error('[events] cancel failed', err);
                         alert(err?.message || t('errors.saveFailed'));
+                    }
+                },
+                onUpdateRegistrationStatus: async ({ userId, status }) => {
+                    if (!selectedEvent?.id || !userId || !status) return;
+                    adminEventsState.registrationStatusSavingUserId = userId;
+                    renderAdminEventsPanel();
+                    try {
+                        await updateRegistrationStatus({
+                            db, collection, doc, getDoc, getDocs, setDoc,
+                            gymId: realUserGymId,
+                            eventId: selectedEvent.id,
+                            userId,
+                            status,
+                        });
+                        await loadAdminEventRegistrations(selectedEvent.id);
+                    } catch (err) {
+                        console.error('[events] registration status update failed', err);
+                        alert(err?.message || t('errors.saveFailed'));
+                        adminEventsState.registrationStatusSavingUserId = '';
+                        renderAdminEventsPanel();
                     }
                 },
             });

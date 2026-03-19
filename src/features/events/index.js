@@ -30,10 +30,12 @@ export {
 
 export {
   EVENT_REGISTRATION_STATUS_REGISTERED,
+  EVENT_REGISTRATION_STATUS_CHECKED_IN,
   EVENT_REGISTRATION_STATUS_CANCELLED,
   EVENT_REGISTRATION_STATUSES,
   registerUserToEvent,
   cancelRegistration,
+  updateRegistrationStatus,
   getCurrentUserRegistration,
   listRegistrationsForEvent,
   countActiveRegistrationsForEvent,

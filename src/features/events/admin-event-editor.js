@@ -10,6 +10,8 @@ export function renderAdminEventEditor({
   onPublish = null,
   onEnd = null,
   onCancel = null,
+  onUpdateRegistrationStatus = null,
+  registrationStatusSavingUserId = '',
   t = (key) => key,
 } = {}) {
   if (!container) return;
@@ -21,7 +23,7 @@ export function renderAdminEventEditor({
   const canCancel = (status === 'draft' || status === 'published') && !!event?.id;
 
   const registrationRows = event?.id
-    ? renderRegistrationRows({ registrations, registrationsLoading, t, formatDateTime })
+    ? renderRegistrationRows({ registrations, registrationsLoading, t, formatDateTime, registrationStatusSavingUserId })
     : '';
 
   container.innerHTML = `
@@ -74,6 +76,12 @@ export function renderAdminEventEditor({
   if (endBtn) endBtn.onclick = () => onEnd?.();
   const cancelBtn = container.querySelector('#admin-event-cancel-btn');
   if (cancelBtn) cancelBtn.onclick = () => onCancel?.();
+  container.querySelectorAll('[data-registration-status]').forEach((button) => {
+    button.onclick = () => onUpdateRegistrationStatus?.({
+      userId: button.dataset.registrationUserId || '',
+      status: button.dataset.registrationStatus || '',
+    });
+  });
 }
 
 export function readFormPayload(container) {
@@ -111,7 +119,7 @@ function escapeHtml(value) {
 }
 
 
-function renderRegistrationRows({ registrations = [], registrationsLoading = false, t = (key) => key, formatDateTime = (value) => value || '-' } = {}) {
+function renderRegistrationRows({ registrations = [], registrationsLoading = false, t = (key) => key, formatDateTime = (value) => value || '-', registrationStatusSavingUserId = '' } = {}) {
   if (registrationsLoading) {
     return `<div style="color:var(--muted);">${escapeHtml(t('admin.eventsRegistrationsLoading'))}</div>`;
   }
@@ -120,22 +128,29 @@ function renderRegistrationRows({ registrations = [], registrationsLoading = fal
     return `<div style="color:var(--muted);">${escapeHtml(t('admin.eventsRegistrationsEmpty'))}</div>`;
   }
 
-  return registrations.map((registration) => `
-    <div style="display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(120px, 1fr) minmax(140px, 1fr); gap:8px; padding:10px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
-      <div>
-        <div style="font-weight:600;">${escapeHtml(registration.displayName || '-')}</div>
-        <div style="color:var(--muted); font-size:0.82rem;">${escapeHtml(registration.userId || '')}</div>
+  return registrations.map((registration) => {
+    const isSaving = registrationStatusSavingUserId && registrationStatusSavingUserId === registration.userId;
+    const canCheckIn = registration.status === 'registered';
+    const canUndoCheckIn = registration.status === 'checked_in';
+    const canCancel = registration.status === 'registered';
+    return `
+    <div style="display:grid; gap:10px; padding:10px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
+      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:700; font-size:1rem;">${escapeHtml(registration.displayName || '-')}</div>
+          <div style="color:var(--muted); font-size:0.78rem; margin-top:4px;">${escapeHtml(t('admin.eventsRegistrationsRegisteredAt'))}: ${escapeHtml(formatDateTime(registration.registeredAt))}</div>
+        </div>
+        <span class="admin-file-chip">${escapeHtml(t(`gym.eventsRegistration${capitalize(registration.status || 'NotRegistered')}`))}</span>
       </div>
-      <div>
-        <div style="color:var(--muted); font-size:0.78rem;">${escapeHtml(t('admin.eventsRegistrationsStatus'))}</div>
-        <div>${escapeHtml(t(`gym.eventsRegistration${capitalize(registration.status || 'NotRegistered')}`))}</div>
-      </div>
-      <div>
-        <div style="color:var(--muted); font-size:0.78rem;">${escapeHtml(t('admin.eventsRegistrationsRegisteredAt'))}</div>
-        <div>${escapeHtml(formatDateTime(registration.registeredAt))}</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        ${canCheckIn ? `<button type="button" class="btn-main" data-registration-status="checked_in" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>${escapeHtml(t('admin.eventsRegistrationCheckIn'))}</button>` : ''}
+        ${canUndoCheckIn ? `<button type="button" class="btn-sec" data-registration-status="registered" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>${escapeHtml(t('admin.eventsRegistrationUndoCheckIn'))}</button>` : ''}
+        ${canCancel ? `<button type="button" class="btn-danger-soft" data-registration-status="cancelled" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>${escapeHtml(t('admin.eventsCancelRegistration'))}</button>` : ''}
+        ${isSaving ? `<span style="color:var(--muted); font-size:0.82rem;">${escapeHtml(t('gym.eventsRegistrationUpdating'))}</span>` : ''}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function capitalize(value) {

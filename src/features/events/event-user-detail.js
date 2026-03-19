@@ -17,10 +17,13 @@ export function renderUserEventDetail({
   }
 
   const isRegistered = registration?.status === 'registered';
-  const canToggleRegistration = Boolean(event.registrationEnabled) && event.status === 'published' && !registrationLoading && !registrationSaving;
+  const isCheckedIn = registration?.status === 'checked_in';
+  const canToggleRegistration = Boolean(event.registrationEnabled) && event.status === 'published' && !registrationLoading && !registrationSaving && !isCheckedIn;
   const statusLabel = isRegistered
     ? t('gym.eventsRegistrationRegistered')
-    : (registration?.status === 'cancelled' ? t('gym.eventsRegistrationCancelled') : t('gym.eventsRegistrationNotRegistered'));
+    : (isCheckedIn
+      ? t('gym.eventsRegistrationChecked_in')
+      : (registration?.status === 'cancelled' ? t('gym.eventsRegistrationCancelled') : t('gym.eventsRegistrationNotRegistered')));
   const buttonLabel = isRegistered ? t('gym.eventsCancelRegistration') : t('gym.eventsRegister');
 
   container.innerHTML = `
