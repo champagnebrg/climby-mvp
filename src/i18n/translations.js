@@ -141,6 +141,52 @@ export const uiLabelFallbacks = {
             sectorOverview: { it: '📊 Panoramica Settore', en: '📊 Sector Overview' }, profilePhoto: { it: 'Foto profilo', en: 'Profile photo' }, changePhoto: { it: 'Cambia foto', en: 'Change photo' }, removePhoto: { it: 'Rimuovi foto', en: 'Remove photo' }, photoUpdated: { it: 'Foto profilo aggiornata.', en: 'Profile photo updated.' }, photoRemoved: { it: 'Foto profilo rimossa.', en: 'Profile photo removed.' }
         };
 
+const adminEventFallbacks = {
+    navEvents: { it: '3️⃣ Eventi', en: '3️⃣ Events' },
+    navUsers: { it: '4️⃣ Utenti', en: '4️⃣ Users' },
+    navSettings: { it: '5️⃣ Impostazioni', en: '5️⃣ Settings' },
+    navEventsSimple: { it: 'Eventi', en: 'Events' },
+    eventsTitle: { it: 'Eventi', en: 'Events' },
+    eventsSubtitle: { it: 'Crea e gestisci gli eventi standard della tua palestra', en: 'Create and manage your gym standard events' },
+    eventsListTitle: { it: 'Eventi esistenti', en: 'Existing events' },
+    eventsListHint: { it: 'Seleziona un evento per modificarlo oppure creane uno nuovo.', en: 'Select an event to edit it or create a new one.' },
+    eventsCreate: { it: '➕ Nuovo evento', en: '➕ New event' },
+    eventsCreateTitle: { it: 'Crea evento standard', en: 'Create standard event' },
+    eventsEditTitle: { it: 'Modifica evento', en: 'Edit event' },
+    eventsEditorHint: { it: 'In questa fase puoi gestire solo eventi standard.', en: 'In this phase you can manage standard events only.' },
+    eventsFieldTitle: { it: 'Titolo evento', en: 'Event title' },
+    eventsFieldSummary: { it: 'Riassunto breve', en: 'Short summary' },
+    eventsFieldDescription: { it: 'Descrizione evento', en: 'Event description' },
+    eventsSave: { it: 'Salva evento', en: 'Save event' },
+    eventsEnd: { it: 'Segna come concluso', en: 'Mark as ended' },
+    eventsCancel: { it: 'Annulla evento', en: 'Cancel event' },
+    eventsEmpty: { it: 'Nessun evento presente. Crea il primo evento della palestra.', en: 'No events yet. Create the gym's first event.' },
+    eventsUntitled: { it: 'Evento senza titolo', en: 'Untitled event' },
+    eventsSaved: { it: 'Evento salvato.', en: 'Event saved.' },
+    eventsPublished: { it: 'Evento pubblicato.', en: 'Event published.' },
+    eventsEnded: { it: 'Evento concluso.', en: 'Event ended.' },
+    eventsCancelled: { it: 'Evento annullato.', en: 'Event cancelled.' },
+    eventsStatusDraft: { it: 'Bozza', en: 'Draft' },
+    eventsStatusPublished: { it: 'Pubblicato', en: 'Published' },
+    eventsStatusEnded: { it: 'Concluso', en: 'Ended' },
+    eventsStatusCancelled: { it: 'Annullato', en: 'Cancelled' },
+    eventsRegistrationDisabledHint: { it: 'Registrazioni disattivate in questa fase MVP', en: 'Registrations are disabled in this MVP phase' }
+};
+
+const gymEventFallbacks = {
+    tabEvents: { it: 'Eventi', en: 'Events' },
+    eventsTitle: { it: 'Eventi palestra', en: 'Gym events' },
+    eventsHint: { it: 'Scopri gli eventi pubblicati e conclusi della palestra.', en: 'Browse the gym published and ended events.' },
+    eventsEmpty: { it: 'Nessun evento visibile per questa palestra.', en: 'No visible events for this gym yet.' },
+    eventsSelectHint: { it: 'Seleziona un evento per vedere i dettagli.', en: 'Select an event to see its details.' },
+    eventsUntitled: { it: 'Evento senza titolo', en: 'Untitled event' },
+    eventsWhen: { it: 'Quando', en: 'When' },
+    eventsStatusLabel: { it: 'Stato', en: 'Status' },
+    eventsStatusPublished: { it: 'Pubblicato', en: 'Published' },
+    eventsStatusEnded: { it: 'Concluso', en: 'Ended' },
+    eventsStatusLive: { it: 'Live', en: 'Live' }
+};
+
 export const emailVerificationFallbacks = {
             title: { it: 'Verifica la tua email', en: 'Verify your email' },
             description: { it: "Devi verificare la tua email prima di usare Climby. Controlla la posta (anche la cartella Spam) e clicca il link di verifica.", en: 'You must verify your email before using Climby. Check your inbox (including Spam/Junk) and click the verification link.' },
@@ -178,6 +224,22 @@ for (const lang of ['it', 'en']) {
     translations[lang].ui = translations[lang].ui || {};
     for (const [k, values] of Object.entries(uiLabelFallbacks)) {
         if (!translations[lang].ui[k]) translations[lang].ui[k] = values[lang];
+    }
+}
+
+for (const lang of ['it', 'en']) {
+    translations[lang] = translations[lang] || {};
+    translations[lang].admin = translations[lang].admin || {};
+    for (const [k, values] of Object.entries(adminEventFallbacks)) {
+        if (!translations[lang].admin[k]) translations[lang].admin[k] = values[lang];
+    }
+}
+
+for (const lang of ['it', 'en']) {
+    translations[lang] = translations[lang] || {};
+    translations[lang].gym = translations[lang].gym || {};
+    for (const [k, values] of Object.entries(gymEventFallbacks)) {
+        if (!translations[lang].gym[k]) translations[lang].gym[k] = values[lang];
     }
 }
 

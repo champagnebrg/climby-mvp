@@ -33,6 +33,10 @@ service cloud.firestore {
       return isSuperadmin() || isGymOwner(gymId) || managesGym(gymId);
     }
 
+    function isVisibleGymEventStatus(status) {
+      return status in ['published', 'ended', 'live'];
+    }
+
     function isSelf(uid) {
       return signedIn() && request.auth.uid == uid;
     }
@@ -131,6 +135,14 @@ service cloud.firestore {
           ])
           && request.resource.data.status in ["active", "inactive"];
         allow delete: if false;
+      }
+
+      match /events/{eventId} {
+        allow read: if canManageGym(gymId) || (
+          verifiedEmail()
+          && isVisibleGymEventStatus(resource.data.status)
+        );
+        allow create, update, delete: if canManageGym(gymId);
       }
 
     }
