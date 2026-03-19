@@ -1837,7 +1837,7 @@
         let activePublicProfileUid = null;
         let gym3DStatusMap = new Map();
         let gym3DUnsubscribers = [];
-        let adminEventsState = { events: [], selectedEventId: '', draft: null, registrationsByEventId: {}, registrationsLoading: {}, registrationStatusSavingUserId: '', statusFilter: 'all' };
+        let adminEventsState = { events: [], selectedEventId: '', draft: null, registrationsByEventId: {}, registrationsLoading: {}, registrationStatusSavingUserId: '', registrationsSearch: '', statusFilter: 'all' };
         let lastUsersSnap = null;
         let followingFeedMap = new Map();
         let followingProgressUnsubscribers = [];
@@ -5455,7 +5455,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         await registerUserToEvent({
                             ...baseOptions,
                             data: {
-                                displayName: currentUserName || activeUser.displayName || 'Climber',
+                                displayName: activeUser.displayName || currentUserName || 'Climber',
+                                username: currentUserName || '',
                                 avatarUrl: activeUser.photoURL || null,
                             },
                         });
@@ -6129,6 +6130,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             adminEventsState.registrationsLoading = Object.fromEntries(Object.entries(adminEventsState.registrationsLoading || {})
                 .filter(([eventId]) => events.some((event) => event.id === eventId)));
             adminEventsState.registrationStatusSavingUserId = '';
+            adminEventsState.registrationsSearch = '';
             renderAdminEventsPanel();
         }
 
@@ -6184,10 +6186,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 onSelect: (eventId) => {
                     adminEventsState.selectedEventId = eventId;
                     adminEventsState.draft = null;
+                    adminEventsState.registrationsSearch = '';
                     renderAdminEventsPanel();
                 },
                 onCreateNew: () => {
                     adminEventsState.selectedEventId = '';
+                    adminEventsState.registrationsSearch = '';
                     adminEventsState.draft = createDraftEvent({
                         gymId: realUserGymId,
                         title: '',
@@ -6217,7 +6221,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 registrationCount: eventRegistrations.filter((registration) => ['registered', 'checked_in'].includes(registration.status)).length,
                 registrationsLoading,
                 registrationStatusSavingUserId: adminEventsState.registrationStatusSavingUserId || '',
+                registrationsSearch: adminEventsState.registrationsSearch || '',
                 formatDateTime: (value) => formatProfileDate(value, toSafeDate, currentLang),
+                onRegistrationsSearchChange: (value) => {
+                    adminEventsState.registrationsSearch = value || '';
+                    renderAdminEventsPanel();
+                },
                 onSave: async (payload) => {
                     try {
                         if (selectedEvent?.id) {

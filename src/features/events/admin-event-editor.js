@@ -12,6 +12,8 @@ export function renderAdminEventEditor({
   onCancel = null,
   onUpdateRegistrationStatus = null,
   registrationStatusSavingUserId = '',
+  registrationsSearch = '',
+  onRegistrationsSearchChange = null,
   t = (key) => key,
 } = {}) {
   if (!container) return;
@@ -23,7 +25,7 @@ export function renderAdminEventEditor({
   const canCancel = (status === 'draft' || status === 'published') && !!event?.id;
 
   const registrationRows = event?.id
-    ? renderRegistrationRows({ registrations, registrationsLoading, t, formatDateTime, registrationStatusSavingUserId })
+    ? renderRegistrationRows({ registrations, registrationsLoading, registrationsSearch, t, formatDateTime, registrationStatusSavingUserId })
     : '';
 
   container.innerHTML = `
@@ -58,7 +60,10 @@ export function renderAdminEventEditor({
           </div>
           <span class="admin-file-chip">${escapeHtml(String(registrationCount))} ${escapeHtml(t('admin.eventsParticipantsCount'))}</span>
         </div>
-        <div style="margin-top:12px; display:grid; gap:8px;">${registrationRows}</div>
+        <div style="margin-top:12px; display:grid; gap:8px;">
+          <input type="search" id="admin-event-registrations-search" value="${escapeHtml(registrationsSearch || '')}" placeholder="${escapeHtml(t('admin.eventsRegistrationsSearchPlaceholder'))}">
+          ${registrationRows}
+        </div>
       </div>
     ` : ''}
   `;
@@ -76,6 +81,9 @@ export function renderAdminEventEditor({
   if (endBtn) endBtn.onclick = () => onEnd?.();
   const cancelBtn = container.querySelector('#admin-event-cancel-btn');
   if (cancelBtn) cancelBtn.onclick = () => onCancel?.();
+  container.querySelector('#admin-event-registrations-search')?.addEventListener('input', (eventObj) => {
+    onRegistrationsSearchChange?.(eventObj.target?.value || '');
+  });
   container.querySelectorAll('[data-registration-status]').forEach((button) => {
     button.onclick = () => onUpdateRegistrationStatus?.({
       userId: button.dataset.registrationUserId || '',
@@ -119,16 +127,26 @@ function escapeHtml(value) {
 }
 
 
-function renderRegistrationRows({ registrations = [], registrationsLoading = false, t = (key) => key, formatDateTime = (value) => value || '-', registrationStatusSavingUserId = '' } = {}) {
+function renderRegistrationRows({ registrations = [], registrationsLoading = false, registrationsSearch = '', t = (key) => key, formatDateTime = (value) => value || '-', registrationStatusSavingUserId = '' } = {}) {
   if (registrationsLoading) {
     return `<div style="color:var(--muted);">${escapeHtml(t('admin.eventsRegistrationsLoading'))}</div>`;
   }
 
-  if (!registrations.length) {
-    return `<div style="color:var(--muted);">${escapeHtml(t('admin.eventsRegistrationsEmpty'))}</div>`;
+  const searchValue = String(registrationsSearch || '').trim().toLowerCase();
+  const filteredRegistrations = registrations
+    .filter((registration) => {
+      if (!searchValue) return true;
+      const displayName = String(registration.displayName || '').toLowerCase();
+      const username = String(registration.username || '').toLowerCase();
+      return displayName.includes(searchValue) || username.includes(searchValue);
+    })
+    .sort((a, b) => String(a.displayName || '').localeCompare(String(b.displayName || ''), undefined, { sensitivity: 'base' }));
+
+  if (!filteredRegistrations.length) {
+    return `<div style="color:var(--muted);">${escapeHtml(searchValue ? t('admin.eventsRegistrationsSearchEmpty') : t('admin.eventsRegistrationsEmpty'))}</div>`;
   }
 
-  return registrations.map((registration) => {
+  return filteredRegistrations.map((registration) => {
     const isSaving = registrationStatusSavingUserId && registrationStatusSavingUserId === registration.userId;
     const canCheckIn = registration.status === 'registered';
     const canUndoCheckIn = registration.status === 'checked_in';
@@ -138,6 +156,7 @@ function renderRegistrationRows({ registrations = [], registrationsLoading = fal
       <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
         <div>
           <div style="font-weight:700; font-size:1rem;">${escapeHtml(registration.displayName || '-')}</div>
+          ${registration.username ? `<div style="color:var(--muted); font-size:0.82rem; margin-top:2px;">@${escapeHtml(registration.username)}</div>` : ''}
           <div style="color:var(--muted); font-size:0.78rem; margin-top:4px;">${escapeHtml(t('admin.eventsRegistrationsRegisteredAt'))}: ${escapeHtml(formatDateTime(registration.registeredAt))}</div>
         </div>
         <span class="admin-file-chip">${escapeHtml(t(`gym.eventsRegistration${capitalize(registration.status || 'NotRegistered')}`))}</span>
