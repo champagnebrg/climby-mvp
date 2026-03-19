@@ -1789,7 +1789,7 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
-        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, countActiveRegistrationsForEvent } from "./src/features/events/index.js";
+        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, listRegistrationsForEvent, countActiveRegistrationsForEvent } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
         import { renderUserEventList } from "./src/features/events/event-user-list.js";
@@ -1837,7 +1837,7 @@
         let activePublicProfileUid = null;
         let gym3DStatusMap = new Map();
         let gym3DUnsubscribers = [];
-        let adminEventsState = { events: [], selectedEventId: '', draft: null };
+        let adminEventsState = { events: [], selectedEventId: '', draft: null, registrationsByEventId: {}, registrationsLoading: {} };
         let lastUsersSnap = null;
         let followingFeedMap = new Map();
         let followingProgressUnsubscribers = [];
@@ -6119,7 +6119,34 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (adminEventsState.selectedEventId && !events.some((event) => event.id === adminEventsState.selectedEventId)) {
                 adminEventsState.selectedEventId = '';
             }
+            adminEventsState.registrationsByEventId = Object.fromEntries(Object.entries(adminEventsState.registrationsByEventId || {})
+                .filter(([eventId]) => events.some((event) => event.id === eventId)));
+            adminEventsState.registrationsLoading = Object.fromEntries(Object.entries(adminEventsState.registrationsLoading || {})
+                .filter(([eventId]) => events.some((event) => event.id === eventId)));
             renderAdminEventsPanel();
+        }
+
+        async function loadAdminEventRegistrations(eventId) {
+            if (!realUserGymId || !eventId || adminEventsState.registrationsLoading?.[eventId]) return;
+            adminEventsState.registrationsLoading = { ...adminEventsState.registrationsLoading, [eventId]: true };
+            renderAdminEventsPanel();
+            try {
+                const registrations = await listRegistrationsForEvent({
+                    db,
+                    collection,
+                    doc,
+                    getDocs,
+                    gymId: realUserGymId,
+                    eventId,
+                });
+                adminEventsState.registrationsByEventId = { ...adminEventsState.registrationsByEventId, [eventId]: registrations };
+            } catch (err) {
+                console.error('[events] registrations load failed', err);
+                adminEventsState.registrationsByEventId = { ...adminEventsState.registrationsByEventId, [eventId]: [] };
+            } finally {
+                adminEventsState.registrationsLoading = { ...adminEventsState.registrationsLoading, [eventId]: false };
+                renderAdminEventsPanel();
+            }
         }
 
         function renderAdminEventsPanel() {
@@ -6128,6 +6155,11 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (!listEl || !editorEl) return;
 
             const selectedEvent = adminEventsState.events.find((event) => event.id === adminEventsState.selectedEventId) || null;
+            const eventRegistrations = selectedEvent?.id ? (adminEventsState.registrationsByEventId?.[selectedEvent.id] || []) : [];
+            const registrationsLoading = selectedEvent?.id ? Boolean(adminEventsState.registrationsLoading?.[selectedEvent.id]) : false;
+            if (selectedEvent?.id && !adminEventsState.registrationsByEventId?.[selectedEvent.id] && !registrationsLoading) {
+                loadAdminEventRegistrations(selectedEvent.id);
+            }
             const draftEvent = adminEventsState.draft || (selectedEvent ? { ...selectedEvent } : createDraftEvent({
                 gymId: realUserGymId,
                 title: '',
@@ -6169,6 +6201,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 event: selectedEvent,
                 draft: draftEvent,
                 t,
+                registrations: eventRegistrations,
+                registrationCount: eventRegistrations.filter((registration) => registration.status === 'registered').length,
+                registrationsLoading,
+                formatDateTime: (value) => formatProfileDate(value, toSafeDate, currentLang),
                 onSave: async (payload) => {
                     try {
                         if (selectedEvent?.id) {

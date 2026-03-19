@@ -170,7 +170,14 @@ const adminEventFallbacks = {
     eventsStatusPublished: { it: 'Pubblicato', en: 'Published' },
     eventsStatusEnded: { it: 'Concluso', en: 'Ended' },
     eventsStatusCancelled: { it: 'Annullato', en: 'Cancelled' },
-    eventsRegistrationDisabledHint: { it: 'Registrazioni disattivate in questa fase MVP', en: 'Registrations are disabled in this MVP phase' }
+    eventsRegistrationDisabledHint: { it: 'Registrazioni disattivate in questa fase MVP', en: 'Registrations are disabled in this MVP phase' },
+    eventsRegistrationsTitle: { it: 'Registrazioni', en: 'Registrations' },
+    eventsRegistrationsHint: { it: 'Elenco partecipanti registrati per questo evento.', en: 'Participant registration list for this event.' },
+    eventsParticipantsCount: { it: 'partecipanti', en: 'participants' },
+    eventsRegistrationsLoading: { it: 'Caricamento registrazioni...', en: 'Loading registrations...' },
+    eventsRegistrationsEmpty: { it: 'Nessuna registrazione per questo evento.', en: 'No registrations for this event.' },
+    eventsRegistrationsStatus: { it: 'Stato', en: 'Status' },
+    eventsRegistrationsRegisteredAt: { it: 'Registrato il', en: 'Registered at' }
 };
 
 const gymEventFallbacks = {
