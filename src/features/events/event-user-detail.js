@@ -25,6 +25,9 @@ export function renderUserEventDetail({
       ? t('gym.eventsRegistrationChecked_in')
       : (registration?.status === 'cancelled' ? t('gym.eventsRegistrationCancelled') : t('gym.eventsRegistrationNotRegistered')));
   const buttonLabel = isRegistered ? t('gym.eventsCancelRegistration') : t('gym.eventsRegister');
+  const registrationAvailabilityMessage = event.registrationEnabled
+    ? (event.status === 'published' ? '' : t('gym.eventsRegistrationClosed'))
+    : (event.status === 'published' ? t('gym.eventsRegistrationUnavailable') : t('gym.eventsRegistrationClosed'));
 
   container.innerHTML = `
     <div class="gym-info-block">
@@ -41,7 +44,8 @@ export function renderUserEventDetail({
         <div style="margin-top:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <button type="button" class="${isRegistered ? 'btn-sec' : 'btn-main'}" data-event-registration-toggle ${canToggleRegistration ? '' : 'disabled'}>${escapeHtml(registrationSaving ? t('gym.eventsRegistrationUpdating') : buttonLabel)}</button>
         </div>
-      ` : `<div class="profile-subtitle" style="margin-top:16px;">${escapeHtml(t('gym.eventsRegistrationUnavailable'))}</div>`}
+        ${registrationAvailabilityMessage && !isRegistered && !isCheckedIn ? `<div class="profile-subtitle" style="margin-top:8px;">${escapeHtml(registrationAvailabilityMessage)}</div>` : ''}
+      ` : `<div class="profile-subtitle" style="margin-top:16px;">${escapeHtml(registrationAvailabilityMessage)}</div>`}
     </div>
   `;
 
