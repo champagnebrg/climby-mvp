@@ -7217,14 +7217,91 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         throw new Error(t('errors.sectorExists'));
                     }
                 }
-                const sRef = ref(storage, `meshes/${realUserGymId}/${sId}.glb`);
-                await uploadBytes(sRef, file);
-                const url = await getDownloadURL(sRef);
-                await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sId), {
-                    name,
-                    meshUrl: url,
-                    analyticsResetAt: existingSId ? new Date().toISOString() : null
-                }, { merge: true });
+
+                let storagePath, sRef, url;
+                try {
+                    storagePath = `meshes/${realUserGymId}/${sId}.glb`;
+                    console.info('[MESH_DEBUG] build storage path', {
+                        uid: activeUser?.uid || null,
+                        gymId: realUserGymId || null,
+                        sectorId: sId || null,
+                        storagePath
+                    });
+                    sRef = ref(storage, storagePath);
+                } catch (err) {
+                    console.error('[MESH_DEBUG] build storage path failed', {
+                        uid: activeUser?.uid || null,
+                        gymId: realUserGymId || null,
+                        sectorId: sId || null,
+                        code: err?.code || null,
+                        message: err?.message || String(err)
+                    });
+                    throw err;
+                }
+
+                try {
+                    await uploadBytes(sRef, file);
+                    console.info('[MESH_DEBUG] uploadBytes succeeded', {
+                        uid: activeUser?.uid || null,
+                        gymId: realUserGymId || null,
+                        sectorId: sId || null,
+                        storagePath
+                    });
+                } catch (err) {
+                    console.error('[MESH_DEBUG] uploadBytes failed', {
+                        uid: activeUser?.uid || null,
+                        gymId: realUserGymId || null,
+                        sectorId: sId || null,
+                        storagePath,
+                        code: err?.code || null,
+                        message: err?.message || String(err)
+                    });
+                    throw err;
+                }
+
+                try {
+                    url = await getDownloadURL(sRef);
+                    console.info('[MESH_DEBUG] getDownloadURL succeeded', {
+                        uid: activeUser?.uid || null,
+                        gymId: realUserGymId || null,
+                        sectorId: sId || null,
+                        storagePath
+                    });
+                } catch (err) {
+                    console.error('[MESH_DEBUG] getDownloadURL failed', {
+                        uid: activeUser?.uid || null,
+                        gymId: realUserGymId || null,
+                        sectorId: sId || null,
+                        storagePath,
+                        code: err?.code || null,
+                        message: err?.message || String(err)
+                    });
+                    throw err;
+                }
+
+                try {
+                    await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sId), {
+                        name,
+                        meshUrl: url,
+                        analyticsResetAt: existingSId ? new Date().toISOString() : null
+                    }, { merge: true });
+                    console.info('[MESH_DEBUG] setDoc meshUrl succeeded', {
+                        uid: activeUser?.uid || null,
+                        gymId: realUserGymId || null,
+                        sectorId: sId || null,
+                        storagePath
+                    });
+                } catch (err) {
+                    console.error('[MESH_DEBUG] setDoc meshUrl failed', {
+                        uid: activeUser?.uid || null,
+                        gymId: realUserGymId || null,
+                        sectorId: sId || null,
+                        storagePath,
+                        code: err?.code || null,
+                        message: err?.message || String(err)
+                    });
+                    throw err;
+                }
                 const gymDocSnap = await getDoc(doc(db, 'gyms', realUserGymId));
                 const gymInfo = gymDocSnap.exists() ? (gymDocSnap.data() || {}) : (lastUserGymsSnap?.docs?.find(g => g.id === realUserGymId)?.data() || {});
                 const sectorDocSnap = await getDoc(doc(db, 'gyms', realUserGymId, 'Sectors', sId));
