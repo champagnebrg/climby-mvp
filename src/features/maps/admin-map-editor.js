@@ -4,6 +4,23 @@ import { isNormalizedMarker } from './map-validation.js';
 const ADMIN_OVERLAY_SELECTOR = '[data-admin-map-overlay="1"]';
 const ADMIN_CLICK_HANDLER_KEY = '__climbyAdminMapClickHandler';
 
+function clamp01(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.min(1, Math.max(0, numeric));
+}
+
+function alignOverlayToImage({ overlayEl, containerEl, imageEl } = {}) {
+  if (!overlayEl || !containerEl || !imageEl) return;
+  const containerRect = containerEl.getBoundingClientRect();
+  const imageRect = imageEl.getBoundingClientRect();
+  if (!imageRect.width || !imageRect.height) return;
+  overlayEl.style.left = `${imageRect.left - containerRect.left}px`;
+  overlayEl.style.top = `${imageRect.top - containerRect.top}px`;
+  overlayEl.style.width = `${imageRect.width}px`;
+  overlayEl.style.height = `${imageRect.height}px`;
+}
+
 function clearAdminOverlay(stageEl) {
   if (!stageEl) return;
   stageEl.querySelectorAll(ADMIN_OVERLAY_SELECTOR).forEach((node) => node.remove());
@@ -54,6 +71,8 @@ export function renderAdminGymMapEditor({
   const overlay = document.createElement('div');
   overlay.className = 'gym-floor-map-overlay admin-floor-map-overlay';
   overlay.dataset.adminMapOverlay = '1';
+  alignOverlayToImage({ overlayEl: overlay, containerEl: stageEl, imageEl: floorMapEl });
+  floorMapEl.addEventListener('load', () => alignOverlayToImage({ overlayEl: overlay, containerEl: stageEl, imageEl: floorMapEl }), { once: true });
 
   sectors.forEach((sector) => {
     const sectorId = sector?.sectorId || null;
@@ -134,9 +153,17 @@ export function renderAdminGymMapEditor({
     if (!selectedSectorId) return;
     const rect = floorMapEl.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    const x = (event.clientX - rect.left) / rect.width;
-    const y = (event.clientY - rect.top) / rect.height;
-    if (x < 0 || x > 1 || y < 0 || y > 1) return;
+    const rawX = (event.clientX - rect.left) / rect.width;
+    const rawY = (event.clientY - rect.top) / rect.height;
+    if (rawX < 0 || rawX > 1 || rawY < 0 || rawY > 1) return;
+    const x = clamp01(rawX);
+    const y = clamp01(rawY);
+    console.info('[map-marker][admin] click normalized', {
+      sectorId: selectedSectorId,
+      x,
+      y,
+      floorMapVersion
+    });
     if (typeof onSaveMarker === 'function') {
       await onSaveMarker(selectedSectorId, { x, y, floorMapVersion });
     }

@@ -7809,6 +7809,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
         window.open3D = async (gId, sId) => {
             const viewer = document.getElementById('main-viewer');
             const token = ++currentModelLoadToken;
+            const requestedPath = `meshes/${gId}/${sId}.glb`;
             lastOpen3DRequest = { gId, sId };
             cleanupModelLoadGuards();
             resetViewerBeforeLoad();
@@ -7816,13 +7817,21 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             activeGymId = gId; activeSectorId = sId;
             setStartGuideVisible(shouldShowStartGuide(gId, sId));
             showViewerMoveGuide();
+            console.info('[3d] requested path', requestedPath);
 
             const onLoad = () => {
                 if (token !== currentModelLoadToken) return;
                 cleanupModelLoadGuards();
                 hideLoading();
             };
-            const onError = () => failModelLoad(t('errors.modelLoadFailed'), token);
+            const onError = (event) => {
+                console.error('[3d] load error', {
+                    path: requestedPath,
+                    currentSrc: viewer?.src || null,
+                    eventType: event?.type || null
+                });
+                failModelLoad(`${t('errors.modelLoadFailed')} (GLB/CORS)`, token);
+            };
 
             viewer.addEventListener('load', onLoad);
             viewer.addEventListener('error', onError);
@@ -7835,7 +7844,20 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             try {
                 const snap = await getDoc(doc(db, "gyms", gId, "Sectors", sId));
                 const meshUrl = snap.exists() ? snap.data()?.meshUrl : null;
-                if (!meshUrl) {
+                const storageRef = ref(storage, requestedPath);
+                let resolvedDownloadUrl = null;
+                try {
+                    resolvedDownloadUrl = await getDownloadURL(storageRef);
+                    console.info('[3d] resolved download url', resolvedDownloadUrl);
+                } catch (downloadError) {
+                    console.error('[3d] load error', {
+                        path: requestedPath,
+                        step: 'getDownloadURL',
+                        code: downloadError?.code || null,
+                        message: downloadError?.message || String(downloadError)
+                    });
+                }
+                if (!resolvedDownloadUrl && !meshUrl) {
                     failModelLoad(t('errors.modelMeshMissing'), token);
                     return;
                 }
@@ -7845,9 +7867,16 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 viewer.removeAttribute('src');
                 viewer.src = '';
                 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-                viewer.src = freshViewerSrc(meshUrl);
+                viewer.src = freshViewerSrc(resolvedDownloadUrl || meshUrl);
+                console.info('[3d] model-viewer src assigned', viewer.src);
             } catch (e) {
-                failModelLoad(t('errors.modelLoadFailed'), token);
+                console.error('[3d] load error', {
+                    path: requestedPath,
+                    step: 'open3D',
+                    code: e?.code || null,
+                    message: e?.message || String(e)
+                });
+                failModelLoad(`${t('errors.modelLoadFailed')} (GLB/CORS)`, token);
             }
 
             if (typeof currentViewerRoutesUnsubscriber === 'function') currentViewerRoutesUnsubscriber();
