@@ -133,7 +133,7 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly([
             "uid", "username", "firstName", "lastName", "city", "birthDate", "createdAt", "totalClimbsInGym", "lastActivityInGym", "status", "avatarUrl"
           ])
-          && request.resource.data.status in ["active", "inactive"];
+                   && request.resource.data.status in ["active", "inactive"];
         allow delete: if false;
       }
 
