@@ -124,6 +124,53 @@ service cloud.firestore {
         allow write: if canManageGym(gymId);
       }
 
+      match /events/{eventId} {
+        allow read: if verifiedEmail() || isSuperadmin();
+        allow create, update, delete: if canManageGym(gymId);
+
+        match /registrations/{userId} {
+          allow list: if canManageGym(gymId);
+          allow get: if canManageGym(gymId) || (verifiedEmail() && request.auth.uid == userId);
+          allow create: if canManageGym(gymId) || (
+            verifiedEmail()
+            && request.auth.uid == userId
+            && request.resource.data.userId == request.auth.uid
+          );
+          allow update: if canManageGym(gymId) || (
+            verifiedEmail()
+            && request.auth.uid == userId
+            && resource.data.userId == request.auth.uid
+            && request.resource.data.userId == request.auth.uid
+          );
+          allow delete: if canManageGym(gymId) || (
+            verifiedEmail()
+            && request.auth.uid == userId
+            && resource.data.userId == request.auth.uid
+          );
+        }
+
+        match /competitionLiveEntries/{userId} {
+          allow list: if canManageGym(gymId);
+          allow get: if canManageGym(gymId) || (verifiedEmail() && request.auth.uid == userId);
+          allow create: if canManageGym(gymId) || (
+            verifiedEmail()
+            && request.auth.uid == userId
+            && request.resource.data.userId == request.auth.uid
+          );
+          allow update: if canManageGym(gymId) || (
+            verifiedEmail()
+            && request.auth.uid == userId
+            && resource.data.userId == request.auth.uid
+            && request.resource.data.userId == request.auth.uid
+          );
+          allow delete: if canManageGym(gymId) || (
+            verifiedEmail()
+            && request.auth.uid == userId
+            && resource.data.userId == request.auth.uid
+          );
+        }
+      }
+
       match /members/{uid} {
         allow read: if verifiedEmail() || isSuperadmin() || canManageGym(gymId);
         allow create, update: if verifiedEmail()

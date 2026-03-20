@@ -5417,7 +5417,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 selectedGymCompetitionEntryLoading = !!selectedEvent?.competition_live?.enabled;
                 renderUserEventsPanel();
                 try {
-                    const [registration, participantCount, competitionEntry] = await Promise.all([
+                    const [registrationResult, participantCountResult, competitionEntryResult] = await Promise.allSettled([
                         getCurrentUserRegistration({
                             db,
                             collection,
@@ -5451,9 +5451,18 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                               })
                             : Promise.resolve(null),
                     ]);
-                    selectedGymEventRegistration = registration;
-                    selectedGymEventParticipantCount = participantCount;
-                    selectedGymCompetitionEntry = competitionEntry;
+                    if (registrationResult.status === 'rejected') throw registrationResult.reason;
+                    if (competitionEntryResult.status === 'rejected') throw competitionEntryResult.reason;
+
+                    selectedGymEventRegistration = registrationResult.value;
+                    selectedGymCompetitionEntry = competitionEntryResult.value;
+                    if (participantCountResult.status === 'fulfilled') {
+                        selectedGymEventParticipantCount = participantCountResult.value;
+                    } else if (isPermissionDeniedError(participantCountResult.reason)) {
+                        selectedGymEventParticipantCount = 0;
+                    } else {
+                        throw participantCountResult.reason;
+                    }
                 } catch (err) {
                     console.error('[events] failed to load registration state', err);
                     selectedGymEventRegistration = null;
