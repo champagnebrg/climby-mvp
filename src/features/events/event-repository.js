@@ -5,6 +5,7 @@ import {
   EVENT_STATUS_PUBLISHED,
   buildEventPayload,
   isEventVisibleToUsers,
+  normalizeEventRecord,
 } from './event-model.js';
 import { canTransitionEventStatus, validateStandardEventInput, validateStandardEventUpdate } from './event-validation.js';
 
@@ -59,7 +60,7 @@ export async function listGymEvents(options = {}) {
   if (!gymId) return [];
   const snap = await options.getDocs(getEventsCollectionRef(options, gymId));
   return snap.docs
-    .map((row) => ({ id: row.id, ...(row.data() || {}) }))
+    .map((row) => ({ id: row.id, ...normalizeEventRecord(row.data() || {}) }))
     .filter((event) => includeHidden || isEventVisibleToUsers(event))
     .sort((a, b) => {
       const aStart = Date.parse(a.startsAt || '') || 0;
@@ -73,7 +74,7 @@ export async function getEventById(options = {}) {
   if (!gymId || !eventId) return null;
   const snap = await options.getDoc(getEventDocRef(options, gymId, eventId));
   if (!snap.exists()) return null;
-  return { id: snap.id, ...(snap.data() || {}) };
+  return { id: snap.id, ...normalizeEventRecord(snap.data() || {}) };
 }
 
 async function updateEventStatus(options = {}, nextStatus) {
