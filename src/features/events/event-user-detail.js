@@ -1,4 +1,5 @@
 import { normalizeCompetitionLive } from './event-model.js';
+import { hasAdminConfirmedEventCheckIn } from './event-registration.js';
 
 export function renderUserEventDetail({
   container,
@@ -38,8 +39,9 @@ export function renderUserEventDetail({
     ? (event.status === 'published' ? '' : t('gym.eventsRegistrationClosed'))
     : (event.status === 'published' ? t('gym.eventsRegistrationUnavailable') : t('gym.eventsRegistrationClosed'));
   const competitionLive = normalizeCompetitionLive(event.competition_live);
+  const hasCompetitionLiveCheckIn = hasAdminConfirmedEventCheckIn(registration);
   const competitionLiveSection = competitionLive.enabled
-    ? renderCompetitionLiveSection({ competitionLive, competitionEntry, competitionEntryLoading, competitionViewOpen, availableSectors, formatDateTime })
+    ? renderCompetitionLiveSection({ competitionLive, competitionEntry, competitionEntryLoading, competitionViewOpen, availableSectors, formatDateTime, hasCompetitionLiveCheckIn, t })
     : '';
 
   container.innerHTML = `
@@ -80,7 +82,7 @@ export function renderUserEventDetail({
   });
 }
 
-function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false, availableSectors = [], formatDateTime = (value) => value || '-' } = {}) {
+function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false, availableSectors = [], formatDateTime = (value) => value || '-', hasCompetitionLiveCheckIn = false, t = (key) => key } = {}) {
   const includedSectors = getCompetitionLiveIncludedSectors(competitionLive, availableSectors);
   const sectorsSection = includedSectors.length
     ? `
@@ -93,7 +95,7 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
       `
     : '';
 
-  const entrySection = renderCompetitionLiveEntrySection({ competitionEntry, competitionEntryLoading, competitionViewOpen });
+  const entrySection = renderCompetitionLiveEntrySection({ competitionEntry, competitionEntryLoading, competitionViewOpen, hasCompetitionLiveCheckIn, t });
   const competitionViewSection = competitionViewOpen
     ? renderCompetitionLiveViewSection({ includedSectors })
     : '';
@@ -118,12 +120,14 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
   `;
 }
 
-function renderCompetitionLiveEntrySection({ competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false } = {}) {
+function renderCompetitionLiveEntrySection({ competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false, hasCompetitionLiveCheckIn = false, t = (key) => key } = {}) {
   const completedCount = Array.isArray(competitionEntry?.completedRouteIds) ? competitionEntry.completedRouteIds.length : 0;
   const statusLabel = competitionEntryLoading
     ? 'Caricamento…'
     : (competitionEntry?.status === 'active' ? 'Partecipazione attiva' : (competitionEntry?.status || 'Non disponibile'));
   const actionLabel = competitionViewOpen ? 'Gara aperta' : (competitionEntry ? 'Apri gara' : 'Partecipa alla gara');
+  const canOpenCompetitionLive = hasCompetitionLiveCheckIn && !competitionEntryLoading && !competitionViewOpen;
+  const checkInMessage = hasCompetitionLiveCheckIn ? '' : t('gym.eventsCompetitionLiveCheckInRequired');
 
   return `
     <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
@@ -131,8 +135,9 @@ function renderCompetitionLiveEntrySection({ competitionEntry = null, competitio
         <div class="gym-about-row"><span class="gym-about-label">Entry</span><span class="gym-about-value">${escapeHtml(statusLabel)}</span></div>
         <div class="gym-about-row"><span class="gym-about-label">Route completate</span><span class="gym-about-value">${escapeHtml(String(completedCount))}</span></div>
       </div>
-      <div>
-        <button type="button" class="btn-sec" data-open-competition-live ${competitionEntryLoading || competitionViewOpen ? 'disabled' : ''}>${escapeHtml(actionLabel)}</button>
+      <div style="display:grid; gap:8px;">
+        <button type="button" class="btn-sec" data-open-competition-live ${canOpenCompetitionLive ? '' : 'disabled'}>${escapeHtml(actionLabel)}</button>
+        ${checkInMessage ? `<div class="profile-subtitle">${escapeHtml(checkInMessage)}</div>` : ''}
       </div>
     </div>
   `;

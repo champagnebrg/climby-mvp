@@ -44,6 +44,7 @@ export {
   EVENT_REGISTRATION_STATUS_CHECKED_IN,
   EVENT_REGISTRATION_STATUS_CANCELLED,
   EVENT_REGISTRATION_STATUSES,
+  hasAdminConfirmedEventCheckIn,
   registerUserToEvent,
   cancelRegistration,
   updateRegistrationStatus,

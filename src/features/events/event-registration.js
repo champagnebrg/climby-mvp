@@ -92,6 +92,10 @@ function normalizeRegistrationRecord(id, input = {}) {
   };
 }
 
+export function hasAdminConfirmedEventCheckIn(registration = null) {
+  return normalizeRegistrationStatus(registration?.status) === EVENT_REGISTRATION_STATUS_CHECKED_IN;
+}
+
 export async function getCurrentUserRegistration(options = {}) {
   const { gymId, eventId, userId } = options;
   if (!gymId || !eventId || !userId) return null;
