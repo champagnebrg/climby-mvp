@@ -29,6 +29,7 @@ export function renderAdminEventEditor({
   const competitionLive = normalizeCompetitionLive(record.competition_live || getDefaultCompetitionLive());
   const competitionLiveFieldsDisabled = !competitionLive.enabled;
   const normalizedAvailableSectors = normalizeAvailableSectors(availableSectors);
+  const competitionLiveUsesEventSchedule = !competitionLive.startsAt && !competitionLive.endsAt;
 
   const registrationRows = event?.id
     ? renderRegistrationRows({ registrations, registrationsLoading, registrationsSearch, t, formatDateTime, registrationStatusSavingUserId })
@@ -42,44 +43,104 @@ export function renderAdminEventEditor({
       </div>
     </div>
     <form id="admin-event-form" class="card admin-block-card" style="display:block;">
-      <div class="admin-gym-form">
-        <input type="text" id="admin-event-title" value="${escapeHtml(record.title || '')}" placeholder="${escapeHtml(t('admin.eventsFieldTitle'))}">
-        <input type="text" id="admin-event-summary" value="${escapeHtml(record.summary || '')}" placeholder="${escapeHtml(t('admin.eventsFieldSummary'))}">
-        <input type="datetime-local" id="admin-event-starts-at" value="${escapeHtml(toDateTimeLocalValue(record.startsAt))}">
-        <input type="datetime-local" id="admin-event-ends-at" value="${escapeHtml(toDateTimeLocalValue(record.endsAt))}">
-        <textarea class="full" id="admin-event-description" rows="5" placeholder="${escapeHtml(t('admin.eventsFieldDescription'))}">${escapeHtml(record.description || '')}</textarea>
-        <label class="admin-toggle full"><input type="checkbox" id="admin-event-registration-enabled" ${record.registrationEnabled ? 'checked' : ''}><span>${escapeHtml(t('admin.eventsRegistrationDisabledHint'))}</span></label>
-      </div>
-      <div class="admin-gym-form" style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
-        <div class="full" style="display:grid; gap:4px;">
-          <h5 style="margin:0; font-size:1rem;">Competition live</h5>
-          <p style="margin:0; color:var(--muted); font-size:0.85rem;">Metadata admin per configurare la competizione live senza toccare scoring o UI utente.</p>
+      <div style="display:grid; gap:16px;">
+        ${renderSection({
+          title: t('admin.eventsSectionBasicTitle'),
+          hint: t('admin.eventsSectionBasicHint'),
+          content: `
+            <div class="admin-gym-form">
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldTitle'))}</span>
+                <input type="text" id="admin-event-title" value="${escapeHtml(record.title || '')}" placeholder="${escapeHtml(t('admin.eventsFieldTitle'))}">
+              </label>
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldSummary'))}</span>
+                <input type="text" id="admin-event-summary" value="${escapeHtml(record.summary || '')}" placeholder="${escapeHtml(t('admin.eventsFieldSummary'))}">
+              </label>
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldStartsAt'))}</span>
+                <input type="datetime-local" id="admin-event-starts-at" value="${escapeHtml(toDateTimeLocalValue(record.startsAt))}">
+              </label>
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldEndsAt'))}</span>
+                <input type="datetime-local" id="admin-event-ends-at" value="${escapeHtml(toDateTimeLocalValue(record.endsAt))}">
+              </label>
+              <label class="full" style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldDescription'))}</span>
+                <textarea id="admin-event-description" rows="5" placeholder="${escapeHtml(t('admin.eventsFieldDescription'))}">${escapeHtml(record.description || '')}</textarea>
+              </label>
+              <div class="full" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsEventStatusLabel'))}</span>
+                <span class="admin-file-chip">${escapeHtml(t(`admin.eventsStatus${capitalize(status)}`))}</span>
+              </div>
+            </div>
+          `,
+        })}
+
+        ${renderSection({
+          title: t('admin.eventsSectionRegistrationTitle'),
+          hint: t('admin.eventsSectionRegistrationHint'),
+          content: `
+            <div class="admin-gym-form">
+              <label class="admin-toggle full"><input type="checkbox" id="admin-event-registration-enabled" ${record.registrationEnabled ? 'checked' : ''}><span>${escapeHtml(t('admin.eventsRegistrationDisabledHint'))}</span></label>
+            </div>
+          `,
+        })}
+
+        ${renderSection({
+          title: t('admin.eventsSectionCompetitionTitle'),
+          hint: t('admin.eventsSectionCompetitionHint'),
+          content: `
+            <div class="admin-gym-form">
+              <label class="admin-toggle full"><input type="checkbox" id="admin-event-competition-live-enabled" ${competitionLive.enabled ? 'checked' : ''}><span>${escapeHtml(t('admin.eventsCompetitionEnabled'))}</span></label>
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionStatusLabel'))}</span>
+                <select id="admin-event-competition-live-status" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>
+                  ${renderCompetitionLiveStatusOptions(competitionLive.status, t)}
+                </select>
+              </label>
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionFormatLabel'))}</span>
+                <input type="text" id="admin-event-competition-live-format" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(competitionLive.format || '')}" placeholder="${escapeHtml(t('admin.eventsCompetitionFormatPlaceholder'))}">
+              </label>
+              <label style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionTypeLabel'))}</span>
+                <select id="admin-event-competition-live-route-selection-mode" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>
+                  ${renderCompetitionLiveRouteSelectionModeOptions(competitionLive.routeSelectionMode, t)}
+                </select>
+              </label>
+              <label class="full" style="display:grid; gap:6px;">
+                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionSectorLabel'))}</span>
+                <select id="admin-event-competition-live-sector-ids" data-competition-live-field multiple size="${Math.max(3, Math.min(normalizedAvailableSectors.length || 3, 8))}" ${competitionLiveFieldsDisabled ? 'disabled' : ''}>
+                  ${renderCompetitionLiveSectorOptions(normalizedAvailableSectors, competitionLive.sectorIds)}
+                </select>
+                <span style="font-size:0.78rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionSectorHint'))}</span>
+              </label>
+              ${!normalizedAvailableSectors.length ? `<p class="full" style="margin:0; color:var(--muted); font-size:0.82rem;">${escapeHtml(t('admin.eventsCompetitionNoSectors'))}</p>` : ''}
+              <label class="admin-toggle full"><input type="checkbox" id="admin-event-competition-live-use-event-schedule" ${competitionLiveUsesEventSchedule ? 'checked' : ''}><span>${escapeHtml(t('admin.eventsCompetitionUseEventSchedule'))}</span></label>
+              <div class="full" style="display:grid; gap:10px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
+                <div style="color:var(--muted); font-size:0.82rem;">${escapeHtml(t('admin.eventsCompetitionScheduleHint'))}</div>
+                <div class="admin-gym-form" style="gap:10px;">
+                  <label style="display:grid; gap:6px;">
+                    <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionStartsAtLabel'))}</span>
+                    <input type="datetime-local" id="admin-event-competition-live-starts-at" data-competition-live-field data-competition-live-schedule-field ${competitionLiveFieldsDisabled || competitionLiveUsesEventSchedule ? 'disabled' : ''} value="${escapeHtml(toDateTimeLocalValue(competitionLive.startsAt))}">
+                  </label>
+                  <label style="display:grid; gap:6px;">
+                    <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionEndsAtLabel'))}</span>
+                    <input type="datetime-local" id="admin-event-competition-live-ends-at" data-competition-live-field data-competition-live-schedule-field ${competitionLiveFieldsDisabled || competitionLiveUsesEventSchedule ? 'disabled' : ''} value="${escapeHtml(toDateTimeLocalValue(competitionLive.endsAt))}">
+                  </label>
+                </div>
+              </div>
+            </div>
+          `,
+        })}
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:2px;">
+          <button type="submit" class="btn-main">${escapeHtml(t('admin.eventsSave'))}</button>
+          ${canPublish ? `<button type="button" class="btn-sec" id="admin-event-publish-btn">${escapeHtml(t('admin.publish'))}</button>` : ''}
+          ${canEnd ? `<button type="button" class="btn-sec" id="admin-event-end-btn">${escapeHtml(t('admin.eventsEnd'))}</button>` : ''}
+          ${canCancel ? `<button type="button" class="btn-danger-soft" id="admin-event-cancel-btn">${escapeHtml(t('admin.eventsCancel'))}</button>` : ''}
         </div>
-        <label class="admin-toggle full"><input type="checkbox" id="admin-event-competition-live-enabled" ${competitionLive.enabled ? 'checked' : ''}><span>Enable competition live</span></label>
-        <select id="admin-event-competition-live-status" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>
-          ${renderCompetitionLiveStatusOptions(competitionLive.status)}
-        </select>
-        <input type="text" id="admin-event-competition-live-format" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(competitionLive.format || '')}" placeholder="Format">
-        <input type="text" id="admin-event-competition-live-label" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(competitionLive.label || '')}" placeholder="Label">
-        <select id="admin-event-competition-live-route-selection-mode" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>
-          ${renderCompetitionLiveRouteSelectionModeOptions(competitionLive.routeSelectionMode)}
-        </select>
-        <label class="full" style="display:grid; gap:6px;">
-          <span style="font-size:0.85rem; color:var(--muted);">Settori inclusi nella gara</span>
-          <select id="admin-event-competition-live-sector-ids" data-competition-live-field multiple size="${Math.max(3, Math.min(normalizedAvailableSectors.length || 3, 8))}" ${competitionLiveFieldsDisabled ? 'disabled' : ''}>
-            ${renderCompetitionLiveSectorOptions(normalizedAvailableSectors, competitionLive.sectorIds)}
-          </select>
-        </label>
-        ${!normalizedAvailableSectors.length ? '<p class="full" style="margin:0; color:var(--muted); font-size:0.82rem;">Nessun settore disponibile per questa palestra.</p>' : ''}
-        <input type="datetime-local" id="admin-event-competition-live-starts-at" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(toDateTimeLocalValue(competitionLive.startsAt))}">
-        <input type="datetime-local" id="admin-event-competition-live-ends-at" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(toDateTimeLocalValue(competitionLive.endsAt))}">
-        <textarea class="full" id="admin-event-competition-live-notes" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} rows="3" placeholder="Notes">${escapeHtml(competitionLive.notes || '')}</textarea>
-      </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
-        <button type="submit" class="btn-main">${escapeHtml(t('admin.eventsSave'))}</button>
-        ${canPublish ? `<button type="button" class="btn-sec" id="admin-event-publish-btn">${escapeHtml(t('admin.publish'))}</button>` : ''}
-        ${canEnd ? `<button type="button" class="btn-sec" id="admin-event-end-btn">${escapeHtml(t('admin.eventsEnd'))}</button>` : ''}
-        ${canCancel ? `<button type="button" class="btn-danger-soft" id="admin-event-cancel-btn">${escapeHtml(t('admin.eventsCancel'))}</button>` : ''}
       </div>
     </form>
     ${event?.id ? `
@@ -111,6 +172,10 @@ export function renderAdminEventEditor({
   if (competitionLiveEnabled) {
     competitionLiveEnabled.addEventListener('change', () => syncCompetitionLiveFieldsState(container));
   }
+  const competitionLiveScheduleToggle = container.querySelector('#admin-event-competition-live-use-event-schedule');
+  if (competitionLiveScheduleToggle) {
+    competitionLiveScheduleToggle.addEventListener('change', () => syncCompetitionLiveFieldsState(container));
+  }
   const publishBtn = container.querySelector('#admin-event-publish-btn');
   if (publishBtn) publishBtn.onclick = () => onPublish?.();
   const endBtn = container.querySelector('#admin-event-end-btn');
@@ -130,6 +195,7 @@ export function renderAdminEventEditor({
 
 export function readFormPayload(container, record = {}) {
   const currentCompetitionLive = normalizeCompetitionLive(record.competition_live || getDefaultCompetitionLive());
+  const useEventSchedule = Boolean(container.querySelector('#admin-event-competition-live-use-event-schedule')?.checked);
   return {
     title: container.querySelector('#admin-event-title')?.value || '',
     summary: container.querySelector('#admin-event-summary')?.value || '',
@@ -142,25 +208,37 @@ export function readFormPayload(container, record = {}) {
       enabled: Boolean(container.querySelector('#admin-event-competition-live-enabled')?.checked),
       status: container.querySelector('#admin-event-competition-live-status')?.value || currentCompetitionLive.status,
       format: container.querySelector('#admin-event-competition-live-format')?.value || '',
-      label: container.querySelector('#admin-event-competition-live-label')?.value || '',
+      label: currentCompetitionLive.label,
       routeSelectionMode: container.querySelector('#admin-event-competition-live-route-selection-mode')?.value || currentCompetitionLive.routeSelectionMode,
       sectorIds: readSelectedOptions(container.querySelector('#admin-event-competition-live-sector-ids')),
-      startsAt: fromDateTimeLocalValue(container.querySelector('#admin-event-competition-live-starts-at')?.value || ''),
-      endsAt: fromDateTimeLocalValue(container.querySelector('#admin-event-competition-live-ends-at')?.value || ''),
-      notes: container.querySelector('#admin-event-competition-live-notes')?.value || '',
+      startsAt: useEventSchedule ? '' : fromDateTimeLocalValue(container.querySelector('#admin-event-competition-live-starts-at')?.value || ''),
+      endsAt: useEventSchedule ? '' : fromDateTimeLocalValue(container.querySelector('#admin-event-competition-live-ends-at')?.value || ''),
+      notes: currentCompetitionLive.notes,
       updatedAt: new Date().toISOString(),
     }),
   };
 }
 
-function renderCompetitionLiveStatusOptions(selectedValue = 'draft') {
-  const options = ['draft', 'live', 'closed'];
-  return options.map((value) => `<option value="${escapeHtml(value)}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
+function renderSection({ title = '', hint = '', content = '' }) {
+  return `
+    <section style="display:grid; gap:10px; padding:14px; border:1px solid rgba(255,255,255,0.08); border-radius:16px;">
+      <div>
+        <h5 style="margin:0; font-size:1rem;">${escapeHtml(title)}</h5>
+        <p style="margin:4px 0 0; color:var(--muted); font-size:0.85rem;">${escapeHtml(hint)}</p>
+      </div>
+      ${content}
+    </section>
+  `;
 }
 
-function renderCompetitionLiveRouteSelectionModeOptions(selectedValue = 'all') {
+function renderCompetitionLiveStatusOptions(selectedValue = 'draft', t = (key) => key) {
+  const options = ['draft', 'live', 'closed'];
+  return options.map((value) => `<option value="${escapeHtml(value)}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(t(`admin.eventsCompetitionStatus${capitalize(value)}`))}</option>`).join('');
+}
+
+function renderCompetitionLiveRouteSelectionModeOptions(selectedValue = 'all', t = (key) => key) {
   const options = ['all', 'manual'];
-  return options.map((value) => `<option value="${escapeHtml(value)}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
+  return options.map((value) => `<option value="${escapeHtml(value)}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(t(`admin.eventsCompetitionType${capitalize(value)}`))}</option>`).join('');
 }
 
 function renderCompetitionLiveSectorOptions(sectors = [], selectedSectorIds = []) {
@@ -194,8 +272,12 @@ function readSelectedOptions(selectEl) {
 
 function syncCompetitionLiveFieldsState(container) {
   const enabled = Boolean(container.querySelector('#admin-event-competition-live-enabled')?.checked);
+  const useEventSchedule = Boolean(container.querySelector('#admin-event-competition-live-use-event-schedule')?.checked);
   container.querySelectorAll('[data-competition-live-field]').forEach((field) => {
     field.disabled = !enabled;
+  });
+  container.querySelectorAll('[data-competition-live-schedule-field]').forEach((field) => {
+    field.disabled = !enabled || useEventSchedule;
   });
 }
 
@@ -221,7 +303,6 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
-
 
 function renderRegistrationRows({ registrations = [], registrationsLoading = false, registrationsSearch = '', t = (key) => key, formatDateTime = (value) => value || '-', registrationStatusSavingUserId = '' } = {}) {
   if (registrationsLoading) {
