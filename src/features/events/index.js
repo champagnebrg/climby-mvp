@@ -10,10 +10,14 @@ export {
   COMPETITION_LIVE_STATUS_LIVE,
   COMPETITION_LIVE_STATUS_CLOSED,
   COMPETITION_LIVE_STATUSES,
+  COMPETITION_LIVE_ROUTE_SELECTION_MODE_ALL,
+  COMPETITION_LIVE_ROUTE_SELECTION_MODE_MANUAL,
+  COMPETITION_LIVE_ROUTE_SELECTION_MODES,
   buildEventPayload,
   getDefaultCompetitionLive,
   normalizeCompetitionLive,
   normalizeCompetitionLiveStatus,
+  normalizeCompetitionLiveRouteSelectionMode,
   normalizeEventRecord,
   isEventVisibleToUsers,
 } from './event-model.js';
@@ -47,3 +51,21 @@ export {
   listRegistrationsForEvent,
   countActiveRegistrationsForEvent,
 } from './event-registration.js';
+
+export {
+  COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
+  COMPETITION_LIVE_ENTRY_STATUSES,
+  getDefaultCompetitionLiveEntry,
+  normalizeCompetitionLiveEntryStatus,
+  buildCompetitionLiveEntryPayload,
+  normalizeCompetitionLiveEntryRecord,
+  normalizeCompletedBySector,
+  normalizeRouteIds,
+} from './event-competition-live-entry-model.js';
+
+export {
+  getCompetitionLiveEntryDocRef,
+  getCompetitionLiveEntry,
+  getOrCreateCompetitionLiveEntry,
+  saveCompetitionLiveCompletedRoutes,
+} from './event-competition-live-entry-repository.js';

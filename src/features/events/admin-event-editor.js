@@ -7,6 +7,7 @@ export function renderAdminEventEditor({
   registrations = [],
   registrationCount = 0,
   registrationsLoading = false,
+  availableSectors = [],
   formatDateTime = (value) => value || '-',
   onSave = null,
   onPublish = null,
@@ -27,6 +28,7 @@ export function renderAdminEventEditor({
   const canCancel = (status === 'draft' || status === 'published') && !!event?.id;
   const competitionLive = normalizeCompetitionLive(record.competition_live || getDefaultCompetitionLive());
   const competitionLiveFieldsDisabled = !competitionLive.enabled;
+  const normalizedAvailableSectors = normalizeAvailableSectors(availableSectors);
 
   const registrationRows = event?.id
     ? renderRegistrationRows({ registrations, registrationsLoading, registrationsSearch, t, formatDateTime, registrationStatusSavingUserId })
@@ -59,6 +61,16 @@ export function renderAdminEventEditor({
         </select>
         <input type="text" id="admin-event-competition-live-format" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(competitionLive.format || '')}" placeholder="Format">
         <input type="text" id="admin-event-competition-live-label" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(competitionLive.label || '')}" placeholder="Label">
+        <select id="admin-event-competition-live-route-selection-mode" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>
+          ${renderCompetitionLiveRouteSelectionModeOptions(competitionLive.routeSelectionMode)}
+        </select>
+        <label class="full" style="display:grid; gap:6px;">
+          <span style="font-size:0.85rem; color:var(--muted);">Settori inclusi nella gara</span>
+          <select id="admin-event-competition-live-sector-ids" data-competition-live-field multiple size="${Math.max(3, Math.min(normalizedAvailableSectors.length || 3, 8))}" ${competitionLiveFieldsDisabled ? 'disabled' : ''}>
+            ${renderCompetitionLiveSectorOptions(normalizedAvailableSectors, competitionLive.sectorIds)}
+          </select>
+        </label>
+        ${!normalizedAvailableSectors.length ? '<p class="full" style="margin:0; color:var(--muted); font-size:0.82rem;">Nessun settore disponibile per questa palestra.</p>' : ''}
         <input type="datetime-local" id="admin-event-competition-live-starts-at" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(toDateTimeLocalValue(competitionLive.startsAt))}">
         <input type="datetime-local" id="admin-event-competition-live-ends-at" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(toDateTimeLocalValue(competitionLive.endsAt))}">
         <textarea class="full" id="admin-event-competition-live-notes" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} rows="3" placeholder="Notes">${escapeHtml(competitionLive.notes || '')}</textarea>
@@ -131,6 +143,8 @@ export function readFormPayload(container, record = {}) {
       status: container.querySelector('#admin-event-competition-live-status')?.value || currentCompetitionLive.status,
       format: container.querySelector('#admin-event-competition-live-format')?.value || '',
       label: container.querySelector('#admin-event-competition-live-label')?.value || '',
+      routeSelectionMode: container.querySelector('#admin-event-competition-live-route-selection-mode')?.value || currentCompetitionLive.routeSelectionMode,
+      sectorIds: readSelectedOptions(container.querySelector('#admin-event-competition-live-sector-ids')),
       startsAt: fromDateTimeLocalValue(container.querySelector('#admin-event-competition-live-starts-at')?.value || ''),
       endsAt: fromDateTimeLocalValue(container.querySelector('#admin-event-competition-live-ends-at')?.value || ''),
       notes: container.querySelector('#admin-event-competition-live-notes')?.value || '',
@@ -142,6 +156,40 @@ export function readFormPayload(container, record = {}) {
 function renderCompetitionLiveStatusOptions(selectedValue = 'draft') {
   const options = ['draft', 'live', 'closed'];
   return options.map((value) => `<option value="${escapeHtml(value)}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
+}
+
+function renderCompetitionLiveRouteSelectionModeOptions(selectedValue = 'all') {
+  const options = ['all', 'manual'];
+  return options.map((value) => `<option value="${escapeHtml(value)}" ${selectedValue === value ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
+}
+
+function renderCompetitionLiveSectorOptions(sectors = [], selectedSectorIds = []) {
+  const selected = new Set(Array.isArray(selectedSectorIds) ? selectedSectorIds : []);
+  return sectors
+    .map((sector) => `<option value="${escapeHtml(sector.sectorId)}" ${selected.has(sector.sectorId) ? 'selected' : ''}>${escapeHtml(sector.sectorName)}</option>`)
+    .join('');
+}
+
+function normalizeAvailableSectors(sectors = []) {
+  if (!Array.isArray(sectors)) return [];
+  const seen = new Set();
+  return sectors
+    .map((sector) => ({
+      sectorId: String(sector?.sectorId || '').trim(),
+      sectorName: String(sector?.sectorName || sector?.name || sector?.sectorId || '').trim(),
+    }))
+    .filter((sector) => {
+      if (!sector.sectorId || seen.has(sector.sectorId)) return false;
+      seen.add(sector.sectorId);
+      return true;
+    });
+}
+
+function readSelectedOptions(selectEl) {
+  if (!selectEl) return [];
+  return Array.from(selectEl.selectedOptions || [])
+    .map((option) => option?.value || '')
+    .filter(Boolean);
 }
 
 function syncCompetitionLiveFieldsState(container) {

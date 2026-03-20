@@ -1720,6 +1720,17 @@
                 <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()" data-i18n="viewer.delete"></button>
             </div>
 
+            <div id="competition-live-panel" class="bottom-sheet" style="display:none; max-height:96dvh;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div>
+                        <h2 id="competition-live-panel-title" style="margin:0; color:var(--primary);">Competition live</h2>
+                        <div id="competition-live-panel-subtitle" style="color:var(--muted); margin-top:5px;"></div>
+                    </div>
+                    <button type="button" onclick="window.closeCompetitionLivePanel()" style="background:none; border:none; color:var(--text); font-size:28px;">×</button>
+                </div>
+                <div id="competition-live-routes-list" style="display:grid; gap:8px; margin-top:14px;"></div>
+            </div>
+
             <div id="social-panel" class="bottom-sheet" style="max-height:96dvh;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div><h2 id="social-grade" style="color:var(--primary); margin:0"></h2><div id="avg-stars-view" style="color:var(--yellow); margin-top:5px;"></div></div>
@@ -1789,7 +1800,7 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
-        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, countActiveRegistrationsForEvent } from "./src/features/events/index.js";
+        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, countActiveRegistrationsForEvent, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCompletedRoutes } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
         import { renderUserEventList } from "./src/features/events/event-user-list.js";
@@ -1872,6 +1883,7 @@
         let socialRouteContext = null;
         let socialTrackerState = null;
         let socialTrackerDraftState = null;
+        let competitionLiveViewerState = { active: false, gymId: '', eventId: '', userId: '', sectorIds: [], sectorId: '', sectorName: '', entry: null, routes: [], savingRouteId: '' };
         let currentGymCoverage = { totalUsers: 0, activeUsers: 0, coveragePct: 0 };
         let adminCoverageUnsubscribers = [];
         let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), sectorResetAt: new Map(), routeMeta: new Map(), reviewsByRoute: new Map(), routeUsers: new Map() };
@@ -5389,17 +5401,23 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             let selectedGymEventParticipantCount = 0;
             let selectedGymEventRegistrationLoading = false;
             let selectedGymEventRegistrationSaving = false;
+            let selectedGymCompetitionEntry = null;
+            let selectedGymCompetitionEntryLoading = false;
+            let selectedGymCompetitionViewOpen = false;
             const loadSelectedGymEventRegistration = async () => {
                 const selectedEvent = visibleEvents.find((event) => event.id === selectedGymEventId) || null;
                 if (!selectedEvent || !activeUser?.uid) {
                     selectedGymEventRegistration = null;
                     selectedGymEventParticipantCount = 0;
+                    selectedGymCompetitionEntry = null;
+                    selectedGymCompetitionEntryLoading = false;
                     return;
                 }
                 selectedGymEventRegistrationLoading = true;
+                selectedGymCompetitionEntryLoading = !!selectedEvent?.competition_live?.enabled;
                 renderUserEventsPanel();
                 try {
-                    const [registration, participantCount] = await Promise.all([
+                    const [registration, participantCount, competitionEntry] = await Promise.all([
                         getCurrentUserRegistration({
                             db,
                             collection,
@@ -5421,15 +5439,29 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             gymId: gId,
                             eventId: selectedEvent.id,
                         }),
+                        selectedEvent?.competition_live?.enabled
+                            ? getOrCreateCompetitionLiveEntry({
+                                db,
+                                doc,
+                                getDoc,
+                                setDoc,
+                                gymId: gId,
+                                eventId: selectedEvent.id,
+                                userId: activeUser.uid,
+                              })
+                            : Promise.resolve(null),
                     ]);
                     selectedGymEventRegistration = registration;
                     selectedGymEventParticipantCount = participantCount;
+                    selectedGymCompetitionEntry = competitionEntry;
                 } catch (err) {
                     console.error('[events] failed to load registration state', err);
                     selectedGymEventRegistration = null;
                     selectedGymEventParticipantCount = 0;
+                    selectedGymCompetitionEntry = null;
                 } finally {
                     selectedGymEventRegistrationLoading = false;
+                    selectedGymCompetitionEntryLoading = false;
                     renderUserEventsPanel();
                 }
             };
@@ -5477,6 +5509,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     selectedEventId: selectedGymEventId,
                     onSelect: (eventId) => {
                         selectedGymEventId = eventId;
+                        selectedGymCompetitionViewOpen = false;
                         loadSelectedGymEventRegistration();
                         renderUserEventsPanel();
                     },
@@ -5490,7 +5523,60 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     participantCount: selectedGymEventParticipantCount,
                     registrationLoading: selectedGymEventRegistrationLoading,
                     registrationSaving: selectedGymEventRegistrationSaving,
+                    competitionEntry: selectedGymCompetitionEntry,
+                    competitionEntryLoading: selectedGymCompetitionEntryLoading,
+                    competitionViewOpen: selectedGymCompetitionViewOpen,
+                    availableSectors: sectorMapRows,
                     onToggleRegistration: handleUserEventRegistrationToggle,
+                    onOpenCompetitionLive: async () => {
+                        try {
+                            const selectedEvent = visibleEvents.find((event) => event.id === selectedGymEventId) || null;
+                            if (!selectedEvent?.id || !activeUser?.uid) return;
+                            selectedGymCompetitionEntryLoading = true;
+                            renderUserEventsPanel();
+                            selectedGymCompetitionEntry = await getOrCreateCompetitionLiveEntry({
+                                db,
+                                doc,
+                                getDoc,
+                                setDoc,
+                                gymId: gId,
+                                eventId: selectedEvent.id,
+                                userId: activeUser.uid,
+                            });
+                            selectedGymCompetitionViewOpen = true;
+                        } catch (err) {
+                            console.error('[events] failed to open competition live', err);
+                            alert(err?.message || 'Unable to open competition.');
+                        } finally {
+                            selectedGymCompetitionEntryLoading = false;
+                            renderUserEventsPanel();
+                        }
+                    },
+                    onCloseCompetitionLive: () => {
+                        selectedGymCompetitionViewOpen = false;
+                        renderUserEventsPanel();
+                    },
+                    onOpenCompetitionSector: async (_eventRecord, sectorId) => {
+                        if (!sectorId) return;
+                        const selectedEvent = visibleEvents.find((event) => event.id === selectedGymEventId) || null;
+                        if (!selectedEvent?.id || !activeUser?.uid) return;
+                        const sectorMeta = sectorMapRows.find((sector) => String(sector?.sectorId || '') === sectorId) || null;
+                        competitionLiveViewerState = {
+                            active: true,
+                            gymId: gId,
+                            eventId: selectedEvent.id,
+                            userId: activeUser.uid,
+                            sectorIds: Array.isArray(selectedEvent?.competition_live?.sectorIds) ? selectedEvent.competition_live.sectorIds : [],
+                            sectorId,
+                            sectorName: sectorMeta?.sectorName || sectorMeta?.name || sectorId,
+                            entry: selectedGymCompetitionEntry,
+                            routes: [],
+                            savingRouteId: '',
+                        };
+                        selectedGymCompetitionViewOpen = false;
+                        renderUserEventsPanel();
+                        await open3D(gId, sectorId);
+                    },
                     t,
                     formatDateTime: (value) => formatProfileDate(value, toSafeDate, currentLang),
                 });
@@ -6222,6 +6308,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 registrationsLoading,
                 registrationStatusSavingUserId: adminEventsState.registrationStatusSavingUserId || '',
                 registrationsSearch: adminEventsState.registrationsSearch || '',
+                availableSectors: adminMapEditorState.sectors || [],
                 formatDateTime: (value) => formatProfileDate(value, toSafeDate, currentLang),
                 onRegistrationsSearchChange: (value) => {
                     adminEventsState.registrationsSearch = value || '';
@@ -7806,6 +7893,109 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (guide) guide.style.display = 'none';
         }
 
+        function resetCompetitionLiveViewerState() {
+            competitionLiveViewerState = { active: false, gymId: '', eventId: '', userId: '', sectorIds: [], sectorId: '', sectorName: '', entry: null, routes: [], savingRouteId: '' };
+            setCompetitionLivePanelVisible(false);
+        }
+
+        function isCompetitionLiveSectorAllowed(gymId, sectorId) {
+            return Boolean(competitionLiveViewerState.active && competitionLiveViewerState.gymId === gymId && competitionLiveViewerState.sectorIds.includes(sectorId));
+        }
+
+        function setCompetitionLivePanelVisible(visible) {
+            const panel = document.getElementById('competition-live-panel');
+            if (panel) panel.style.display = visible ? 'block' : 'none';
+        }
+
+        function renderCompetitionLiveRoutesPanel() {
+            const titleEl = document.getElementById('competition-live-panel-title');
+            const subtitleEl = document.getElementById('competition-live-panel-subtitle');
+            const listEl = document.getElementById('competition-live-routes-list');
+            if (!titleEl || !subtitleEl || !listEl) return;
+            if (!competitionLiveViewerState.active || !competitionLiveViewerState.sectorId) {
+                setCompetitionLivePanelVisible(false);
+                listEl.innerHTML = '';
+                return;
+            }
+
+            titleEl.textContent = 'Competition live';
+            subtitleEl.textContent = competitionLiveViewerState.sectorName || competitionLiveViewerState.sectorId || '';
+            const completedIds = new Set(Array.isArray(competitionLiveViewerState.entry?.completedRouteIds) ? competitionLiveViewerState.entry.completedRouteIds : []);
+            listEl.innerHTML = competitionLiveViewerState.routes.length
+                ? competitionLiveViewerState.routes.map((route) => {
+                    const routeId = String(route?.id || '');
+                    const completed = completedIds.has(routeId);
+                    const saving = competitionLiveViewerState.savingRouteId === routeId;
+                    return `
+                        <div style="display:grid; gap:8px; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.02);">
+                            <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <div style="display:grid; gap:2px;">
+                                    <b>${escapeHtml(route.grade || route.name || routeId || '-')}</b>
+                                    <span style="color:var(--muted); font-size:0.8rem;">${escapeHtml(routeId)}</span>
+                                </div>
+                                <span style="color:${completed ? '#62f29b' : 'var(--muted)'}; font-size:0.85rem;">${completed ? '✅ Completata' : '⭕ Non completata'}</span>
+                            </div>
+                            <button type="button" class="btn-sec" data-competition-route-toggle="1" data-route-id="${escapeHtml(routeId)}" ${saving ? 'disabled' : ''}>${completed ? 'Segna non completata' : 'Segna completata'}</button>
+                        </div>
+                    `;
+                }).join('')
+                : '<div class="profile-subtitle">Nessuna route disponibile in questo settore.</div>';
+            listEl.querySelectorAll('[data-competition-route-toggle]').forEach((button) => {
+                button.onclick = async () => {
+                    const routeId = String(button.dataset.routeId || '').trim();
+                    if (!routeId) return;
+                    if (!isCompetitionLiveSectorAllowed(activeGymId, activeSectorId)) return;
+                    const entry = competitionLiveViewerState.entry || await getOrCreateCompetitionLiveEntry({
+                        db,
+                        doc,
+                        getDoc,
+                        setDoc,
+                        gymId: competitionLiveViewerState.gymId,
+                        eventId: competitionLiveViewerState.eventId,
+                        userId: competitionLiveViewerState.userId,
+                    });
+                    const completedRouteIds = new Set(Array.isArray(entry?.completedRouteIds) ? entry.completedRouteIds : []);
+                    const completedBySector = { ...(entry?.completedBySector || {}) };
+                    const sectorCompleted = new Set(Array.isArray(completedBySector[competitionLiveViewerState.sectorId]) ? completedBySector[competitionLiveViewerState.sectorId] : []);
+                    const alreadyCompleted = completedRouteIds.has(routeId);
+                    if (alreadyCompleted) {
+                        completedRouteIds.delete(routeId);
+                        sectorCompleted.delete(routeId);
+                    } else {
+                        completedRouteIds.add(routeId);
+                        sectorCompleted.add(routeId);
+                    }
+                    if (sectorCompleted.size) completedBySector[competitionLiveViewerState.sectorId] = Array.from(sectorCompleted);
+                    else delete completedBySector[competitionLiveViewerState.sectorId];
+                    competitionLiveViewerState.savingRouteId = routeId;
+                    renderCompetitionLiveRoutesPanel();
+                    try {
+                        competitionLiveViewerState.entry = await saveCompetitionLiveCompletedRoutes({
+                            db,
+                            doc,
+                            getDoc,
+                            setDoc,
+                            gymId: competitionLiveViewerState.gymId,
+                            eventId: competitionLiveViewerState.eventId,
+                            userId: competitionLiveViewerState.userId,
+                            data: { completedRouteIds: Array.from(completedRouteIds), completedBySector },
+                        });
+                    } catch (err) {
+                        console.error('[competition-live] route toggle failed', err);
+                        alert(err?.message || 'Unable to save competition route.');
+                    } finally {
+                        competitionLiveViewerState.savingRouteId = '';
+                        renderCompetitionLiveRoutesPanel();
+                    }
+                };
+            });
+            setCompetitionLivePanelVisible(true);
+        }
+
+        window.closeCompetitionLivePanel = () => {
+            resetCompetitionLiveViewerState();
+        };
+
         window.open3D = async (gId, sId) => {
             const viewer = document.getElementById('main-viewer');
             const token = ++currentModelLoadToken;
@@ -7815,6 +8005,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             resetViewerBeforeLoad();
             showLoading(t('loading.loading3d'));
             activeGymId = gId; activeSectorId = sId;
+            if (competitionLiveViewerState.active) {
+                if (!isCompetitionLiveSectorAllowed(gId, sId)) resetCompetitionLiveViewerState();
+                else competitionLiveViewerState.sectorId = sId;
+            }
             setStartGuideVisible(shouldShowStartGuide(gId, sId));
             showViewerMoveGuide();
             console.info('[3d] requested path', requestedPath);
@@ -7882,8 +8076,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (typeof currentViewerRoutesUnsubscriber === 'function') currentViewerRoutesUnsubscriber();
             currentViewerRoutesUnsubscriber = onSnapshot(collection(db, `gyms/${gId}/Sectors/${sId}/routes`), (s) => {
                 document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
+                const competitionRoutes = [];
                 s.forEach(rd => {
                     const r = rd.data();
+                    competitionRoutes.push({ id: rd.id, ...(r || {}) });
                     if (!r?.position || !r?.normal) return;
                     const btn = document.createElement('button');
                     btn.className = 'hotspot'; btn.slot = `hotspot-${rd.id}`;
@@ -7908,6 +8104,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         openSocial(rd.id, r);
                     }
                 });
+                if (isCompetitionLiveSectorAllowed(gId, sId)) {
+                    competitionLiveViewerState.routes = competitionRoutes;
+                    renderCompetitionLiveRoutesPanel();
+                } else {
+                    setCompetitionLivePanelVisible(false);
+                }
             });
         };
 
@@ -8399,7 +8601,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             currentMode = currentMode === 'admin' ? 'user' : 'admin';
             await initDashboard();
         };
-        window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); setStartGuideVisible(false); hideViewerMoveGuide(); document.getElementById('viewer-container').style.display = 'none'; const nav = document.getElementById('app-bottom-nav'); if (nav && currentMode !== 'admin' && currentMode !== 'superadmin') { nav.style.display = ''; nav.classList.add('active'); } hideLoading(); };
+        window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); resetCompetitionLiveViewerState(); setStartGuideVisible(false); hideViewerMoveGuide(); document.getElementById('viewer-container').style.display = 'none'; const nav = document.getElementById('app-bottom-nav'); if (nav && currentMode !== 'admin' && currentMode !== 'superadmin') { nav.style.display = ''; nav.classList.add('active'); } hideLoading(); };
         window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; updateAdminRouteColorPreview(); };
     </script>
 

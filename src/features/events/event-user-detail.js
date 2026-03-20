@@ -7,7 +7,14 @@ export function renderUserEventDetail({
   participantCount = 0,
   registrationLoading = false,
   registrationSaving = false,
+  competitionEntry = null,
+  competitionEntryLoading = false,
+  competitionViewOpen = false,
+  availableSectors = [],
   onToggleRegistration = null,
+  onOpenCompetitionLive = null,
+  onCloseCompetitionLive = null,
+  onOpenCompetitionSector = null,
   t = (key) => key,
   formatDateTime = (value) => value || '-',
 } = {}) {
@@ -32,7 +39,7 @@ export function renderUserEventDetail({
     : (event.status === 'published' ? t('gym.eventsRegistrationUnavailable') : t('gym.eventsRegistrationClosed'));
   const competitionLive = normalizeCompetitionLive(event.competition_live);
   const competitionLiveSection = competitionLive.enabled
-    ? renderCompetitionLiveSection({ competitionLive, formatDateTime })
+    ? renderCompetitionLiveSection({ competitionLive, competitionEntry, competitionEntryLoading, competitionViewOpen, availableSectors, formatDateTime })
     : '';
 
   container.innerHTML = `
@@ -60,9 +67,37 @@ export function renderUserEventDetail({
     if (!canToggleRegistration) return;
     onToggleRegistration?.(event, registration);
   });
+  container.querySelector('[data-open-competition-live]')?.addEventListener('click', () => {
+    onOpenCompetitionLive?.(event, competitionEntry);
+  });
+  container.querySelector('[data-close-competition-live]')?.addEventListener('click', () => {
+    onCloseCompetitionLive?.(event, competitionEntry);
+  });
+  container.querySelectorAll('[data-open-competition-sector]').forEach((button) => {
+    button.addEventListener('click', () => {
+      onOpenCompetitionSector?.(event, button.dataset.sectorId || '');
+    });
+  });
 }
 
-function renderCompetitionLiveSection({ competitionLive = {}, formatDateTime = (value) => value || '-' } = {}) {
+function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false, availableSectors = [], formatDateTime = (value) => value || '-' } = {}) {
+  const includedSectors = getCompetitionLiveIncludedSectors(competitionLive, availableSectors);
+  const sectorsSection = includedSectors.length
+    ? `
+        <div style="margin-top:12px;">
+          <div style="font-size:0.82rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;">Settori inclusi</div>
+          <div style="margin-top:8px; display:grid; gap:8px;">
+            ${includedSectors.map((sector) => renderCompetitionLiveSectorRow(sector)).join('')}
+          </div>
+        </div>
+      `
+    : '';
+
+  const entrySection = renderCompetitionLiveEntrySection({ competitionEntry, competitionEntryLoading, competitionViewOpen });
+  const competitionViewSection = competitionViewOpen
+    ? renderCompetitionLiveViewSection({ includedSectors })
+    : '';
+
   return `
     <div style="margin-top:16px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.02);">
       <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -76,6 +111,86 @@ function renderCompetitionLiveSection({ competitionLive = {}, formatDateTime = (
         ${competitionLive.endsAt ? `<div class="gym-about-row"><span class="gym-about-label">Ends</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.endsAt))}</span></div>` : ''}
         ${competitionLive.notes ? `<div class="gym-about-row"><span class="gym-about-label">Notes</span><span class="gym-about-value" style="white-space:pre-wrap;">${escapeHtml(competitionLive.notes)}</span></div>` : ''}
       </div>
+      ${sectorsSection}
+      ${entrySection}
+      ${competitionViewSection}
+    </div>
+  `;
+}
+
+function renderCompetitionLiveEntrySection({ competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false } = {}) {
+  const completedCount = Array.isArray(competitionEntry?.completedRouteIds) ? competitionEntry.completedRouteIds.length : 0;
+  const statusLabel = competitionEntryLoading
+    ? 'Caricamento…'
+    : (competitionEntry?.status === 'active' ? 'Partecipazione attiva' : (competitionEntry?.status || 'Non disponibile'));
+  const actionLabel = competitionViewOpen ? 'Gara aperta' : (competitionEntry ? 'Apri gara' : 'Partecipa alla gara');
+
+  return `
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
+      <div class="gym-about-content">
+        <div class="gym-about-row"><span class="gym-about-label">Entry</span><span class="gym-about-value">${escapeHtml(statusLabel)}</span></div>
+        <div class="gym-about-row"><span class="gym-about-label">Route completate</span><span class="gym-about-value">${escapeHtml(String(completedCount))}</span></div>
+      </div>
+      <div>
+        <button type="button" class="btn-sec" data-open-competition-live ${competitionEntryLoading || competitionViewOpen ? 'disabled' : ''}>${escapeHtml(actionLabel)}</button>
+      </div>
+    </div>
+  `;
+}
+
+
+function renderCompetitionLiveViewSection({ includedSectors = [] } = {}) {
+  return `
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
+      <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
+        <div style="font-size:0.92rem; font-weight:700;">Settori gara</div>
+        <button type="button" class="btn-sec" data-close-competition-live>Chiudi</button>
+      </div>
+      ${includedSectors.length ? `
+        <div style="display:grid; gap:8px;">
+          ${includedSectors.map((sector) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; background:rgba(255,255,255,0.02);">
+              <div style="display:grid; gap:2px;">
+                <span style="font-weight:600;">${escapeHtml(sector.sectorName || sector.sectorId || '-')}</span>
+                ${sector.sectorId && sector.sectorId !== sector.sectorName ? `<span style="color:var(--muted); font-size:0.8rem;">ID: ${escapeHtml(sector.sectorId)}</span>` : ''}
+              </div>
+              <button type="button" class="btn-sec" data-open-competition-sector data-sector-id="${escapeHtml(sector.sectorId || '')}">Apri modello 3D</button>
+            </div>
+          `).join('')}
+        </div>
+      ` : '<div class="profile-subtitle">Nessun settore disponibile nella gara.</div>'}
+    </div>
+  `;
+}
+
+function getCompetitionLiveIncludedSectors(competitionLive = {}, availableSectors = []) {
+  const sectorIds = Array.isArray(competitionLive?.sectorIds) ? competitionLive.sectorIds : [];
+  if (!sectorIds.length) return [];
+
+  const sectorNameById = new Map((Array.isArray(availableSectors) ? availableSectors : [])
+    .map((sector) => [String(sector?.sectorId || '').trim(), String(sector?.sectorName || sector?.name || sector?.sectorId || '').trim()]));
+
+  return sectorIds
+    .map((sectorId) => {
+      const normalizedId = String(sectorId || '').trim();
+      if (!normalizedId) return null;
+      return {
+        sectorId: normalizedId,
+        sectorName: sectorNameById.get(normalizedId) || normalizedId,
+      };
+    })
+    .filter(Boolean);
+}
+
+function renderCompetitionLiveSectorRow(sector = {}) {
+  const label = sector.sectorName || sector.sectorId || '-';
+  const meta = sector.sectorId && sector.sectorId !== label
+    ? `<span style="color:var(--muted); font-size:0.8rem;">ID: ${escapeHtml(sector.sectorId)}</span>`
+    : '';
+  return `
+    <div style="display:grid; gap:2px; padding:8px 10px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; background:rgba(255,255,255,0.02);">
+      <span style="font-weight:600;">${escapeHtml(label)}</span>
+      ${meta}
     </div>
   `;
 }

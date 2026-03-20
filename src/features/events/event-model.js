@@ -26,6 +26,14 @@ export const COMPETITION_LIVE_STATUSES = Object.freeze([
   COMPETITION_LIVE_STATUS_CLOSED,
 ]);
 
+export const COMPETITION_LIVE_ROUTE_SELECTION_MODE_ALL = 'all';
+export const COMPETITION_LIVE_ROUTE_SELECTION_MODE_MANUAL = 'manual';
+
+export const COMPETITION_LIVE_ROUTE_SELECTION_MODES = Object.freeze([
+  COMPETITION_LIVE_ROUTE_SELECTION_MODE_ALL,
+  COMPETITION_LIVE_ROUTE_SELECTION_MODE_MANUAL,
+]);
+
 export function isSupportedEventType(value) {
   return EVENT_TYPES.includes(value);
 }
@@ -43,6 +51,8 @@ export function getDefaultCompetitionLive() {
     startsAt: null,
     endsAt: null,
     notes: '',
+    sectorIds: [],
+    routeSelectionMode: COMPETITION_LIVE_ROUTE_SELECTION_MODE_ALL,
     updatedAt: null,
   };
 }
@@ -59,6 +69,8 @@ export function normalizeCompetitionLive(input = {}) {
     startsAt: normalizeOptionalDateValue(source.startsAt),
     endsAt: normalizeOptionalDateValue(source.endsAt),
     notes: normalizeText(source.notes),
+    sectorIds: normalizeCompetitionLiveSectorIds(source.sectorIds),
+    routeSelectionMode: normalizeCompetitionLiveRouteSelectionMode(source.routeSelectionMode) || defaults.routeSelectionMode,
     updatedAt: normalizeOptionalDateValue(source.updatedAt),
   };
 }
@@ -120,4 +132,14 @@ export function normalizeOptionalDateValue(value) {
 export function isEventVisibleToUsers(event = {}) {
   const status = normalizeText(event.status).toLowerCase();
   return status === EVENT_STATUS_PUBLISHED || status === 'live' || status === EVENT_STATUS_ENDED;
+}
+
+export function normalizeCompetitionLiveRouteSelectionMode(value) {
+  const normalized = normalizeText(value).toLowerCase();
+  return COMPETITION_LIVE_ROUTE_SELECTION_MODES.includes(normalized) ? normalized : '';
+}
+
+function normalizeCompetitionLiveSectorIds(value) {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(value.map((item) => normalizeText(item)).filter(Boolean)));
 }
