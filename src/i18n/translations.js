@@ -210,6 +210,8 @@ const gymEventFallbacks = {
     eventsRegistrationUnavailable: { it: 'Le iscrizioni a questo evento non sono aperte al momento.', en: 'Sign-ups for this event are not open right now.' },
     eventsRegistrationClosed: { it: 'Le iscrizioni per questo evento non sono disponibili in questa fase.', en: 'Sign-ups for this event are not available at this stage.' },
     eventsRegistrationUpdating: { it: 'Aggiornamento...', en: 'Updating...' },
+    eventsCompetitionLiveCheckInRequired: { it: 'La competition live si sblocca solo dopo il check-in confermato dall\'admin.', en: 'Competition live unlocks only after admin check-in is confirmed.' },
+    eventsCompetitionLiveCheckInAlert: { it: 'Non puoi aprire la competition live finché l\'admin non conferma il tuo check-in.', en: 'You cannot open competition live until admin check-in is confirmed.' },
     eventsGroupLive: { it: 'Live / attivi', en: 'Live / active' },
     eventsGroupUpcoming: { it: 'Prossimi', en: 'Upcoming / future' },
     eventsGroupPast: { it: 'Passati', en: 'Past' }
