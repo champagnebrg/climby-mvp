@@ -5492,6 +5492,15 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     if (registration?.status === 'registered') {
                         await cancelRegistration(baseOptions);
                     } else {
+                        selectedGymEventRegistration = {
+                            ...(selectedGymEventRegistration || {}),
+                            userId: activeUser.uid,
+                            status: 'registered',
+                            displayName: activeUser.displayName || currentUserName || 'Climber',
+                            username: currentUserName || '',
+                            avatarUrl: activeUser.photoURL || null,
+                        };
+                        renderUserEventsPanel();
                         await registerUserToEvent({
                             ...baseOptions,
                             data: {

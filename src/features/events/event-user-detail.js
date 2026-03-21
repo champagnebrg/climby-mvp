@@ -28,16 +28,25 @@ export function renderUserEventDetail({
 
   const isRegistered = registration?.status === 'registered';
   const isCheckedIn = registration?.status === 'checked_in';
-  const canToggleRegistration = Boolean(event.registrationEnabled) && event.status === 'published' && !registrationLoading && !registrationSaving && !isCheckedIn;
+  const isEventClosed = event.status !== 'published';
+  const isRegistrationClosed = !event.registrationEnabled;
+  const canRegister = !isEventClosed && !isRegistrationClosed && !registrationLoading && !registrationSaving && !isRegistered && !isCheckedIn;
   const statusLabel = isRegistered
     ? t('gym.eventsRegistrationRegistered')
     : (isCheckedIn
       ? t('gym.eventsRegistrationChecked_in')
       : (registration?.status === 'cancelled' ? t('gym.eventsRegistrationCancelled') : t('gym.eventsRegistrationNotRegistered')));
-  const buttonLabel = isRegistered ? t('gym.eventsCancelRegistration') : t('gym.eventsRegister');
-  const registrationAvailabilityMessage = event.registrationEnabled
-    ? (event.status === 'published' ? '' : t('gym.eventsRegistrationClosed'))
-    : (event.status === 'published' ? t('gym.eventsRegistrationUnavailable') : t('gym.eventsRegistrationClosed'));
+  const buttonLabel = isEventClosed
+    ? t('gym.eventsRegistrationEventClosedCta')
+    : (isRegistrationClosed
+      ? t('gym.eventsRegistrationClosedCta')
+      : (isCheckedIn
+        ? t('gym.eventsRegistrationCheckInCompleted')
+        : (isRegistered ? t('gym.eventsRegistrationRegisteredCta') : t('gym.eventsRegister'))));
+  const buttonClass = canRegister ? 'btn-main' : 'btn-sec';
+  const registrationAvailabilityMessage = isEventClosed
+    ? t('gym.eventsRegistrationClosed')
+    : (isRegistrationClosed ? t('gym.eventsRegistrationUnavailable') : '');
   const competitionLive = normalizeCompetitionLive(event.competition_live);
   const hasCompetitionLiveCheckIn = hasAdminConfirmedEventCheckIn(registration);
   const competitionLiveSection = competitionLive.enabled
@@ -56,17 +65,15 @@ export function renderUserEventDetail({
       ${event.summary ? `<p class="profile-subtitle" style="margin-top:12px;">${escapeHtml(event.summary)}</p>` : ''}
       <div style="margin-top:10px; white-space:pre-wrap; line-height:1.5;">${escapeHtml(event.description || '')}</div>
       ${competitionLiveSection}
-      ${event.registrationEnabled ? `
-        <div style="margin-top:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-          <button type="button" class="${isRegistered ? 'btn-sec' : 'btn-main'}" data-event-registration-toggle ${canToggleRegistration ? '' : 'disabled'}>${escapeHtml(registrationSaving ? t('gym.eventsRegistrationUpdating') : buttonLabel)}</button>
-        </div>
-        ${registrationAvailabilityMessage && !isRegistered && !isCheckedIn ? `<div class="profile-subtitle" style="margin-top:8px;">${escapeHtml(registrationAvailabilityMessage)}</div>` : ''}
-      ` : `<div class="profile-subtitle" style="margin-top:16px;">${escapeHtml(registrationAvailabilityMessage)}</div>`}
+      <div style="margin-top:16px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button type="button" class="${buttonClass}" data-event-registration-toggle ${canRegister ? '' : 'disabled'}>${escapeHtml(registrationSaving ? t('gym.eventsRegistrationUpdating') : buttonLabel)}</button>
+      </div>
+      ${registrationAvailabilityMessage && !isRegistered && !isCheckedIn ? `<div class="profile-subtitle" style="margin-top:8px;">${escapeHtml(registrationAvailabilityMessage)}</div>` : ''}
     </div>
   `;
 
   container.querySelector('[data-event-registration-toggle]')?.addEventListener('click', () => {
-    if (!canToggleRegistration) return;
+    if (!canRegister) return;
     onToggleRegistration?.(event, registration);
   });
   container.querySelector('[data-open-competition-live]')?.addEventListener('click', () => {
