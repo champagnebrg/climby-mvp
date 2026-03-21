@@ -150,24 +150,44 @@ service cloud.firestore {
         }
 
         match /competitionLiveEntries/{userId} {
+          function parentEventCompetitionLiveOpen() {
+            return exists(/databases/$(database)/documents/gyms/$(gymId)/events/$(eventId))
+              && get(/databases/$(database)/documents/gyms/$(gymId)/events/$(eventId)).data.competition_live.status != 'closed';
+          }
+
+          function hasValidCompetitionLiveEntryScore() {
+            return request.resource.data.score == request.resource.data.completedRouteIds.size();
+          }
+
           allow list: if canManageGym(gymId);
           allow get: if canManageGym(gymId) || (verifiedEmail() && request.auth.uid == userId);
-          allow create: if canManageGym(gymId) || (
-            verifiedEmail()
-            && request.auth.uid == userId
-            && request.resource.data.userId == request.auth.uid
-          );
-          allow update: if canManageGym(gymId) || (
-            verifiedEmail()
-            && request.auth.uid == userId
-            && resource.data.userId == request.auth.uid
-            && request.resource.data.userId == request.auth.uid
-          );
-          allow delete: if canManageGym(gymId) || (
-            verifiedEmail()
-            && request.auth.uid == userId
-            && resource.data.userId == request.auth.uid
-          );
+          allow create: if (
+            canManageGym(gymId) || (
+              verifiedEmail()
+              && request.auth.uid == userId
+              && request.resource.data.userId == request.auth.uid
+            )
+          )
+          && parentEventCompetitionLiveOpen()
+          && hasValidCompetitionLiveEntryScore();
+          allow update: if (
+            canManageGym(gymId) || (
+              verifiedEmail()
+              && request.auth.uid == userId
+              && resource.data.userId == request.auth.uid
+              && request.resource.data.userId == request.auth.uid
+            )
+          )
+          && parentEventCompetitionLiveOpen()
+          && hasValidCompetitionLiveEntryScore();
+          allow delete: if (
+            canManageGym(gymId) || (
+              verifiedEmail()
+              && request.auth.uid == userId
+              && resource.data.userId == request.auth.uid
+            )
+          )
+          && parentEventCompetitionLiveOpen();
         }
       }
 

@@ -1,0 +1,10 @@
+{
+  "firestore": {
+    "rules": "rules_firestore.txt"
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080
+    }
+  }
+}
