@@ -3,6 +3,7 @@ import {
   getDefaultCompetitionLiveEntry,
   normalizeCompetitionLiveEntryRecord,
 } from './event-competition-live-entry-model.js';
+import { COMPETITION_LIVE_STATUS_CLOSED, normalizeCompetitionLive } from './event-model.js';
 
 function ensureDb(options = {}) {
   if (!options.db) throw new Error('Competition live entry repository requires db');
@@ -94,6 +95,11 @@ export async function saveCompetitionLiveCompletedRoutes(options = {}) {
     throw new Error('saveCompetitionLiveCompletedRoutes requires gymId, eventId, and userId');
   }
 
+  const competitionLive = await getCompetitionLiveState(options);
+  if (competitionLive.status === COMPETITION_LIVE_STATUS_CLOSED) {
+    return getCompetitionLiveEntry(options);
+  }
+
   ensureSetDoc(options);
   const existing = await getOrCreateCompetitionLiveEntry(options);
   const payload = buildCompetitionLiveEntryPayload({
@@ -110,4 +116,22 @@ export async function saveCompetitionLiveCompletedRoutes(options = {}) {
 
   await options.setDoc(getCompetitionLiveEntryDocRef(options, gymId, eventId, userId), payload, { merge: true });
   return normalizeCompetitionLiveEntryRecord(userId, payload);
+}
+
+async function getCompetitionLiveState(options = {}) {
+  if (options.event?.competition_live) {
+    return normalizeCompetitionLive(options.event.competition_live);
+  }
+
+  if (options.competitionLive) {
+    return normalizeCompetitionLive(options.competitionLive);
+  }
+
+  const { gymId, eventId } = options;
+  if (!gymId || !eventId) return normalizeCompetitionLive();
+
+  ensureGetDoc(options);
+  const eventSnap = await options.getDoc(options.doc(options.db, 'gyms', gymId, 'events', eventId));
+  if (!eventSnap.exists()) return normalizeCompetitionLive();
+  return normalizeCompetitionLive(eventSnap.data()?.competition_live);
 }
