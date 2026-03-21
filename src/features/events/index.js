@@ -66,7 +66,9 @@ export {
 
 export {
   getCompetitionLiveEntryDocRef,
+  getCompetitionLiveEntriesCollectionRef,
   getCompetitionLiveEntry,
+  listCompetitionLiveEntries,
   getOrCreateCompetitionLiveEntry,
   saveCompetitionLiveCompletedRoutes,
 } from './event-competition-live-entry-repository.js';

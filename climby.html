@@ -1800,7 +1800,7 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
-        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCompletedRoutes } from "./src/features/events/index.js";
+        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCompletedRoutes } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
         import { renderUserEventList } from "./src/features/events/event-user-list.js";
@@ -1848,7 +1848,7 @@
         let activePublicProfileUid = null;
         let gym3DStatusMap = new Map();
         let gym3DUnsubscribers = [];
-        let adminEventsState = { events: [], selectedEventId: '', draft: null, registrationsByEventId: {}, registrationsLoading: {}, registrationStatusSavingUserId: '', registrationsSearch: '', statusFilter: 'all' };
+        let adminEventsState = { events: [], selectedEventId: '', draft: null, registrationsByEventId: {}, registrationsLoading: {}, competitionEntriesByEventId: {}, competitionEntriesLoading: {}, registrationStatusSavingUserId: '', registrationsSearch: '', statusFilter: 'all' };
         let lastUsersSnap = null;
         let followingFeedMap = new Map();
         let followingProgressUnsubscribers = [];
@@ -6242,6 +6242,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 .filter(([eventId]) => events.some((event) => event.id === eventId)));
             adminEventsState.registrationsLoading = Object.fromEntries(Object.entries(adminEventsState.registrationsLoading || {})
                 .filter(([eventId]) => events.some((event) => event.id === eventId)));
+            adminEventsState.competitionEntriesByEventId = Object.fromEntries(Object.entries(adminEventsState.competitionEntriesByEventId || {})
+                .filter(([eventId]) => events.some((event) => event.id === eventId)));
+            adminEventsState.competitionEntriesLoading = Object.fromEntries(Object.entries(adminEventsState.competitionEntriesLoading || {})
+                .filter(([eventId]) => events.some((event) => event.id === eventId)));
             adminEventsState.registrationStatusSavingUserId = '';
             adminEventsState.registrationsSearch = '';
             renderAdminEventsPanel();
@@ -6271,6 +6275,28 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             }
         }
 
+        async function loadAdminCompetitionEntries(eventId) {
+            if (!realUserGymId || !eventId || adminEventsState.competitionEntriesLoading?.[eventId]) return;
+            adminEventsState.competitionEntriesLoading = { ...adminEventsState.competitionEntriesLoading, [eventId]: true };
+            renderAdminEventsPanel();
+            try {
+                const competitionEntries = await listCompetitionLiveEntries({
+                    db,
+                    collection,
+                    getDocs,
+                    gymId: realUserGymId,
+                    eventId,
+                });
+                adminEventsState.competitionEntriesByEventId = { ...adminEventsState.competitionEntriesByEventId, [eventId]: competitionEntries };
+            } catch (err) {
+                console.error('[events] competition entries load failed', err);
+                adminEventsState.competitionEntriesByEventId = { ...adminEventsState.competitionEntriesByEventId, [eventId]: [] };
+            } finally {
+                adminEventsState.competitionEntriesLoading = { ...adminEventsState.competitionEntriesLoading, [eventId]: false };
+                renderAdminEventsPanel();
+            }
+        }
+
         function renderAdminEventsPanel() {
             const listEl = document.getElementById('admin-events-list');
             const editorEl = document.getElementById('admin-events-editor');
@@ -6279,8 +6305,13 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const selectedEvent = adminEventsState.events.find((event) => event.id === adminEventsState.selectedEventId) || null;
             const eventRegistrations = selectedEvent?.id ? (adminEventsState.registrationsByEventId?.[selectedEvent.id] || []) : [];
             const registrationsLoading = selectedEvent?.id ? Boolean(adminEventsState.registrationsLoading?.[selectedEvent.id]) : false;
+            const competitionEntries = selectedEvent?.id ? (adminEventsState.competitionEntriesByEventId?.[selectedEvent.id] || []) : [];
+            const competitionEntriesLoading = selectedEvent?.id ? Boolean(adminEventsState.competitionEntriesLoading?.[selectedEvent.id]) : false;
             if (selectedEvent?.id && !adminEventsState.registrationsByEventId?.[selectedEvent.id] && !registrationsLoading) {
                 loadAdminEventRegistrations(selectedEvent.id);
+            }
+            if (selectedEvent?.competition_live?.enabled && selectedEvent?.id && !adminEventsState.competitionEntriesByEventId?.[selectedEvent.id] && !competitionEntriesLoading) {
+                loadAdminCompetitionEntries(selectedEvent.id);
             }
             const draftEvent = adminEventsState.draft || (selectedEvent ? { ...selectedEvent } : createDraftEvent({
                 gymId: realUserGymId,
@@ -6333,6 +6364,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 registrations: eventRegistrations,
                 registrationCount: eventRegistrations.filter((registration) => ['registered', 'checked_in'].includes(registration.status)).length,
                 registrationsLoading,
+                competitionEntries,
+                competitionEntriesLoading,
                 registrationStatusSavingUserId: adminEventsState.registrationStatusSavingUserId || '',
                 registrationsSearch: adminEventsState.registrationsSearch || '',
                 availableSectors: adminMapEditorState.sectors || [],

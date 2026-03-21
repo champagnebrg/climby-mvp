@@ -13,6 +13,7 @@ export function getDefaultCompetitionLiveEntry() {
     gymId: '',
     userId: '',
     status: COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
+    score: 0,
     completedRouteIds: [],
     completedBySector: {},
     createdAt: null,
@@ -29,13 +30,15 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
   const defaults = getDefaultCompetitionLiveEntry();
   const createdAt = normalizeOptionalDateValue(input.createdAt) || existing?.createdAt || normalizeOptionalDateValue(now);
   const updatedAt = normalizeOptionalDateValue(now);
+  const completedRouteIds = normalizeRouteIds(input.completedRouteIds);
 
   return {
     eventId: normalizeText(input.eventId),
     gymId: normalizeText(input.gymId),
     userId: normalizeText(input.userId),
     status: normalizeCompetitionLiveEntryStatus(input.status) || existing?.status || defaults.status,
-    completedRouteIds: normalizeRouteIds(input.completedRouteIds),
+    score: completedRouteIds.length,
+    completedRouteIds,
     completedBySector: normalizeCompletedBySector(input.completedBySector),
     createdAt,
     updatedAt,
@@ -43,13 +46,16 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
 }
 
 export function normalizeCompetitionLiveEntryRecord(id, input = {}) {
+  const completedRouteIds = normalizeRouteIds(input.completedRouteIds);
+
   return {
     id: normalizeText(id || input.userId),
     eventId: normalizeText(input.eventId),
     gymId: normalizeText(input.gymId),
     userId: normalizeText(input.userId),
     status: normalizeCompetitionLiveEntryStatus(input.status) || COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
-    completedRouteIds: normalizeRouteIds(input.completedRouteIds),
+    score: Number.isFinite(input.score) ? input.score : completedRouteIds.length,
+    completedRouteIds,
     completedBySector: normalizeCompletedBySector(input.completedBySector),
     createdAt: normalizeOptionalDateValue(input.createdAt),
     updatedAt: normalizeOptionalDateValue(input.updatedAt),
