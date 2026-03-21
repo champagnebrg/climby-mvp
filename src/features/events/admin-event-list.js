@@ -155,8 +155,9 @@ function isEventLive(event = {}) {
 
 function eventHasPastEnded(event = {}) {
   const now = Date.now();
+  const status = event?.status || '';
   const endsAt = Date.parse(event?.endsAt || event?.startsAt || '') || 0;
-  return (event?.status || '') === 'ended' || ((event?.status || '') !== 'cancelled' && endsAt > 0 && endsAt < now);
+  return status === 'ended' || status === 'cancelled' || (endsAt > 0 && endsAt < now);
 }
 
 function escapeHtml(value) {

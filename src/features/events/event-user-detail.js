@@ -84,86 +84,81 @@ export function renderUserEventDetail({
 
 function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false, availableSectors = [], formatDateTime = (value) => value || '-', hasCompetitionLiveCheckIn = false, t = (key) => key } = {}) {
   const includedSectors = getCompetitionLiveIncludedSectors(competitionLive, availableSectors);
-  const sectorsSection = includedSectors.length
-    ? `
-        <div style="margin-top:12px;">
-          <div style="font-size:0.82rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;">Settori inclusi</div>
-          <div style="margin-top:8px; display:grid; gap:8px;">
-            ${includedSectors.map((sector) => renderCompetitionLiveSectorRow(sector)).join('')}
-          </div>
-        </div>
-      `
-    : '';
-
-  const entrySection = renderCompetitionLiveEntrySection({ competitionEntry, competitionEntryLoading, competitionViewOpen, hasCompetitionLiveCheckIn, t });
+  const completedCount = Array.isArray(competitionEntry?.completedRouteIds) ? competitionEntry.completedRouteIds.length : 0;
+  const isClosed = isCompetitionLiveClosed(competitionLive);
+  const accessLabel = getCompetitionAccessLabel({ competitionEntryLoading, hasCompetitionLiveCheckIn, competitionEntry, competitionViewOpen, isClosed, t });
+  const actionLabel = getCompetitionActionLabel({ competitionEntryLoading, hasCompetitionLiveCheckIn, competitionEntry, competitionViewOpen, isClosed, t });
+  const canOpenCompetitionLive = hasCompetitionLiveCheckIn && !competitionEntryLoading && !competitionViewOpen && !isClosed;
+  const helperMessage = isClosed
+    ? t('gym.eventsCompetitionClosedMessage')
+    : (hasCompetitionLiveCheckIn ? t('gym.eventsCompetitionLiveReadyHint') : t('gym.eventsCompetitionLiveCheckInRequired'));
   const competitionViewSection = competitionViewOpen
-    ? renderCompetitionLiveViewSection({ includedSectors })
+    ? renderCompetitionLiveViewSection({ includedSectors, competitionEntry, t })
     : '';
 
   return `
     <div style="margin-top:16px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.02);">
       <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
-        <h5 style="margin:0; font-size:1rem;">Competition live</h5>
-        <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; ${getCompetitionLiveBadgeStyle(competitionLive.status)}">${escapeHtml(competitionLive.status || 'draft')}</span>
+        <div style="display:grid; gap:4px;">
+          <h5 style="margin:0; font-size:1rem;">${escapeHtml(t('gym.eventsCompetitionLiveTitle'))}</h5>
+          <div style="color:var(--muted); font-size:0.84rem;">${escapeHtml(t('gym.eventsCompetitionLiveSubtitle'))}</div>
+        </div>
+        <span style="display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:0.78rem; font-weight:700; ${getCompetitionAccessBadgeStyle({ hasCompetitionLiveCheckIn, competitionViewOpen, isClosed })}">${escapeHtml(accessLabel)}</span>
       </div>
+      ${competitionLive.label ? `<div style="margin-top:10px; font-weight:600;">${escapeHtml(competitionLive.label)}</div>` : ''}
       <div class="gym-about-content" style="margin-top:10px;">
-        ${competitionLive.label ? `<div class="gym-about-row"><span class="gym-about-label">Label</span><span class="gym-about-value">${escapeHtml(competitionLive.label)}</span></div>` : ''}
-        ${competitionLive.format ? `<div class="gym-about-row"><span class="gym-about-label">Format</span><span class="gym-about-value">${escapeHtml(competitionLive.format)}</span></div>` : ''}
-        ${competitionLive.startsAt ? `<div class="gym-about-row"><span class="gym-about-label">Starts</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.startsAt))}</span></div>` : ''}
-        ${competitionLive.endsAt ? `<div class="gym-about-row"><span class="gym-about-label">Ends</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.endsAt))}</span></div>` : ''}
-        ${competitionLive.notes ? `<div class="gym-about-row"><span class="gym-about-label">Notes</span><span class="gym-about-value" style="white-space:pre-wrap;">${escapeHtml(competitionLive.notes)}</span></div>` : ''}
+        ${competitionLive.startsAt ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionLiveStartsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.startsAt))}</span></div>` : ''}
+        ${competitionLive.endsAt ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionLiveEndsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.endsAt))}</span></div>` : ''}
+        <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionAccessLabel'))}</span><span class="gym-about-value">${escapeHtml(accessLabel)}</span></div>
+        <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionCompletedLabel'))}</span><span class="gym-about-value">${escapeHtml(String(completedCount))}</span></div>
+        <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionSectorsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatCompetitionSectorCount(includedSectors.length, t))}</span></div>
       </div>
-      ${sectorsSection}
-      ${entrySection}
+      <div class="profile-subtitle" style="margin-top:10px;">${escapeHtml(helperMessage)}</div>
+      <div style="margin-top:12px; display:grid; gap:8px;">
+        <button type="button" class="btn-sec" data-open-competition-live ${canOpenCompetitionLive ? '' : 'disabled'}>${escapeHtml(actionLabel)}</button>
+      </div>
       ${competitionViewSection}
     </div>
   `;
 }
 
-function renderCompetitionLiveEntrySection({ competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false, hasCompetitionLiveCheckIn = false, t = (key) => key } = {}) {
-  const completedCount = Array.isArray(competitionEntry?.completedRouteIds) ? competitionEntry.completedRouteIds.length : 0;
-  const statusLabel = competitionEntryLoading
-    ? 'Caricamento…'
-    : (competitionEntry?.status === 'active' ? 'Partecipazione attiva' : (competitionEntry?.status || 'Non disponibile'));
-  const actionLabel = competitionViewOpen ? 'Gara aperta' : (competitionEntry ? 'Apri gara' : 'Partecipa alla gara');
-  const canOpenCompetitionLive = hasCompetitionLiveCheckIn && !competitionEntryLoading && !competitionViewOpen;
-  const checkInMessage = hasCompetitionLiveCheckIn ? '' : t('gym.eventsCompetitionLiveCheckInRequired');
-
+function renderCompetitionLiveViewSection({ includedSectors = [], competitionEntry = null, t = (key) => key } = {}) {
   return `
     <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
-      <div class="gym-about-content">
-        <div class="gym-about-row"><span class="gym-about-label">Entry</span><span class="gym-about-value">${escapeHtml(statusLabel)}</span></div>
-        <div class="gym-about-row"><span class="gym-about-label">Route completate</span><span class="gym-about-value">${escapeHtml(String(completedCount))}</span></div>
+      <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:0.92rem; font-weight:700;">${escapeHtml(t('gym.eventsCompetitionSectorListTitle'))}</div>
+          <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">${escapeHtml(t('gym.eventsCompetitionSectorListHint'))}</div>
+        </div>
+        <button type="button" class="btn-sec" data-close-competition-live>${escapeHtml(t('gym.eventsCompetitionCloseCta'))}</button>
       </div>
-      <div style="display:grid; gap:8px;">
-        <button type="button" class="btn-sec" data-open-competition-live ${canOpenCompetitionLive ? '' : 'disabled'}>${escapeHtml(actionLabel)}</button>
-        ${checkInMessage ? `<div class="profile-subtitle">${escapeHtml(checkInMessage)}</div>` : ''}
-      </div>
+      ${includedSectors.length ? `
+        <div style="display:grid; gap:8px;">
+          ${includedSectors.map((sector, index) => renderCompetitionLiveSectorRow(sector, index, competitionEntry, t)).join('')}
+        </div>
+      ` : `<div class="profile-subtitle">${escapeHtml(t('gym.eventsCompetitionNoSectors'))}</div>`}
     </div>
   `;
 }
 
+function renderCompetitionLiveSectorRow(sector = {}, index = 0, competitionEntry = null, t = (key) => key) {
+  const label = sector.sectorName || sector.sectorId || '-';
+  const completedCount = getCompetitionSectorCompletedCount(sector.sectorId, competitionEntry);
+  const progressLabel = completedCount > 0
+    ? formatCompetitionSectorCompletedLabel(completedCount, t)
+    : t('gym.eventsCompetitionSectorNoProgress');
+  const progressStyle = completedCount > 0
+    ? 'color:#62f29b; font-weight:700;'
+    : 'color:var(--muted);';
 
-function renderCompetitionLiveViewSection({ includedSectors = [] } = {}) {
   return `
-    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
-      <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
-        <div style="font-size:0.92rem; font-weight:700;">Settori gara</div>
-        <button type="button" class="btn-sec" data-close-competition-live>Chiudi</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; background:rgba(255,255,255,0.02);">
+      <div style="display:grid; gap:4px;">
+        <span style="font-weight:600;">${escapeHtml(label)}</span>
+        <span style="color:var(--muted); font-size:0.8rem;">${escapeHtml(formatCompetitionSectorItemHint(index + 1, t))}</span>
+        <span style="font-size:0.82rem; ${progressStyle}">${escapeHtml(progressLabel)}</span>
       </div>
-      ${includedSectors.length ? `
-        <div style="display:grid; gap:8px;">
-          ${includedSectors.map((sector) => `
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; background:rgba(255,255,255,0.02);">
-              <div style="display:grid; gap:2px;">
-                <span style="font-weight:600;">${escapeHtml(sector.sectorName || sector.sectorId || '-')}</span>
-                ${sector.sectorId && sector.sectorId !== sector.sectorName ? `<span style="color:var(--muted); font-size:0.8rem;">ID: ${escapeHtml(sector.sectorId)}</span>` : ''}
-              </div>
-              <button type="button" class="btn-sec" data-open-competition-sector data-sector-id="${escapeHtml(sector.sectorId || '')}">Apri modello 3D</button>
-            </div>
-          `).join('')}
-        </div>
-      ` : '<div class="profile-subtitle">Nessun settore disponibile nella gara.</div>'}
+      <button type="button" class="btn-sec" data-open-competition-sector data-sector-id="${escapeHtml(sector.sectorId || '')}">${escapeHtml(t('gym.eventsCompetitionOpenSectorCta'))}</button>
     </div>
   `;
 }
@@ -187,27 +182,59 @@ function getCompetitionLiveIncludedSectors(competitionLive = {}, availableSector
     .filter(Boolean);
 }
 
-function renderCompetitionLiveSectorRow(sector = {}) {
-  const label = sector.sectorName || sector.sectorId || '-';
-  const meta = sector.sectorId && sector.sectorId !== label
-    ? `<span style="color:var(--muted); font-size:0.8rem;">ID: ${escapeHtml(sector.sectorId)}</span>`
-    : '';
-  return `
-    <div style="display:grid; gap:2px; padding:8px 10px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; background:rgba(255,255,255,0.02);">
-      <span style="font-weight:600;">${escapeHtml(label)}</span>
-      ${meta}
-    </div>
-  `;
+
+function getCompetitionSectorCompletedCount(sectorId = '', competitionEntry = null) {
+  const completedBySector = competitionEntry?.completedBySector || {};
+  const routeIds = Array.isArray(completedBySector?.[sectorId]) ? completedBySector[sectorId] : [];
+  return routeIds.length;
 }
 
-function getCompetitionLiveBadgeStyle(status) {
-  if (status === 'live') {
-    return 'background:rgba(43,224,125,0.14); color:#62f29b; border:1px solid rgba(43,224,125,0.35);';
-  }
-  if (status === 'closed') {
+function formatCompetitionSectorCompletedLabel(count = 0, t = (key) => key) {
+  return `${count} ${t(count === 1 ? 'gym.eventsCompetitionSectorCompletedSingle' : 'gym.eventsCompetitionSectorCompletedPlural')}`;
+}
+
+function formatCompetitionSectorCount(count = 0, t = (key) => key) {
+  return `${count} ${t(count === 1 ? 'gym.eventsCompetitionSectorCountSingle' : 'gym.eventsCompetitionSectorCountPlural')}`;
+}
+
+function formatCompetitionSectorItemHint(index = 1, t = (key) => key) {
+  return `${t('gym.eventsCompetitionSectorLabel')} ${index}`;
+}
+function getCompetitionAccessLabel({ competitionEntryLoading = false, hasCompetitionLiveCheckIn = false, competitionEntry = null, competitionViewOpen = false, isClosed = false, t = (key) => key } = {}) {
+  if (competitionEntryLoading) return t('gym.eventsCompetitionLoading');
+  if (isClosed) return t('gym.eventsCompetitionAccessClosed');
+  if (!hasCompetitionLiveCheckIn) return t('gym.eventsCompetitionAccessLocked');
+  if (competitionViewOpen) return t('gym.eventsCompetitionAccessOpen');
+  if (competitionEntry?.status === 'active') return t('gym.eventsCompetitionAccessReady');
+  return t('gym.eventsCompetitionAccessAvailable');
+}
+
+function getCompetitionActionLabel({ competitionEntryLoading = false, hasCompetitionLiveCheckIn = false, competitionEntry = null, competitionViewOpen = false, isClosed = false, t = (key) => key } = {}) {
+  if (competitionEntryLoading) return t('gym.eventsCompetitionLoading');
+  if (isClosed) return t('gym.eventsCompetitionActionClosed');
+  if (!hasCompetitionLiveCheckIn) return t('gym.eventsCompetitionActionLocked');
+  if (competitionViewOpen) return t('gym.eventsCompetitionActionOpen');
+  if (competitionEntry?.status === 'active') return t('gym.eventsCompetitionActionContinue');
+  return t('gym.eventsCompetitionActionStart');
+}
+
+function getCompetitionAccessBadgeStyle({ hasCompetitionLiveCheckIn = false, competitionViewOpen = false, isClosed = false } = {}) {
+  if (isClosed) {
     return 'background:rgba(255,107,107,0.14); color:#ff9b9b; border:1px solid rgba(255,107,107,0.35);';
   }
+  if (competitionViewOpen) {
+    return 'background:rgba(111,77,255,0.16); color:#c6b6ff; border:1px solid rgba(111,77,255,0.35);';
+  }
+  if (hasCompetitionLiveCheckIn) {
+    return 'background:rgba(43,224,125,0.14); color:#62f29b; border:1px solid rgba(43,224,125,0.35);';
+  }
   return 'background:rgba(255,255,255,0.06); color:var(--muted); border:1px solid rgba(255,255,255,0.12);';
+}
+
+function isCompetitionLiveClosed(competitionLive = {}) {
+  if ((competitionLive?.status || '') === 'closed') return true;
+  const endsAt = Date.parse(competitionLive?.endsAt || '') || 0;
+  return endsAt > 0 && endsAt < Date.now();
 }
 
 function escapeHtml(value) {
