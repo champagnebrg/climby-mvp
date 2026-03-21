@@ -1883,7 +1883,7 @@
         let socialRouteContext = null;
         let socialTrackerState = null;
         let socialTrackerDraftState = null;
-        let competitionLiveViewerState = { active: false, gymId: '', eventId: '', userId: '', sectorIds: [], sectorId: '', sectorName: '', entry: null, routes: [], savingRouteId: '' };
+        let competitionLiveViewerState = { active: false, gymId: '', eventId: '', userId: '', sectorIds: [], sectorId: '', sectorName: '', competitionStatus: '', competitionEndsAt: '', entry: null, routes: [], savingRouteId: '' };
         let currentGymCoverage = { totalUsers: 0, activeUsers: 0, coveragePct: 0 };
         let adminCoverageUnsubscribers = [];
         let adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), sectorResetAt: new Map(), routeMeta: new Map(), reviewsByRoute: new Map(), routeUsers: new Map() };
@@ -5585,6 +5585,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             sectorIds: Array.isArray(selectedEvent?.competition_live?.sectorIds) ? selectedEvent.competition_live.sectorIds : [],
                             sectorId,
                             sectorName: sectorMeta?.sectorName || sectorMeta?.name || sectorId,
+                            competitionStatus: selectedEvent?.competition_live?.status || '',
+                            competitionEndsAt: selectedEvent?.competition_live?.endsAt || '',
                             entry: selectedGymCompetitionEntry,
                             routes: [],
                             savingRouteId: '',
@@ -7910,12 +7912,18 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
         }
 
         function resetCompetitionLiveViewerState() {
-            competitionLiveViewerState = { active: false, gymId: '', eventId: '', userId: '', sectorIds: [], sectorId: '', sectorName: '', entry: null, routes: [], savingRouteId: '' };
+            competitionLiveViewerState = { active: false, gymId: '', eventId: '', userId: '', sectorIds: [], sectorId: '', sectorName: '', competitionStatus: '', competitionEndsAt: '', entry: null, routes: [], savingRouteId: '' };
             setCompetitionLivePanelVisible(false);
         }
 
         function isCompetitionLiveSectorAllowed(gymId, sectorId) {
             return Boolean(competitionLiveViewerState.active && competitionLiveViewerState.gymId === gymId && competitionLiveViewerState.sectorIds.includes(sectorId));
+        }
+
+        function isCompetitionLiveClosedForViewer() {
+            if ((competitionLiveViewerState.competitionStatus || '') === 'closed') return true;
+            const endsAt = Date.parse(competitionLiveViewerState.competitionEndsAt || '') || 0;
+            return endsAt > 0 && endsAt < Date.now();
         }
 
         function setCompetitionLivePanelVisible(visible) {
@@ -7936,9 +7944,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 
             titleEl.textContent = 'Competition live';
             subtitleEl.textContent = competitionLiveViewerState.sectorName || competitionLiveViewerState.sectorId || '';
+            const competitionClosed = isCompetitionLiveClosedForViewer();
             const completedIds = new Set(Array.isArray(competitionLiveViewerState.entry?.completedRouteIds) ? competitionLiveViewerState.entry.completedRouteIds : []);
             listEl.innerHTML = competitionLiveViewerState.routes.length
-                ? competitionLiveViewerState.routes.map((route) => {
+                ? `${competitionClosed ? `<div class="profile-subtitle" style="margin-bottom:8px;">${escapeHtml(t('gym.eventsCompetitionClosedMessage'))}</div>` : ''}${competitionLiveViewerState.routes.map((route) => {
                     const routeId = String(route?.id || '');
                     const completed = completedIds.has(routeId);
                     const saving = competitionLiveViewerState.savingRouteId === routeId;
@@ -7951,10 +7960,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                                 </div>
                                 <span style="color:${completed ? '#62f29b' : 'var(--muted)'}; font-size:0.85rem;">${completed ? '✅ Completata' : '⭕ Non completata'}</span>
                             </div>
-                            <button type="button" class="btn-sec" data-competition-route-toggle="1" data-route-id="${escapeHtml(routeId)}" ${saving ? 'disabled' : ''}>${completed ? 'Segna non completata' : 'Segna completata'}</button>
+                            <button type="button" class="btn-sec" data-competition-route-toggle="1" data-route-id="${escapeHtml(routeId)}" ${(saving || competitionClosed) ? 'disabled' : ''}>${completed ? 'Segna non completata' : 'Segna completata'}</button>
                         </div>
                     `;
-                }).join('')
+                }).join('')}`
                 : '<div class="profile-subtitle">Nessuna route disponibile in questo settore.</div>';
             listEl.querySelectorAll('[data-competition-route-toggle]').forEach((button) => {
                 button.onclick = async () => {
@@ -7974,6 +7983,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     });
                     if (!hasAdminConfirmedEventCheckIn(registration)) {
                         alert(t('gym.eventsCompetitionLiveCheckInAlert'));
+                        return;
+                    }
+                    if (isCompetitionLiveClosedForViewer()) {
+                        alert(t('gym.eventsCompetitionClosedMessage'));
                         return;
                     }
                     const entry = competitionLiveViewerState.entry || await getOrCreateCompetitionLiveEntry({
