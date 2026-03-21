@@ -13,9 +13,19 @@ function ensureDoc(options = {}) {
   if (typeof options.doc !== 'function') throw new Error('Competition live entry repository requires doc()');
 }
 
+function ensureCollection(options = {}) {
+  ensureDb(options);
+  if (typeof options.collection !== 'function') throw new Error('Competition live entry repository requires collection()');
+}
+
 function ensureGetDoc(options = {}) {
   ensureDoc(options);
   if (typeof options.getDoc !== 'function') throw new Error('Competition live entry repository requires getDoc()');
+}
+
+function ensureGetDocs(options = {}) {
+  ensureCollection(options);
+  if (typeof options.getDocs !== 'function') throw new Error('Competition live entry repository requires getDocs()');
 }
 
 function ensureSetDoc(options = {}) {
@@ -28,6 +38,11 @@ export function getCompetitionLiveEntryDocRef(options = {}, gymId, eventId, user
   return options.doc(options.db, 'gyms', gymId, 'events', eventId, 'competitionLiveEntries', userId);
 }
 
+export function getCompetitionLiveEntriesCollectionRef(options = {}, gymId, eventId) {
+  ensureCollection(options);
+  return options.collection(options.db, 'gyms', gymId, 'events', eventId, 'competitionLiveEntries');
+}
+
 export async function getCompetitionLiveEntry(options = {}) {
   const { gymId, eventId, userId } = options;
   if (!gymId || !eventId || !userId) return null;
@@ -36,6 +51,17 @@ export async function getCompetitionLiveEntry(options = {}) {
   const snap = await options.getDoc(getCompetitionLiveEntryDocRef(options, gymId, eventId, userId));
   if (!snap.exists()) return null;
   return normalizeCompetitionLiveEntryRecord(snap.id, snap.data() || {});
+}
+
+export async function listCompetitionLiveEntries(options = {}) {
+  const { gymId, eventId } = options;
+  if (!gymId || !eventId) return [];
+
+  ensureGetDocs(options);
+  const snap = await options.getDocs(getCompetitionLiveEntriesCollectionRef(options, gymId, eventId));
+  return snap.docs
+    .map((docSnap) => normalizeCompetitionLiveEntryRecord(docSnap.id, docSnap.data() || {}))
+    .sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
 }
 
 export async function getOrCreateCompetitionLiveEntry(options = {}) {

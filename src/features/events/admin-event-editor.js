@@ -7,6 +7,8 @@ export function renderAdminEventEditor({
   registrations = [],
   registrationCount = 0,
   registrationsLoading = false,
+  competitionEntries = [],
+  competitionEntriesLoading = false,
   availableSectors = [],
   formatDateTime = (value) => value || '-',
   onSave = null,
@@ -33,6 +35,9 @@ export function renderAdminEventEditor({
 
   const registrationRows = event?.id
     ? renderRegistrationRows({ registrations, registrationsLoading, registrationsSearch, t, formatDateTime, registrationStatusSavingUserId })
+    : '';
+  const competitionLeaderboard = competitionLive.enabled
+    ? renderCompetitionLeaderboard({ competitionEntries, competitionEntriesLoading, registrations })
     : '';
 
   container.innerHTML = `
@@ -131,6 +136,13 @@ export function renderAdminEventEditor({
                   </label>
                 </div>
               </div>
+              <div class="full" style="display:grid; gap:10px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
+                <div>
+                  <div style="font-weight:700;">Competition live leaderboard</div>
+                  <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">Classifica admin basata sul punteggio live salvato.</div>
+                </div>
+                ${competitionLeaderboard}
+              </div>
             </div>
           `,
         })}
@@ -191,6 +203,37 @@ export function renderAdminEventEditor({
       status: button.dataset.registrationStatus || '',
     });
   });
+}
+
+function renderCompetitionLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, registrations = [] } = {}) {
+  if (competitionEntriesLoading) {
+    return '<div style="color:var(--muted); font-size:0.85rem;">Caricamento punteggi...</div>';
+  }
+
+  if (!competitionEntries.length) {
+    return '<div style="color:var(--muted); font-size:0.85rem;">Nessun punteggio disponibile</div>';
+  }
+
+  return `<div style="display:grid; gap:8px;">${competitionEntries.map((entry, index) => renderCompetitionLeaderboardRow(entry, index, registrations)).join('')}</div>`;
+}
+
+function renderCompetitionLeaderboardRow(entry = {}, index = 0, registrations = []) {
+  const label = resolveCompetitionEntryLabel(entry, registrations);
+  return `
+    <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; background:rgba(255,255,255,0.02);">
+      <div style="display:grid; gap:2px;">
+        <div style="font-weight:600;">#${index + 1} ${escapeHtml(label)}</div>
+        <div style="color:var(--muted); font-size:0.8rem;">${escapeHtml(entry.userId || '-')}</div>
+      </div>
+      <div style="font-weight:700;">${escapeHtml(String(Number(entry.score || 0)))}</div>
+    </div>
+  `;
+}
+
+function resolveCompetitionEntryLabel(entry = {}, registrations = []) {
+  const registration = (Array.isArray(registrations) ? registrations : [])
+    .find((item) => String(item?.userId || '') === String(entry?.userId || ''));
+  return registration?.displayName || registration?.username || entry?.userId || '-';
 }
 
 export function readFormPayload(container, record = {}) {

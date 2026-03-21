@@ -92,6 +92,7 @@ export function renderUserEventDetail({
 function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry = null, competitionEntryLoading = false, competitionViewOpen = false, availableSectors = [], formatDateTime = (value) => value || '-', hasCompetitionLiveCheckIn = false, t = (key) => key } = {}) {
   const includedSectors = getCompetitionLiveIncludedSectors(competitionLive, availableSectors);
   const completedCount = Array.isArray(competitionEntry?.completedRouteIds) ? competitionEntry.completedRouteIds.length : 0;
+  const score = Number.isFinite(competitionEntry?.score) ? competitionEntry.score : completedCount;
   const isClosed = isCompetitionLiveClosed(competitionLive);
   const accessLabel = getCompetitionAccessLabel({ competitionEntryLoading, hasCompetitionLiveCheckIn, competitionEntry, competitionViewOpen, isClosed, t });
   const actionLabel = getCompetitionActionLabel({ competitionEntryLoading, hasCompetitionLiveCheckIn, competitionEntry, competitionViewOpen, isClosed, t });
@@ -117,6 +118,7 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
         ${competitionLive.startsAt ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionLiveStartsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.startsAt))}</span></div>` : ''}
         ${competitionLive.endsAt ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionLiveEndsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.endsAt))}</span></div>` : ''}
         <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionAccessLabel'))}</span><span class="gym-about-value">${escapeHtml(accessLabel)}</span></div>
+        <div class="gym-about-row"><span class="gym-about-label">Score</span><span class="gym-about-value">${escapeHtml(String(score))}</span></div>
         <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionCompletedLabel'))}</span><span class="gym-about-value">${escapeHtml(String(completedCount))}</span></div>
         <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionSectorsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatCompetitionSectorCount(includedSectors.length, t))}</span></div>
       </div>
