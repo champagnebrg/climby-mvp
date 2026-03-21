@@ -1726,7 +1726,10 @@
                         <h2 id="competition-live-panel-title" style="margin:0; color:var(--primary);">Competition live</h2>
                         <div id="competition-live-panel-subtitle" style="color:var(--muted); margin-top:5px;"></div>
                     </div>
-                    <button type="button" onclick="window.closeCompetitionLivePanel()" style="background:none; border:none; color:var(--text); font-size:28px;">×</button>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="btn-sec" onclick="window.exitCompetitionLiveMode()">Esci gara</button>
+                        <button type="button" onclick="window.closeCompetitionLivePanel()" style="background:none; border:none; color:var(--text); font-size:28px;">×</button>
+                    </div>
                 </div>
                 <div id="competition-live-routes-list" style="display:grid; gap:8px; margin-top:14px;"></div>
             </div>
@@ -7973,6 +7976,73 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (panel) panel.style.display = visible ? 'block' : 'none';
         }
 
+        async function toggleCompetitionLiveRoute(routeId) {
+            const normalizedRouteId = String(routeId || '').trim();
+            if (!normalizedRouteId) return;
+            if (!isCompetitionLiveSectorAllowed(activeGymId, activeSectorId)) return;
+            const registration = await getCurrentUserRegistration({
+                db,
+                collection,
+                doc,
+                getDoc,
+                getDocs,
+                setDoc,
+                gymId: competitionLiveViewerState.gymId,
+                eventId: competitionLiveViewerState.eventId,
+                userId: competitionLiveViewerState.userId,
+            });
+            if (!hasAdminConfirmedEventCheckIn(registration)) {
+                alert(t('gym.eventsCompetitionLiveCheckInAlert'));
+                return;
+            }
+            if (isCompetitionLiveClosedForViewer()) {
+                alert(t('gym.eventsCompetitionClosedMessage'));
+                return;
+            }
+            const entry = competitionLiveViewerState.entry || await getOrCreateCompetitionLiveEntry({
+                db,
+                doc,
+                getDoc,
+                setDoc,
+                gymId: competitionLiveViewerState.gymId,
+                eventId: competitionLiveViewerState.eventId,
+                userId: competitionLiveViewerState.userId,
+            });
+            const completedRouteIds = new Set(Array.isArray(entry?.completedRouteIds) ? entry.completedRouteIds : []);
+            const completedBySector = { ...(entry?.completedBySector || {}) };
+            const sectorCompleted = new Set(Array.isArray(completedBySector[competitionLiveViewerState.sectorId]) ? completedBySector[competitionLiveViewerState.sectorId] : []);
+            const alreadyCompleted = completedRouteIds.has(normalizedRouteId);
+            if (alreadyCompleted) {
+                completedRouteIds.delete(normalizedRouteId);
+                sectorCompleted.delete(normalizedRouteId);
+            } else {
+                completedRouteIds.add(normalizedRouteId);
+                sectorCompleted.add(normalizedRouteId);
+            }
+            if (sectorCompleted.size) completedBySector[competitionLiveViewerState.sectorId] = Array.from(sectorCompleted);
+            else delete completedBySector[competitionLiveViewerState.sectorId];
+            competitionLiveViewerState.savingRouteId = normalizedRouteId;
+            renderCompetitionLiveRoutesPanel();
+            try {
+                competitionLiveViewerState.entry = await saveCompetitionLiveCompletedRoutes({
+                    db,
+                    doc,
+                    getDoc,
+                    setDoc,
+                    gymId: competitionLiveViewerState.gymId,
+                    eventId: competitionLiveViewerState.eventId,
+                    userId: competitionLiveViewerState.userId,
+                    data: { completedRouteIds: Array.from(completedRouteIds), completedBySector },
+                });
+            } catch (err) {
+                console.error('[competition-live] route toggle failed', err);
+                alert(err?.message || 'Unable to save competition route.');
+            } finally {
+                competitionLiveViewerState.savingRouteId = '';
+                renderCompetitionLiveRoutesPanel();
+            }
+        }
+
         function renderCompetitionLiveRoutesPanel() {
             const titleEl = document.getElementById('competition-live-panel-title');
             const subtitleEl = document.getElementById('competition-live-panel-subtitle');
@@ -8011,75 +8081,19 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 button.onclick = async () => {
                     const routeId = String(button.dataset.routeId || '').trim();
                     if (!routeId) return;
-                    if (!isCompetitionLiveSectorAllowed(activeGymId, activeSectorId)) return;
-                    const registration = await getCurrentUserRegistration({
-                        db,
-                        collection,
-                        doc,
-                        getDoc,
-                        getDocs,
-                        setDoc,
-                        gymId: competitionLiveViewerState.gymId,
-                        eventId: competitionLiveViewerState.eventId,
-                        userId: competitionLiveViewerState.userId,
-                    });
-                    if (!hasAdminConfirmedEventCheckIn(registration)) {
-                        alert(t('gym.eventsCompetitionLiveCheckInAlert'));
-                        return;
-                    }
-                    if (isCompetitionLiveClosedForViewer()) {
-                        alert(t('gym.eventsCompetitionClosedMessage'));
-                        return;
-                    }
-                    const entry = competitionLiveViewerState.entry || await getOrCreateCompetitionLiveEntry({
-                        db,
-                        doc,
-                        getDoc,
-                        setDoc,
-                        gymId: competitionLiveViewerState.gymId,
-                        eventId: competitionLiveViewerState.eventId,
-                        userId: competitionLiveViewerState.userId,
-                    });
-                    const completedRouteIds = new Set(Array.isArray(entry?.completedRouteIds) ? entry.completedRouteIds : []);
-                    const completedBySector = { ...(entry?.completedBySector || {}) };
-                    const sectorCompleted = new Set(Array.isArray(completedBySector[competitionLiveViewerState.sectorId]) ? completedBySector[competitionLiveViewerState.sectorId] : []);
-                    const alreadyCompleted = completedRouteIds.has(routeId);
-                    if (alreadyCompleted) {
-                        completedRouteIds.delete(routeId);
-                        sectorCompleted.delete(routeId);
-                    } else {
-                        completedRouteIds.add(routeId);
-                        sectorCompleted.add(routeId);
-                    }
-                    if (sectorCompleted.size) completedBySector[competitionLiveViewerState.sectorId] = Array.from(sectorCompleted);
-                    else delete completedBySector[competitionLiveViewerState.sectorId];
-                    competitionLiveViewerState.savingRouteId = routeId;
-                    renderCompetitionLiveRoutesPanel();
-                    try {
-                        competitionLiveViewerState.entry = await saveCompetitionLiveCompletedRoutes({
-                            db,
-                            doc,
-                            getDoc,
-                            setDoc,
-                            gymId: competitionLiveViewerState.gymId,
-                            eventId: competitionLiveViewerState.eventId,
-                            userId: competitionLiveViewerState.userId,
-                            data: { completedRouteIds: Array.from(completedRouteIds), completedBySector },
-                        });
-                    } catch (err) {
-                        console.error('[competition-live] route toggle failed', err);
-                        alert(err?.message || 'Unable to save competition route.');
-                    } finally {
-                        competitionLiveViewerState.savingRouteId = '';
-                        renderCompetitionLiveRoutesPanel();
-                    }
+                    await toggleCompetitionLiveRoute(routeId);
                 };
             });
             setCompetitionLivePanelVisible(true);
         }
 
         window.closeCompetitionLivePanel = () => {
+            setCompetitionLivePanelVisible(false);
+        };
+
+        window.exitCompetitionLiveMode = () => {
             resetCompetitionLiveViewerState();
+            setSocialPanelVisible(false);
         };
 
         window.open3D = async (gId, sId) => {
@@ -8172,7 +8186,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     btn.dataset.position = r.position; btn.dataset.normal = r.normal;
                     btn.style.background = 'transparent';
                     btn.style.borderColor = r.color || '#ffffff';
-                    btn.onclick = (e) => {
+                    btn.onclick = async (e) => {
                         e.stopPropagation();
                         if(currentMode === 'admin' && activeGymId === realUserGymId) {
                             activeRouteId = rd.id;
@@ -8182,10 +8196,17 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             updateAdminRouteColorPreview();
                             document.getElementById('btn-delete-route').style.display = 'block';
                             document.getElementById('admin-editor-panel').style.display = 'block';
-                        } else openSocial(rd.id, r);
+                            return;
+                        }
+                        if (isCompetitionLiveSectorAllowed(gId, sId)) {
+                            setSocialPanelVisible(false);
+                            await toggleCompetitionLiveRoute(rd.id);
+                            return;
+                        }
+                        openSocial(rd.id, r);
                     };
                     viewer.appendChild(btn);
-                    if (pendingRouteOpenId && pendingRouteOpenId === rd.id && !(currentMode === 'admin' && activeGymId === realUserGymId)) {
+                    if (pendingRouteOpenId && pendingRouteOpenId === rd.id && !(currentMode === 'admin' && activeGymId === realUserGymId) && !isCompetitionLiveSectorAllowed(gId, sId)) {
                         pendingRouteOpenId = null;
                         openSocial(rd.id, r);
                     }
