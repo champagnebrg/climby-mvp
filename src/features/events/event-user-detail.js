@@ -100,14 +100,16 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
   const score = Number.isFinite(competitionEntry?.score) ? competitionEntry.score : completedCount;
   const isClosed = isCompetitionLiveClosed(competitionLive);
   const accessLabel = getCompetitionAccessLabel({ competitionEntryLoading, hasCompetitionLiveCheckIn, competitionEntry, competitionViewOpen, isClosed, t });
-  const actionLabel = getCompetitionActionLabel({ competitionEntryLoading, hasCompetitionLiveCheckIn, competitionEntry, competitionViewOpen, isClosed, t });
-  const canOpenCompetitionLive = hasCompetitionLiveCheckIn && !competitionEntryLoading && !competitionViewOpen && !isClosed;
   const helperMessage = isClosed
     ? t('gym.eventsCompetitionClosedMessage')
     : (hasCompetitionLiveCheckIn ? t('gym.eventsCompetitionLiveReadyHint') : t('gym.eventsCompetitionLiveCheckInRequired'));
-  const competitionViewSection = competitionViewOpen
-    ? renderCompetitionLiveViewSection({ blocksCount, completedBlockNumbers, competitionEntryLoading, isClosed, t })
-    : '';
+  const competitionViewSection = renderCompetitionLiveViewSection({
+    blocksCount,
+    completedBlockNumbers,
+    competitionEntryLoading,
+    disabled: isClosed,
+    t,
+  });
   const leaderboardSection = renderCompetitionLiveLeaderboard({ competitionEntries, competitionEntriesLoading, currentUserId });
 
   return `
@@ -128,33 +130,27 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
         <div class="gym-about-row"><span class="gym-about-label">Blocchi gara</span><span class="gym-about-value">${escapeHtml(String(blocksCount))}</span></div>
       </div>
       <div class="profile-subtitle" style="margin-top:10px;">${escapeHtml(helperMessage)}</div>
-      <div style="margin-top:12px; display:grid; gap:8px;">
-        <button type="button" class="btn-sec" data-open-competition-live ${canOpenCompetitionLive ? '' : 'disabled'}>${escapeHtml(actionLabel)}</button>
-      </div>
       ${leaderboardSection}
       ${competitionViewSection}
     </div>
   `;
 }
 
-function renderCompetitionLiveViewSection({ blocksCount = 0, completedBlockNumbers = [], competitionEntryLoading = false, isClosed = false, t = (key) => key } = {}) {
+function renderCompetitionLiveViewSection({ blocksCount = 0, completedBlockNumbers = [], competitionEntryLoading = false, disabled = false, t = (key) => key } = {}) {
   const blocks = Array.from({ length: Math.max(0, blocksCount) }, (_, index) => index + 1);
   const completedBlocks = new Set(completedBlockNumbers);
   return `
     <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
-      <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
-        <div>
-          <div style="font-size:0.92rem; font-weight:700;">Blocchi gara</div>
-          <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">Seleziona i numeri dei blocchi completati.</div>
-        </div>
-        <button type="button" class="btn-sec" data-close-competition-live>${escapeHtml(t('gym.eventsCompetitionCloseCta'))}</button>
+      <div>
+        <div style="font-size:0.92rem; font-weight:700;">Blocchi gara</div>
+        <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">Tocca un blocco per segnare o rimuovere il completamento.</div>
       </div>
       ${blocks.length ? `
-        <div style="display:grid; gap:8px; grid-template-columns:repeat(auto-fit, minmax(96px, 1fr));">
+        <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));">
           ${blocks.map((blockNumber) => renderCompetitionLiveBlockButton({
             blockNumber,
             completed: completedBlocks.has(blockNumber),
-            disabled: competitionEntryLoading || isClosed,
+            disabled: competitionEntryLoading || disabled,
           })).join('')}
         </div>
       ` : `<div class="profile-subtitle">Nessun blocco configurato.</div>`}
@@ -163,17 +159,25 @@ function renderCompetitionLiveViewSection({ blocksCount = 0, completedBlockNumbe
 }
 
 function renderCompetitionLiveBlockButton({ blockNumber = 0, completed = false, disabled = false } = {}) {
+  const borderColor = completed ? 'rgba(98,242,155,0.42)' : 'rgba(255,255,255,0.12)';
+  const background = completed
+    ? 'linear-gradient(180deg, rgba(98,242,155,0.20) 0%, rgba(98,242,155,0.12) 100%)'
+    : 'rgba(255,255,255,0.03)';
+  const badgeBackground = completed ? 'rgba(98,242,155,0.18)' : 'rgba(255,255,255,0.06)';
+  const badgeColor = completed ? '#62f29b' : 'var(--muted)';
   return `
     <button
       type="button"
-      class="${completed ? 'btn-main' : 'btn-sec'}"
       data-toggle-competition-block
       data-block-number="${escapeHtml(String(blockNumber))}"
       ${disabled ? 'disabled' : ''}
-      style="min-height:72px; display:grid; gap:6px; place-items:center;"
+      aria-pressed="${completed ? 'true' : 'false'}"
+      style="min-height:88px; display:grid; gap:8px; place-items:center; padding:14px 12px; border-radius:16px; border:1px solid ${borderColor}; background:${background}; box-shadow:${completed ? '0 10px 24px rgba(98,242,155,0.12)' : '0 8px 18px rgba(15,23,42,0.10)'}; transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; ${disabled ? 'opacity:0.65; cursor:not-allowed;' : 'cursor:pointer;'}"
     >
-      <span style="font-size:1.15rem; font-weight:700;">#${escapeHtml(String(blockNumber))}</span>
-      <span style="font-size:0.8rem;">${escapeHtml(completed ? 'Completato' : 'Non completato')}</span>
+      <span style="font-size:1.2rem; font-weight:800; color:var(--text);">#${escapeHtml(String(blockNumber))}</span>
+      <span style="display:inline-flex; align-items:center; justify-content:center; min-width:100%; padding:6px 10px; border-radius:999px; background:${badgeBackground}; color:${badgeColor}; font-size:0.79rem; font-weight:700;">
+        ${escapeHtml(completed ? '✅ Completata' : '○ Non completata')}
+      </span>
     </button>
   `;
 }
