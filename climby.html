@@ -5655,6 +5655,14 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         const completedBlockNumbers = new Set(Array.isArray(entry?.completedBlockNumbers) ? entry.completedBlockNumbers : []);
                         if (completedBlockNumbers.has(blockNumber)) completedBlockNumbers.delete(blockNumber);
                         else completedBlockNumbers.add(blockNumber);
+                        const nextCompletedBlockNumbers = Array.from(completedBlockNumbers).sort((a, b) => a - b);
+                        selectedGymCompetitionEntry = {
+                            ...entry,
+                            completedBlockNumbers: nextCompletedBlockNumbers,
+                            score: nextCompletedBlockNumbers.length,
+                        };
+                        selectedGymCompetitionEntries = [...(selectedGymCompetitionEntries || []).filter((competitionRow) => String(competitionRow?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
+                            .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
                         selectedGymCompetitionEntryLoading = true;
                         renderUserEventsPanel();
                         try {
@@ -5668,7 +5676,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 	                                userId: activeUser.uid,
 	                                data: {
                                         ...await buildCompetitionEntryIdentityPayload(activeUser.uid),
-                                        completedBlockNumbers: Array.from(completedBlockNumbers).sort((a, b) => a - b),
+                                        completedBlockNumbers: nextCompletedBlockNumbers,
                                     },
                                     event: selectedEvent,
 	                            });

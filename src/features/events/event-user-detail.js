@@ -221,7 +221,7 @@ function getCompletedBlockNumbers(competitionEntry = null) {
 }
 
 function resolveCompetitionEntryLabel(entry = {}, index = 0) {
-  return resolveReadableCompetitionEntryLabel(entry) || String(entry?.userId || `Partecipante ${index + 1}`);
+  return resolveReadableCompetitionEntryLabel(entry) || `Partecipante ${index + 1}`;
 }
 function getCompetitionAccessLabel({ competitionEntryLoading = false, hasCompetitionLiveCheckIn = false, competitionEntry = null, competitionViewOpen = false, isClosed = false, t = (key) => key } = {}) {
   if (competitionEntryLoading) return t('gym.eventsCompetitionLoading');
