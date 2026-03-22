@@ -46,6 +46,7 @@ export function getDefaultCompetitionLive() {
   return {
     enabled: false,
     status: COMPETITION_LIVE_STATUS_DRAFT,
+    blocksCount: 0,
     format: '',
     label: '',
     startsAt: null,
@@ -64,6 +65,7 @@ export function normalizeCompetitionLive(input = {}) {
   return {
     enabled: Boolean(source.enabled),
     status: normalizeCompetitionLiveStatus(source.status) || defaults.status,
+    blocksCount: normalizeCompetitionLiveBlocksCount(source.blocksCount),
     format: normalizeText(source.format),
     label: normalizeText(source.label),
     startsAt: normalizeOptionalDateValue(source.startsAt),
@@ -137,6 +139,12 @@ export function isEventVisibleToUsers(event = {}) {
 export function normalizeCompetitionLiveRouteSelectionMode(value) {
   const normalized = normalizeText(value).toLowerCase();
   return COMPETITION_LIVE_ROUTE_SELECTION_MODES.includes(normalized) ? normalized : '';
+}
+
+export function normalizeCompetitionLiveBlocksCount(value) {
+  const numeric = Number(value);
+  if (!Number.isInteger(numeric) || numeric < 0) return 0;
+  return numeric;
 }
 
 function normalizeCompetitionLiveSectorIds(value) {

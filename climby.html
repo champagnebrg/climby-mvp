@@ -5405,6 +5405,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             let selectedGymEventRegistrationLoading = false;
             let selectedGymEventRegistrationSaving = false;
             let selectedGymCompetitionEntry = null;
+            let selectedGymCompetitionEntries = [];
+            let selectedGymCompetitionEntriesLoading = false;
             let selectedGymCompetitionEntryLoading = false;
             let selectedGymCompetitionViewOpen = false;
             const loadSelectedGymEventRegistration = async () => {
@@ -5413,14 +5415,17 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     selectedGymEventRegistration = null;
                     selectedGymEventParticipantCount = 0;
                     selectedGymCompetitionEntry = null;
+                    selectedGymCompetitionEntries = [];
+                    selectedGymCompetitionEntriesLoading = false;
                     selectedGymCompetitionEntryLoading = false;
                     return;
                 }
                 selectedGymEventRegistrationLoading = true;
+                selectedGymCompetitionEntriesLoading = !!selectedEvent?.competition_live?.enabled;
                 selectedGymCompetitionEntryLoading = !!selectedEvent?.competition_live?.enabled;
                 renderUserEventsPanel();
                 try {
-                    const [registrationResult, participantCountResult, competitionEntryResult] = await Promise.allSettled([
+                    const [registrationResult, participantCountResult, competitionEntryResult, competitionEntriesResult] = await Promise.allSettled([
                         getCurrentUserRegistration({
                             db,
                             collection,
@@ -5452,12 +5457,28 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                                 userId: activeUser.uid,
                               })
                             : Promise.resolve(null),
+                        selectedEvent?.competition_live?.enabled
+                            ? listCompetitionLiveEntries({
+                                db,
+                                collection,
+                                getDocs,
+                                gymId: gId,
+                                eventId: selectedEvent.id,
+                              })
+                            : Promise.resolve([]),
                     ]);
                     if (registrationResult.status === 'rejected') throw registrationResult.reason;
                     if (competitionEntryResult.status === 'rejected') throw competitionEntryResult.reason;
 
                     selectedGymEventRegistration = registrationResult.value;
                     selectedGymCompetitionEntry = hasAdminConfirmedEventCheckIn(registrationResult.value) ? competitionEntryResult.value : null;
+                    if (competitionEntriesResult.status === 'fulfilled') {
+                        selectedGymCompetitionEntries = competitionEntriesResult.value;
+                    } else if (isPermissionDeniedError(competitionEntriesResult.reason)) {
+                        selectedGymCompetitionEntries = [];
+                    } else {
+                        throw competitionEntriesResult.reason;
+                    }
                     if (participantCountResult.status === 'fulfilled') {
                         selectedGymEventParticipantCount = participantCountResult.value;
                     } else if (isPermissionDeniedError(participantCountResult.reason)) {
@@ -5470,8 +5491,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     selectedGymEventRegistration = null;
                     selectedGymEventParticipantCount = 0;
                     selectedGymCompetitionEntry = null;
+                    selectedGymCompetitionEntries = [];
                 } finally {
                     selectedGymEventRegistrationLoading = false;
+                    selectedGymCompetitionEntriesLoading = false;
                     selectedGymCompetitionEntryLoading = false;
                     renderUserEventsPanel();
                 }
@@ -5544,9 +5567,11 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     registrationLoading: selectedGymEventRegistrationLoading,
                     registrationSaving: selectedGymEventRegistrationSaving,
                     competitionEntry: selectedGymCompetitionEntry,
+                    competitionEntries: selectedGymCompetitionEntries,
+                    competitionEntriesLoading: selectedGymCompetitionEntriesLoading,
                     competitionEntryLoading: selectedGymCompetitionEntryLoading,
                     competitionViewOpen: selectedGymCompetitionViewOpen,
-                    availableSectors: sectorMapRows,
+                    currentUserId: activeUser?.uid || '',
                     onToggleRegistration: handleUserEventRegistrationToggle,
                     onOpenCompetitionLive: async () => {
                         try {
@@ -5558,16 +5583,18 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             }
                             selectedGymCompetitionEntryLoading = true;
                             renderUserEventsPanel();
-                            selectedGymCompetitionEntry = await getOrCreateCompetitionLiveEntry({
-                                db,
-                                doc,
+	                            selectedGymCompetitionEntry = await getOrCreateCompetitionLiveEntry({
+	                                db,
+	                                doc,
                                 getDoc,
                                 setDoc,
                                 gymId: gId,
-                                eventId: selectedEvent.id,
-                                userId: activeUser.uid,
-                            });
-                            selectedGymCompetitionViewOpen = true;
+	                                eventId: selectedEvent.id,
+	                                userId: activeUser.uid,
+	                            });
+                                selectedGymCompetitionEntries = [...(selectedGymCompetitionEntries || []).filter((entry) => String(entry?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
+                                    .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
+	                            selectedGymCompetitionViewOpen = true;
                         } catch (err) {
                             console.error('[events] failed to open competition live', err);
                             alert(err?.message || 'Unable to open competition.');
@@ -5580,32 +5607,54 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         selectedGymCompetitionViewOpen = false;
                         renderUserEventsPanel();
                     },
-                    onOpenCompetitionSector: async (_eventRecord, sectorId) => {
-                        if (!sectorId) return;
+                    onToggleCompetitionBlock: async (_eventRecord, blockNumber) => {
+                        if (!Number.isInteger(blockNumber) || blockNumber <= 0) return;
                         const selectedEvent = visibleEvents.find((event) => event.id === selectedGymEventId) || null;
                         if (!selectedEvent?.id || !activeUser?.uid) return;
                         if (!hasAdminConfirmedEventCheckIn(selectedGymEventRegistration)) {
                             alert(t('gym.eventsCompetitionLiveCheckInAlert'));
                             return;
                         }
-                        const sectorMeta = sectorMapRows.find((sector) => String(sector?.sectorId || '') === sectorId) || null;
-                        competitionLiveViewerState = {
-                            active: true,
+                        const competitionLive = normalizeCompetitionLive(selectedEvent?.competition_live || {});
+                        const endsAt = Date.parse(competitionLive?.endsAt || '') || 0;
+                        if ((competitionLive?.status || '') === 'closed' || (endsAt > 0 && endsAt < Date.now())) {
+                            alert(t('gym.eventsCompetitionClosedMessage'));
+                            return;
+                        }
+                        const entry = selectedGymCompetitionEntry || await getOrCreateCompetitionLiveEntry({
+                            db,
+                            doc,
+                            getDoc,
+                            setDoc,
                             gymId: gId,
                             eventId: selectedEvent.id,
                             userId: activeUser.uid,
-                            sectorIds: Array.isArray(selectedEvent?.competition_live?.sectorIds) ? selectedEvent.competition_live.sectorIds : [],
-                            sectorId,
-                            sectorName: sectorMeta?.sectorName || sectorMeta?.name || sectorId,
-                            competitionStatus: selectedEvent?.competition_live?.status || '',
-                            competitionEndsAt: selectedEvent?.competition_live?.endsAt || '',
-                            entry: selectedGymCompetitionEntry,
-                            routes: [],
-                            savingRouteId: '',
-                        };
-                        selectedGymCompetitionViewOpen = false;
+                        });
+                        const completedBlockNumbers = new Set(Array.isArray(entry?.completedBlockNumbers) ? entry.completedBlockNumbers : []);
+                        if (completedBlockNumbers.has(blockNumber)) completedBlockNumbers.delete(blockNumber);
+                        else completedBlockNumbers.add(blockNumber);
+                        selectedGymCompetitionEntryLoading = true;
                         renderUserEventsPanel();
-                        await open3D(gId, sectorId);
+                        try {
+	                            selectedGymCompetitionEntry = await saveCompetitionLiveCompletedRoutes({
+	                                db,
+                                doc,
+                                getDoc,
+                                setDoc,
+                                gymId: gId,
+                                eventId: selectedEvent.id,
+	                                userId: activeUser.uid,
+	                                data: { completedBlockNumbers: Array.from(completedBlockNumbers).sort((a, b) => a - b) },
+	                            });
+                                selectedGymCompetitionEntries = [...(selectedGymCompetitionEntries || []).filter((competitionRow) => String(competitionRow?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
+                                    .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
+	                        } catch (err) {
+                            console.error('[events] failed to toggle competition block', err);
+                            alert(err?.message || 'Unable to save competition block.');
+                        } finally {
+                            selectedGymCompetitionEntryLoading = false;
+                            renderUserEventsPanel();
+                        }
                     },
                     t,
                     formatDateTime: (value) => formatProfileDate(value, toSafeDate, currentLang),

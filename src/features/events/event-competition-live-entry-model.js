@@ -14,6 +14,7 @@ export function getDefaultCompetitionLiveEntry() {
     userId: '',
     status: COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
     score: 0,
+    completedBlockNumbers: [],
     completedRouteIds: [],
     completedBySector: {},
     createdAt: null,
@@ -30,6 +31,7 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
   const defaults = getDefaultCompetitionLiveEntry();
   const createdAt = normalizeOptionalDateValue(input.createdAt) || existing?.createdAt || normalizeOptionalDateValue(now);
   const updatedAt = normalizeOptionalDateValue(now);
+  const completedBlockNumbers = normalizeCompletedBlockNumbers(input.completedBlockNumbers);
   const completedRouteIds = normalizeRouteIds(input.completedRouteIds);
 
   return {
@@ -37,7 +39,11 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
     gymId: normalizeText(input.gymId),
     userId: normalizeText(input.userId),
     status: normalizeCompetitionLiveEntryStatus(input.status) || existing?.status || defaults.status,
-    score: completedRouteIds.length,
+    score: computeCompetitionLiveEntryScore({
+      completedBlockNumbers,
+      completedRouteIds,
+    }),
+    completedBlockNumbers,
     completedRouteIds,
     completedBySector: normalizeCompletedBySector(input.completedBySector),
     createdAt,
@@ -46,6 +52,7 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
 }
 
 export function normalizeCompetitionLiveEntryRecord(id, input = {}) {
+  const completedBlockNumbers = normalizeCompletedBlockNumbers(input.completedBlockNumbers);
   const completedRouteIds = normalizeRouteIds(input.completedRouteIds);
 
   return {
@@ -54,7 +61,12 @@ export function normalizeCompetitionLiveEntryRecord(id, input = {}) {
     gymId: normalizeText(input.gymId),
     userId: normalizeText(input.userId),
     status: normalizeCompetitionLiveEntryStatus(input.status) || COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
-    score: Number.isFinite(input.score) ? input.score : completedRouteIds.length,
+    score: computeCompetitionLiveEntryScore({
+      completedBlockNumbers,
+      completedRouteIds,
+      fallbackScore: input.score,
+    }),
+    completedBlockNumbers,
     completedRouteIds,
     completedBySector: normalizeCompletedBySector(input.completedBySector),
     createdAt: normalizeOptionalDateValue(input.createdAt),
@@ -75,6 +87,26 @@ export function normalizeCompletedBySector(input = {}) {
 export function normalizeRouteIds(input = []) {
   if (!Array.isArray(input)) return [];
   return Array.from(new Set(input.map((routeId) => normalizeText(routeId)).filter(Boolean)));
+}
+
+export function normalizeCompletedBlockNumbers(input = []) {
+  if (!Array.isArray(input)) return [];
+  return Array.from(new Set(
+    input
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value > 0)
+  )).sort((a, b) => a - b);
+}
+
+export function computeCompetitionLiveEntryScore({
+  completedBlockNumbers = [],
+  completedRouteIds = [],
+  fallbackScore = null,
+} = {}) {
+  if (completedBlockNumbers.length) return completedBlockNumbers.length;
+  if (completedRouteIds.length) return completedRouteIds.length;
+  if (Number.isFinite(fallbackScore)) return fallbackScore;
+  return 0;
 }
 
 function normalizeOptionalDateValue(value) {
