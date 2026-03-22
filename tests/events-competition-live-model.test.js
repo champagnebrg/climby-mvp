@@ -85,6 +85,27 @@ test('buildCompetitionLiveEntryPayload computes score from completedBlockNumbers
   assert.deepEqual(result.completedBySector, { sectorA: ['route-1'] });
 });
 
+
+test('buildCompetitionLiveEntryPayload preserves readable user identity fields', () => {
+  const result = buildCompetitionLiveEntryPayload({
+    gymId: 'g',
+    eventId: 'e',
+    userId: 'u',
+    displayName: 'Mario Rossi',
+    username: 'mario',
+    firstName: 'Mario',
+    lastName: 'Rossi',
+    completedBlockNumbers: [1],
+  }, {
+    now: new Date('2026-03-22T00:00:00.000Z'),
+  });
+
+  assert.equal(result.displayName, 'Mario Rossi');
+  assert.equal(result.username, 'mario');
+  assert.equal(result.firstName, 'Mario');
+  assert.equal(result.lastName, 'Rossi');
+});
+
 test('normalizeCompetitionLiveEntryRecord falls back to legacy route-based score when blocks are absent', () => {
   const result = normalizeCompetitionLiveEntryRecord('u', {
     gymId: 'g',

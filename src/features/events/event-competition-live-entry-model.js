@@ -12,6 +12,10 @@ export function getDefaultCompetitionLiveEntry() {
     eventId: '',
     gymId: '',
     userId: '',
+    displayName: null,
+    username: null,
+    firstName: null,
+    lastName: null,
     status: COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
     score: 0,
     completedBlockNumbers: [],
@@ -38,6 +42,10 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
     eventId: normalizeText(input.eventId),
     gymId: normalizeText(input.gymId),
     userId: normalizeText(input.userId),
+    displayName: normalizeNullableText(input.displayName) || existing?.displayName || null,
+    username: normalizeNullableText(input.username) || existing?.username || null,
+    firstName: normalizeNullableText(input.firstName) || existing?.firstName || null,
+    lastName: normalizeNullableText(input.lastName) || existing?.lastName || null,
     status: normalizeCompetitionLiveEntryStatus(input.status) || existing?.status || defaults.status,
     score: computeCompetitionLiveEntryScore({
       completedBlockNumbers,
@@ -60,6 +68,10 @@ export function normalizeCompetitionLiveEntryRecord(id, input = {}) {
     eventId: normalizeText(input.eventId),
     gymId: normalizeText(input.gymId),
     userId: normalizeText(input.userId),
+    displayName: normalizeNullableText(input.displayName),
+    username: normalizeNullableText(input.username),
+    firstName: normalizeNullableText(input.firstName),
+    lastName: normalizeNullableText(input.lastName),
     status: normalizeCompetitionLiveEntryStatus(input.status) || COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
     score: computeCompetitionLiveEntryScore({
       completedBlockNumbers,
@@ -112,4 +124,9 @@ export function computeCompetitionLiveEntryScore({
 function normalizeOptionalDateValue(value) {
   const safe = toSafeDate(value);
   return safe ? safe.toISOString() : null;
+}
+
+function normalizeNullableText(value) {
+  const normalized = normalizeText(value);
+  return normalized || null;
 }

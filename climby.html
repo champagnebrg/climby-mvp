@@ -1803,7 +1803,7 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
-        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCompletedRoutes } from "./src/features/events/index.js";
+        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCompletedBlocks, saveCompetitionLiveCompletedRoutes } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
         import { renderUserEventList } from "./src/features/events/event-user-list.js";
@@ -2225,6 +2225,26 @@
                 status: 'active',
                 avatarUrl: userData.avatarUrl || extras.avatarUrl || null
             }, { merge: true });
+        }
+
+        async function buildCompetitionEntryIdentityPayload(uid) {
+            if (!uid) return {};
+            try {
+                const profile = await getUserProfileByAuthUid(uid);
+                const data = profile?.data || {};
+                return {
+                    displayName: activeUser?.displayName || data.displayName || [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || currentUserName || 'Climber',
+                    username: data.username || currentUserName || '',
+                    firstName: data.firstName || null,
+                    lastName: data.lastName || null,
+                };
+            } catch (err) {
+                console.warn('[events] competition identity payload fallback', err);
+                return {
+                    displayName: activeUser?.displayName || currentUserName || 'Climber',
+                    username: currentUserName || '',
+                };
+            }
         }
 
         const newSectorFileInput = document.getElementById('file-mesh-new');
@@ -5587,10 +5607,11 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 	                                db,
 	                                doc,
                                 getDoc,
-                                setDoc,
-                                gymId: gId,
+	                                setDoc,
+	                                gymId: gId,
 	                                eventId: selectedEvent.id,
 	                                userId: activeUser.uid,
+                                    data: await buildCompetitionEntryIdentityPayload(activeUser.uid),
 	                            });
                                 selectedGymCompetitionEntries = [...(selectedGymCompetitionEntries || []).filter((entry) => String(entry?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
                                     .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
@@ -5629,6 +5650,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             gymId: gId,
                             eventId: selectedEvent.id,
                             userId: activeUser.uid,
+                            data: await buildCompetitionEntryIdentityPayload(activeUser.uid),
                         });
                         const completedBlockNumbers = new Set(Array.isArray(entry?.completedBlockNumbers) ? entry.completedBlockNumbers : []);
                         if (completedBlockNumbers.has(blockNumber)) completedBlockNumbers.delete(blockNumber);
@@ -5636,7 +5658,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         selectedGymCompetitionEntryLoading = true;
                         renderUserEventsPanel();
                         try {
-	                            selectedGymCompetitionEntry = await saveCompetitionLiveCompletedRoutes({
+	                            selectedGymCompetitionEntry = await saveCompetitionLiveCompletedBlocks({
 	                                db,
                                 doc,
                                 getDoc,
@@ -5644,7 +5666,11 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                                 gymId: gId,
                                 eventId: selectedEvent.id,
 	                                userId: activeUser.uid,
-	                                data: { completedBlockNumbers: Array.from(completedBlockNumbers).sort((a, b) => a - b) },
+	                                data: {
+                                        ...await buildCompetitionEntryIdentityPayload(activeUser.uid),
+                                        completedBlockNumbers: Array.from(completedBlockNumbers).sort((a, b) => a - b),
+                                    },
+                                    event: selectedEvent,
 	                            });
                                 selectedGymCompetitionEntries = [...(selectedGymCompetitionEntries || []).filter((competitionRow) => String(competitionRow?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
                                     .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
