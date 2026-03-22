@@ -156,10 +156,16 @@ service cloud.firestore {
           }
 
           function hasValidCompetitionLiveEntryScore() {
-            return request.resource.data.score == request.resource.data.completedRouteIds.size();
+            return (
+              request.resource.data.completedBlockNumbers is list
+              && request.resource.data.score == request.resource.data.completedBlockNumbers.size()
+            ) || (
+              !(request.resource.data.completedBlockNumbers is list)
+              && request.resource.data.score == request.resource.data.completedRouteIds.size()
+            );
           }
 
-          allow list: if canManageGym(gymId);
+          allow list: if canManageGym(gymId) || verifiedEmail();
           allow get: if canManageGym(gymId) || (verifiedEmail() && request.auth.uid == userId);
           allow create: if (
             canManageGym(gymId) || (

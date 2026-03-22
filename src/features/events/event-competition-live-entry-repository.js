@@ -89,10 +89,10 @@ export async function getOrCreateCompetitionLiveEntry(options = {}) {
   return normalizeCompetitionLiveEntryRecord(userId, payload);
 }
 
-export async function saveCompetitionLiveCompletedRoutes(options = {}) {
+export async function saveCompetitionLiveCompletedBlocks(options = {}) {
   const { gymId, eventId, userId } = options;
   if (!gymId || !eventId || !userId) {
-    throw new Error('saveCompetitionLiveCompletedRoutes requires gymId, eventId, and userId');
+    throw new Error('saveCompetitionLiveCompletedBlocks requires gymId, eventId, and userId');
   }
 
   const competitionLive = await getCompetitionLiveState(options);
@@ -116,6 +116,10 @@ export async function saveCompetitionLiveCompletedRoutes(options = {}) {
 
   await options.setDoc(getCompetitionLiveEntryDocRef(options, gymId, eventId, userId), payload, { merge: true });
   return normalizeCompetitionLiveEntryRecord(userId, payload);
+}
+
+export async function saveCompetitionLiveCompletedRoutes(options = {}) {
+  return saveCompetitionLiveCompletedBlocks(options);
 }
 
 async function getCompetitionLiveState(options = {}) {

@@ -16,6 +16,7 @@ export {
   buildEventPayload,
   getDefaultCompetitionLive,
   normalizeCompetitionLive,
+  normalizeCompetitionLiveBlocksCount,
   normalizeCompetitionLiveStatus,
   normalizeCompetitionLiveRouteSelectionMode,
   normalizeEventRecord,
@@ -59,6 +60,8 @@ export {
   getDefaultCompetitionLiveEntry,
   normalizeCompetitionLiveEntryStatus,
   buildCompetitionLiveEntryPayload,
+  computeCompetitionLiveEntryScore,
+  normalizeCompletedBlockNumbers,
   normalizeCompetitionLiveEntryRecord,
   normalizeCompletedBySector,
   normalizeRouteIds,
@@ -70,5 +73,6 @@ export {
   getCompetitionLiveEntry,
   listCompetitionLiveEntries,
   getOrCreateCompetitionLiveEntry,
+  saveCompetitionLiveCompletedBlocks,
   saveCompetitionLiveCompletedRoutes,
 } from './event-competition-live-entry-repository.js';

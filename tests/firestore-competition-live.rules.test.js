@@ -54,13 +54,19 @@ async function seedCompetitionLive({ competitionStatus = 'live' } = {}) {
   });
 }
 
-function buildEntryPayload({ userId = 'user1', score = 1, completedRouteIds = ['route-1'] } = {}) {
+function buildEntryPayload({
+  userId = 'user1',
+  score = 1,
+  completedBlockNumbers = null,
+  completedRouteIds = ['route-1'],
+} = {}) {
   return {
     eventId: 'event1',
     gymId: 'gym1',
     userId,
     status: 'active',
     score,
+    ...(Array.isArray(completedBlockNumbers) ? { completedBlockNumbers } : {}),
     completedRouteIds,
     completedBySector: {
       sectorA: completedRouteIds,
@@ -84,10 +90,16 @@ test('admin/manageGym can list competitionLiveEntries', async () => {
   );
 });
 
-test('standard user cannot list competitionLiveEntries', async () => {
+test('standard user can list competitionLiveEntries for leaderboard', async () => {
   await seedCompetitionLive();
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(
+      doc(context.firestore(), 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
+      buildEntryPayload({ userId: 'user1', score: 1, completedBlockNumbers: [1], completedRouteIds: ['route-1'] })
+    );
+  });
 
-  await assertFails(
+  await assertSucceeds(
     getDocs(collection(authedDb('user1'), 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries'))
   );
 });
@@ -115,7 +127,7 @@ test('create and update are allowed when competition live is not closed', async 
   await assertSucceeds(
     setDoc(
       doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
-      buildEntryPayload({ userId: 'user1', score: 1, completedRouteIds: ['route-1'] })
+      buildEntryPayload({ userId: 'user1', score: 1, completedBlockNumbers: [1], completedRouteIds: ['route-1'] })
     )
   );
 
@@ -124,6 +136,7 @@ test('create and update are allowed when competition live is not closed', async 
       doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
       {
         score: 2,
+        completedBlockNumbers: [1, 2],
         completedRouteIds: ['route-1', 'route-2'],
         completedBySector: { sectorA: ['route-1', 'route-2'] },
         updatedAt: '2026-03-21T01:00:00.000Z',
@@ -139,14 +152,14 @@ test('create and update are rejected when competition live is closed', async () 
   await assertFails(
     setDoc(
       doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
-      buildEntryPayload({ userId: 'user1', score: 1, completedRouteIds: ['route-1'] })
+      buildEntryPayload({ userId: 'user1', score: 1, completedBlockNumbers: [1], completedRouteIds: ['route-1'] })
     )
   );
 
   await testEnv.withSecurityRulesDisabled(async (context) => {
     await setDoc(
       doc(context.firestore(), 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
-      buildEntryPayload({ userId: 'user1', score: 1, completedRouteIds: ['route-1'] })
+      buildEntryPayload({ userId: 'user1', score: 1, completedBlockNumbers: [1], completedRouteIds: ['route-1'] })
     );
   });
 
@@ -155,6 +168,7 @@ test('create and update are rejected when competition live is closed', async () 
       doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
       {
         score: 2,
+        completedBlockNumbers: [1, 2],
         completedRouteIds: ['route-1', 'route-2'],
         completedBySector: { sectorA: ['route-1', 'route-2'] },
         updatedAt: '2026-03-21T01:00:00.000Z',
@@ -163,21 +177,21 @@ test('create and update are rejected when competition live is closed', async () 
   );
 });
 
-test('create and update are rejected when score does not match completedRouteIds length', async () => {
+test('create and update are rejected when score does not match completedBlockNumbers length', async () => {
   await seedCompetitionLive({ competitionStatus: 'live' });
   const db = authedDb('user1');
 
   await assertFails(
     setDoc(
       doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
-      buildEntryPayload({ userId: 'user1', score: 99, completedRouteIds: ['route-1'] })
+      buildEntryPayload({ userId: 'user1', score: 99, completedBlockNumbers: [1], completedRouteIds: ['route-1'] })
     )
   );
 
   await assertSucceeds(
     setDoc(
       doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
-      buildEntryPayload({ userId: 'user1', score: 1, completedRouteIds: ['route-1'] })
+      buildEntryPayload({ userId: 'user1', score: 1, completedBlockNumbers: [1], completedRouteIds: ['route-1'] })
     )
   );
 
@@ -186,6 +200,31 @@ test('create and update are rejected when score does not match completedRouteIds
       doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
       {
         score: 7,
+        completedBlockNumbers: [1, 2],
+        completedRouteIds: ['route-1', 'route-2'],
+        completedBySector: { sectorA: ['route-1', 'route-2'] },
+        updatedAt: '2026-03-21T01:00:00.000Z',
+      }
+    )
+  );
+});
+
+test('legacy route-based documents remain allowed when completedBlockNumbers is absent', async () => {
+  await seedCompetitionLive({ competitionStatus: 'live' });
+  const db = authedDb('user1');
+
+  await assertSucceeds(
+    setDoc(
+      doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
+      buildEntryPayload({ userId: 'user1', score: 1, completedRouteIds: ['route-1'] })
+    )
+  );
+
+  await assertSucceeds(
+    updateDoc(
+      doc(db, 'gyms', 'gym1', 'events', 'event1', 'competitionLiveEntries', 'user1'),
+      {
+        score: 2,
         completedRouteIds: ['route-1', 'route-2'],
         completedBySector: { sectorA: ['route-1', 'route-2'] },
         updatedAt: '2026-03-21T01:00:00.000Z',
