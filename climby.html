@@ -5642,26 +5642,25 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             alert(t('gym.eventsCompetitionClosedMessage'));
                             return;
                         }
-                        const entry = selectedGymCompetitionEntry || await getOrCreateCompetitionLiveEntry({
-                            db,
-                            doc,
-                            getDoc,
-                            setDoc,
-                            gymId: gId,
+                        const entry = selectedGymCompetitionEntry || {
                             eventId: selectedEvent.id,
+                            gymId: gId,
                             userId: activeUser.uid,
-                            data: await buildCompetitionEntryIdentityPayload(activeUser.uid),
-                        });
+                            score: 0,
+                            completedBlockNumbers: [],
+                        };
                         const completedBlockNumbers = new Set(Array.isArray(entry?.completedBlockNumbers) ? entry.completedBlockNumbers : []);
                         if (completedBlockNumbers.has(blockNumber)) completedBlockNumbers.delete(blockNumber);
                         else completedBlockNumbers.add(blockNumber);
                         const nextCompletedBlockNumbers = Array.from(completedBlockNumbers).sort((a, b) => a - b);
+                        const previousCompetitionEntry = selectedGymCompetitionEntry;
+                        const previousCompetitionEntries = [...(selectedGymCompetitionEntries || [])];
                         selectedGymCompetitionEntry = {
                             ...entry,
                             completedBlockNumbers: nextCompletedBlockNumbers,
                             score: nextCompletedBlockNumbers.length,
                         };
-                        selectedGymCompetitionEntries = [...(selectedGymCompetitionEntries || []).filter((competitionRow) => String(competitionRow?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
+                        selectedGymCompetitionEntries = [...previousCompetitionEntries.filter((competitionRow) => String(competitionRow?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
                             .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
                         selectedGymCompetitionEntryLoading = true;
                         renderUserEventsPanel();
@@ -5680,9 +5679,11 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                                     },
                                     event: selectedEvent,
 	                            });
-                                selectedGymCompetitionEntries = [...(selectedGymCompetitionEntries || []).filter((competitionRow) => String(competitionRow?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
+                                selectedGymCompetitionEntries = [...previousCompetitionEntries.filter((competitionRow) => String(competitionRow?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
                                     .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
 	                        } catch (err) {
+                            selectedGymCompetitionEntry = previousCompetitionEntry;
+                            selectedGymCompetitionEntries = previousCompetitionEntries;
                             console.error('[events] failed to toggle competition block', err);
                             alert(err?.message || 'Unable to save competition block.');
                         } finally {
