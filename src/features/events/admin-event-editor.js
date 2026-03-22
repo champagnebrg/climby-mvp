@@ -30,8 +30,6 @@ export function renderAdminEventEditor({
   const canCancel = (status === 'draft' || status === 'published') && !!event?.id;
   const competitionLive = normalizeCompetitionLive(record.competition_live || getDefaultCompetitionLive());
   const competitionLiveFieldsDisabled = !competitionLive.enabled;
-  const competitionLiveUsesEventSchedule = !competitionLive.startsAt && !competitionLive.endsAt;
-
   const registrationRows = event?.id
     ? renderRegistrationRows({ registrations, registrationsLoading, registrationsSearch, t, formatDateTime, registrationStatusSavingUserId })
     : '';
@@ -42,7 +40,6 @@ export function renderAdminEventEditor({
     <div class="admin-tab-header">
       <div>
         <h4 class="admin-section-title" style="margin:0;">${escapeHtml(event?.id ? t('admin.eventsEditTitle') : t('admin.eventsCreateTitle'))}</h4>
-        <p style="margin:4px 0 0; color:var(--muted); font-size:0.9rem;">${escapeHtml(t('admin.eventsEditorHint'))}</p>
       </div>
     </div>
     <form id="admin-event-form" class="card admin-block-card" style="display:block;">
@@ -106,20 +103,6 @@ export function renderAdminEventEditor({
 	                <span style="font-size:0.85rem; color:var(--muted);">Numero blocchi gara</span>
 	                <input type="number" min="0" step="1" id="admin-event-competition-live-blocks-count" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(String(Number.isFinite(competitionLive.blocksCount) ? competitionLive.blocksCount : 0))}" placeholder="Es. 20">
 	              </label>
-	              <label class="admin-toggle full"><input type="checkbox" id="admin-event-competition-live-use-event-schedule" ${competitionLiveUsesEventSchedule ? 'checked' : ''}><span>${escapeHtml(t('admin.eventsCompetitionUseEventSchedule'))}</span></label>
-	              <div class="full" style="display:grid; gap:10px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
-	                <div style="color:var(--muted); font-size:0.82rem;">${escapeHtml(t('admin.eventsCompetitionScheduleHint'))}</div>
-                <div class="admin-gym-form" style="gap:10px;">
-                  <label style="display:grid; gap:6px;">
-                    <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionStartsAtLabel'))}</span>
-                    <input type="datetime-local" id="admin-event-competition-live-starts-at" data-competition-live-field data-competition-live-schedule-field ${competitionLiveFieldsDisabled || competitionLiveUsesEventSchedule ? 'disabled' : ''} value="${escapeHtml(toDateTimeLocalValue(competitionLive.startsAt))}">
-                  </label>
-                  <label style="display:grid; gap:6px;">
-                    <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionEndsAtLabel'))}</span>
-                    <input type="datetime-local" id="admin-event-competition-live-ends-at" data-competition-live-field data-competition-live-schedule-field ${competitionLiveFieldsDisabled || competitionLiveUsesEventSchedule ? 'disabled' : ''} value="${escapeHtml(toDateTimeLocalValue(competitionLive.endsAt))}">
-                  </label>
-                </div>
-	              </div>
 	            </div>
 	          `,
         })}
@@ -175,10 +158,6 @@ export function renderAdminEventEditor({
   if (competitionLiveEnabled) {
     competitionLiveEnabled.addEventListener('change', () => syncCompetitionLiveFieldsState(container));
   }
-  const competitionLiveScheduleToggle = container.querySelector('#admin-event-competition-live-use-event-schedule');
-  if (competitionLiveScheduleToggle) {
-    competitionLiveScheduleToggle.addEventListener('change', () => syncCompetitionLiveFieldsState(container));
-  }
   const publishBtn = container.querySelector('#admin-event-publish-btn');
   if (publishBtn) publishBtn.onclick = () => onPublish?.();
   const endBtn = container.querySelector('#admin-event-end-btn');
@@ -229,18 +208,13 @@ function renderCompetitionLeaderboardRow(entry = {}, index = 0, registrations = 
 function resolveCompetitionEntryLabel(entry = {}, registrations = [], index = 0) {
   const registration = (Array.isArray(registrations) ? registrations : [])
     .find((item) => String(item?.userId || '') === String(entry?.userId || ''));
-  return registration?.displayName
-    || registration?.username
-    || registration?.name
-    || entry?.displayName
-    || entry?.username
-    || entry?.name
+  return resolveReadableCompetitionEntryLabel(registration)
+    || resolveReadableCompetitionEntryLabel(entry)
     || `Partecipante #${index + 1}`;
 }
 
 export function readFormPayload(container, record = {}) {
   const currentCompetitionLive = normalizeCompetitionLive(record.competition_live || getDefaultCompetitionLive());
-  const useEventSchedule = Boolean(container.querySelector('#admin-event-competition-live-use-event-schedule')?.checked);
   return {
     title: container.querySelector('#admin-event-title')?.value || '',
     summary: container.querySelector('#admin-event-summary')?.value || '',
@@ -257,8 +231,8 @@ export function readFormPayload(container, record = {}) {
       label: currentCompetitionLive.label,
       routeSelectionMode: currentCompetitionLive.routeSelectionMode,
       sectorIds: currentCompetitionLive.sectorIds,
-      startsAt: useEventSchedule ? '' : fromDateTimeLocalValue(container.querySelector('#admin-event-competition-live-starts-at')?.value || ''),
-      endsAt: useEventSchedule ? '' : fromDateTimeLocalValue(container.querySelector('#admin-event-competition-live-ends-at')?.value || ''),
+      startsAt: currentCompetitionLive.startsAt,
+      endsAt: currentCompetitionLive.endsAt,
       notes: currentCompetitionLive.notes,
       updatedAt: new Date().toISOString(),
     }),
@@ -284,12 +258,8 @@ function renderCompetitionLiveStatusOptions(selectedValue = 'draft', t = (key) =
 
 function syncCompetitionLiveFieldsState(container) {
   const enabled = Boolean(container.querySelector('#admin-event-competition-live-enabled')?.checked);
-  const useEventSchedule = Boolean(container.querySelector('#admin-event-competition-live-use-event-schedule')?.checked);
   container.querySelectorAll('[data-competition-live-field]').forEach((field) => {
     field.disabled = !enabled;
-  });
-  container.querySelectorAll('[data-competition-live-schedule-field]').forEach((field) => {
-    field.disabled = !enabled || useEventSchedule;
   });
 }
 
@@ -364,4 +334,17 @@ function renderRegistrationRows({ registrations = [], registrationsLoading = fal
 function capitalize(value) {
   const raw = String(value || '');
   return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : '';
+}
+
+function resolveReadableCompetitionEntryLabel(record = {}) {
+  const displayName = String(record?.displayName || '').trim();
+  if (displayName) return displayName;
+  const username = String(record?.username || '').trim();
+  if (username) return username;
+  const firstName = String(record?.firstName || '').trim();
+  const lastName = String(record?.lastName || '').trim();
+  const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+  if (fullName) return fullName;
+  if (firstName) return firstName;
+  return String(record?.name || '').trim();
 }

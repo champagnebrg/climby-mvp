@@ -121,7 +121,6 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
       </div>
       ${competitionLive.label ? `<div style="margin-top:10px; font-weight:600;">${escapeHtml(competitionLive.label)}</div>` : ''}
       <div class="gym-about-content" style="margin-top:10px;">
-        ${competitionLive.startsAt ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionLiveStartsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.startsAt))}</span></div>` : ''}
         ${competitionLive.endsAt ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionLiveEndsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.endsAt))}</span></div>` : ''}
         <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionAccessLabel'))}</span><span class="gym-about-value">${escapeHtml(accessLabel)}</span></div>
         <div class="gym-about-row"><span class="gym-about-label">Score</span><span class="gym-about-value">${escapeHtml(String(score))}</span></div>
@@ -222,7 +221,7 @@ function getCompletedBlockNumbers(competitionEntry = null) {
 }
 
 function resolveCompetitionEntryLabel(entry = {}, index = 0) {
-  return String(entry?.username || entry?.displayName || entry?.name || entry?.userId || `Partecipante ${index + 1}`);
+  return resolveReadableCompetitionEntryLabel(entry) || String(entry?.userId || `Partecipante ${index + 1}`);
 }
 function getCompetitionAccessLabel({ competitionEntryLoading = false, hasCompetitionLiveCheckIn = false, competitionEntry = null, competitionViewOpen = false, isClosed = false, t = (key) => key } = {}) {
   if (competitionEntryLoading) return t('gym.eventsCompetitionLoading');
@@ -273,4 +272,17 @@ function escapeHtml(value) {
 function capitalize(value) {
   const raw = String(value || '');
   return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : '';
+}
+
+function resolveReadableCompetitionEntryLabel(entry = {}) {
+  const displayName = String(entry?.displayName || '').trim();
+  if (displayName) return displayName;
+  const username = String(entry?.username || '').trim();
+  if (username) return username;
+  const firstName = String(entry?.firstName || '').trim();
+  const lastName = String(entry?.lastName || '').trim();
+  const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+  if (fullName) return fullName;
+  if (firstName) return firstName;
+  return '';
 }

@@ -11,8 +11,8 @@ export function renderAdminEventList({
 } = {}) {
   if (!container) return;
 
-  const filteredEvents = statusFilter === 'all' ? events : events.filter((event) => (event.status || 'draft') === statusFilter);
-  const { visibleEvents, archivedEvents } = splitEvents(filteredEvents);
+  const { visibleEvents, archivedEvents } = splitEvents(events);
+  const filteredArchivedEvents = statusFilter === 'all' ? archivedEvents : archivedEvents.filter((event) => (event.status || 'draft') === statusFilter);
 
   container.innerHTML = `
     <div class="admin-tab-header">
@@ -21,10 +21,6 @@ export function renderAdminEventList({
         <p style="margin:4px 0 0; color:var(--muted); font-size:0.9rem;">${escapeHtml(t('admin.eventsListHint'))}</p>
       </div>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <label style="color:var(--muted); font-size:0.85rem;">${escapeHtml(t('admin.eventsFilterStatus'))}</label>
-        <select id="admin-events-status-filter" style="min-width:140px;">
-          ${['all', 'draft', 'published', 'ended', 'cancelled'].map((value) => `<option value="${escapeHtml(value)}" ${value === statusFilter ? 'selected' : ''}>${escapeHtml(value === 'all' ? t('admin.eventsFilterAll') : t(`admin.eventsStatus${capitalize(value)}`))}</option>`).join('')}
-        </select>
         <button type="button" class="btn-main" id="admin-events-create-btn">${escapeHtml(t('admin.eventsCreate'))}</button>
       </div>
     </div>
@@ -34,7 +30,7 @@ export function renderAdminEventList({
   const listEl = container.querySelector('#admin-events-list-items');
   if (!listEl) return;
 
-  if (!filteredEvents.length) {
+  if (!events.length) {
     listEl.innerHTML = `<div class="card" style="display:block;">${escapeHtml(t('admin.eventsEmpty'))}</div>`;
   } else {
     listEl.innerHTML = `
@@ -47,10 +43,11 @@ export function renderAdminEventList({
         t,
       })}
       ${renderArchiveSection({
-        events: archivedEvents,
+        events: filteredArchivedEvents,
         selectedEventId,
         formatDateTime,
         t,
+        statusFilter,
       })}
     `;
   }
@@ -78,14 +75,22 @@ function renderEventSection({ title = '', hint = '', events = [], selectedEventI
   `;
 }
 
-function renderArchiveSection({ events = [], selectedEventId = '', formatDateTime, t }) {
+function renderArchiveSection({ events = [], selectedEventId = '', formatDateTime, t, statusFilter = 'all' }) {
   return `
     <details style="border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px 14px; background:rgba(255,255,255,0.02);">
       <summary style="cursor:pointer; list-style:none; display:flex; justify-content:space-between; gap:10px; align-items:center;">
         <span style="font-weight:700;">${escapeHtml(t('admin.eventsArchiveTitle'))}</span>
         <span class="admin-file-chip">${escapeHtml(String(events.length))}</span>
       </summary>
-      <div style="color:var(--muted); font-size:0.85rem; margin-top:8px;">${escapeHtml(t('admin.eventsArchiveHint'))}</div>
+      <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+        <div style="color:var(--muted); font-size:0.85rem;">${escapeHtml(t('admin.eventsArchiveHint'))}</div>
+        <label style="display:flex; gap:8px; align-items:center; color:var(--muted); font-size:0.85rem;">
+          <span>${escapeHtml(t('admin.eventsFilterStatus'))}</span>
+          <select id="admin-events-status-filter" style="min-width:140px;">
+            ${['all', 'draft', 'published', 'ended', 'cancelled'].map((value) => `<option value="${escapeHtml(value)}" ${value === statusFilter ? 'selected' : ''}>${escapeHtml(value === 'all' ? t('admin.eventsFilterAll') : t(`admin.eventsStatus${capitalize(value)}`))}</option>`).join('')}
+          </select>
+        </label>
+      </div>
       <div style="display:grid; gap:10px; margin-top:12px;">
         ${events.length
           ? events.map((event) => renderEventCard({ event, selectedEventId, formatDateTime, t })).join('')
