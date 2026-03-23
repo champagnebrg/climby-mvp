@@ -2475,6 +2475,11 @@ document.getElementById('auth-btn').onclick = async () => {
             if (type === 'NEW_SECTOR' && notification.gymId) {
                 setUserMainTab('explore');
                 openGymDetail(notification.gymId);
+                return;
+            }
+            if (type === 'NEW_EVENT_PUBLISHED' && notification.gymId) {
+                setUserMainTab('explore');
+                openGymDetail(notification.gymId);
             }
         }
 
@@ -6625,7 +6630,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 },
                 onPublish: async () => {
                     try {
-                        await publishEvent({ db, collection, doc, addDoc, getDoc, getDocs, setDoc, gymId: realUserGymId, eventId: selectedEvent.id, userId: activeUser?.uid || '' });
+                        const publishedEvent = await publishEvent({ db, collection, doc, addDoc, getDoc, getDocs, setDoc, gymId: realUserGymId, eventId: selectedEvent.id, userId: activeUser?.uid || '' });
+                        await notifyGymMembers(
+                            realUserGymId,
+                            'NEW_EVENT_PUBLISHED',
+                            `Nuovo evento pubblicato: ${publishedEvent?.title || selectedEvent?.title || 'Evento Climby'}`
+                        );
                         await refreshAdminEventsPanel();
                         alert(t('admin.eventsPublished'));
                     } catch (err) {

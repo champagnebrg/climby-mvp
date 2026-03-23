@@ -107,7 +107,7 @@ export function renderAdminEventEditor({
                   <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
                     <div>
                       <span style="font-size:0.85rem; color:var(--muted);">Categorie gara</span>
-                      <p style="margin:4px 0 0; color:var(--muted); font-size:0.8rem;">Nome categoria e attiva/disattiva. Id gestito internamente.</p>
+                      <p style="margin:4px 0 0; color:var(--muted); font-size:0.8rem;">Nome categoria e attiva/disattiva. Ordine = ordine righe. Id gestito internamente.</p>
                     </div>
                     <button type="button" class="btn-sec" id="admin-event-competition-live-category-add" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>Aggiungi categoria</button>
                   </div>
