@@ -107,7 +107,7 @@ export function renderAdminEventEditor({
                   <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
                     <div>
                       <span style="font-size:0.85rem; color:var(--muted);">Categorie gara</span>
-                      <p style="margin:4px 0 0; color:var(--muted); font-size:0.8rem;">Label, ordine e attiva/disattiva. Id gestito internamente.</p>
+                      <p style="margin:4px 0 0; color:var(--muted); font-size:0.8rem;">Nome categoria e attiva/disattiva. Id gestito internamente.</p>
                     </div>
                     <button type="button" class="btn-sec" id="admin-event-competition-live-category-add" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>Aggiungi categoria</button>
                   </div>
@@ -306,22 +306,17 @@ function renderCompetitionLiveCategoryRows(categories = []) {
   if (!Array.isArray(categories) || !categories.length) {
     return renderCompetitionLiveCategoryRow();
   }
-  return categories.map((category, index) => renderCompetitionLiveCategoryRow(category, index)).join('');
+  return categories.map((category) => renderCompetitionLiveCategoryRow(category)).join('');
 }
 
-function renderCompetitionLiveCategoryRow(category = {}, index = 0) {
-  const safeOrder = Number.isInteger(category.order) ? category.order : index;
+function renderCompetitionLiveCategoryRow(category = {}) {
   return `
     <div data-competition-live-category-row style="display:grid; gap:8px; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
       <input type="hidden" data-competition-live-category-id value="${escapeHtml(category.id || '')}">
-      <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px auto; gap:8px; align-items:end;">
+      <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:end;">
         <label style="display:grid; gap:6px;">
-          <span style="font-size:0.8rem; color:var(--muted);">Label</span>
+          <span style="font-size:0.8rem; color:var(--muted);">Nome categoria</span>
           <input type="text" data-competition-live-category-label data-competition-live-field value="${escapeHtml(category.label || '')}" placeholder="Es. Open">
-        </label>
-        <label style="display:grid; gap:6px;">
-          <span style="font-size:0.8rem; color:var(--muted);">Ordine</span>
-          <input type="number" min="0" step="1" data-competition-live-category-order data-competition-live-field value="${escapeHtml(String(safeOrder))}">
         </label>
         <button type="button" class="btn-danger-soft" data-competition-live-category-remove data-competition-live-field>Rimuovi</button>
       </div>
@@ -347,7 +342,7 @@ function bindCompetitionLiveCategoryActions(container) {
 function addCompetitionLiveCategoryRow(container, category = {}) {
   const list = container.querySelector('#admin-event-competition-live-categories-list');
   if (!list) return;
-  list.insertAdjacentHTML('beforeend', renderCompetitionLiveCategoryRow(category, list.querySelectorAll('[data-competition-live-category-row]').length));
+  list.insertAdjacentHTML('beforeend', renderCompetitionLiveCategoryRow(category));
   syncCompetitionLiveFieldsState(container);
 }
 
@@ -365,7 +360,7 @@ function readCompetitionLiveCategories(container) {
       return {
         id: storedId || buildCompetitionLiveCategoryId(label, index),
         label,
-        order: Number(row.querySelector('[data-competition-live-category-order]')?.value || index),
+        order: index,
         enabled: Boolean(row.querySelector('[data-competition-live-category-enabled]')?.checked),
       };
     });
