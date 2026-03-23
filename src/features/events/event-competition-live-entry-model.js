@@ -16,6 +16,7 @@ export function getDefaultCompetitionLiveEntry() {
     username: null,
     firstName: null,
     lastName: null,
+    categoryId: '',
     status: COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
     score: 0,
     completedBlockNumbers: [],
@@ -46,6 +47,7 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
     username: normalizeNullableText(input.username) || existing?.username || null,
     firstName: normalizeNullableText(input.firstName) || existing?.firstName || null,
     lastName: normalizeNullableText(input.lastName) || existing?.lastName || null,
+    categoryId: normalizeCompetitionLiveEntryCategoryId(input.categoryId) || existing?.categoryId || defaults.categoryId,
     status: normalizeCompetitionLiveEntryStatus(input.status) || existing?.status || defaults.status,
     score: computeCompetitionLiveEntryScore({
       completedBlockNumbers,
@@ -72,6 +74,7 @@ export function normalizeCompetitionLiveEntryRecord(id, input = {}) {
     username: normalizeNullableText(input.username),
     firstName: normalizeNullableText(input.firstName),
     lastName: normalizeNullableText(input.lastName),
+    categoryId: normalizeCompetitionLiveEntryCategoryId(input.categoryId),
     status: normalizeCompetitionLiveEntryStatus(input.status) || COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
     score: computeCompetitionLiveEntryScore({
       completedBlockNumbers,
@@ -119,6 +122,10 @@ export function computeCompetitionLiveEntryScore({
   if (completedRouteIds.length) return completedRouteIds.length;
   if (Number.isFinite(fallbackScore)) return fallbackScore;
   return 0;
+}
+
+export function normalizeCompetitionLiveEntryCategoryId(value) {
+  return normalizeText(value);
 }
 
 function normalizeOptionalDateValue(value) {

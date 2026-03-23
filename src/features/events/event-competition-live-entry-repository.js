@@ -142,6 +142,16 @@ export async function saveCompetitionLiveCompletedRoutes(options = {}) {
   return saveCompetitionLiveCompletedBlocks(options);
 }
 
+export async function saveCompetitionLiveCategorySelection(options = {}) {
+  const existing = await getOrCreateCompetitionLiveEntry(options);
+  const existingCompletedBlockNumbers = Array.isArray(existing?.completedBlockNumbers) ? existing.completedBlockNumbers : [];
+  const nextCategoryId = String(options?.data?.categoryId || '');
+  if (existingCompletedBlockNumbers.length > 0 && nextCategoryId && nextCategoryId !== String(existing?.categoryId || '')) {
+    throw new Error('Competition category cannot be changed after the first completed block.');
+  }
+  return saveCompetitionLiveCompletedBlocks(options);
+}
+
 async function getCompetitionLiveState(options = {}) {
   if (options.event?.competition_live) {
     return normalizeCompetitionLive(options.event.competition_live);

@@ -6,6 +6,7 @@ import {
   computeCompetitionLiveEntryScore,
   normalizeCompletedBlockNumbers,
   normalizeCompetitionLive,
+  normalizeCompetitionLiveCategories,
   normalizeCompetitionLiveBlocksCount,
   normalizeCompetitionLiveEntryRecord,
 } from '../src/features/events/index.js';
@@ -23,6 +24,11 @@ test('normalizeCompetitionLive keeps legacy fields and normalizes blocksCount', 
     enabled: true,
     status: 'live',
     blocksCount: '15',
+    categories: [
+      { id: 'open', label: 'Open', order: '2', enabled: 1 },
+      { id: '', label: 'Invalid', order: 0, enabled: true },
+      { id: 'u16', label: 'Under 16', order: '1', enabled: 0 },
+    ],
     sectorIds: ['a', 'a', 'b'],
     routeSelectionMode: 'manual',
   });
@@ -31,6 +37,10 @@ test('normalizeCompetitionLive keeps legacy fields and normalizes blocksCount', 
     enabled: true,
     status: 'live',
     blocksCount: 15,
+    categories: [
+      { id: 'u16', label: 'Under 16', order: 1, enabled: false },
+      { id: 'open', label: 'Open', order: 2, enabled: true },
+    ],
     format: '',
     label: '',
     startsAt: null,
@@ -40,6 +50,20 @@ test('normalizeCompetitionLive keeps legacy fields and normalizes blocksCount', 
     routeSelectionMode: 'manual',
     updatedAt: null,
   });
+});
+
+test('normalizeCompetitionLiveCategories keeps only valid ids and sorts by order', () => {
+  const result = normalizeCompetitionLiveCategories([
+    { id: 'b', label: 'B', order: 3, enabled: true },
+    null,
+    { id: 'a', label: 'A', order: 1, enabled: false },
+    { id: '', label: 'Missing id', order: 0, enabled: true },
+  ]);
+
+  assert.deepEqual(result, [
+    { id: 'a', label: 'A', order: 1, enabled: false },
+    { id: 'b', label: 'B', order: 3, enabled: true },
+  ]);
 });
 
 test('normalizeCompletedBlockNumbers returns sorted unique positive integers only', () => {
@@ -72,6 +96,7 @@ test('buildCompetitionLiveEntryPayload computes score from completedBlockNumbers
     gymId: 'g',
     eventId: 'e',
     userId: 'u',
+    categoryId: 'open',
     completedBlockNumbers: [3, '2', 2, 1],
     completedRouteIds: ['route-1'],
     completedBySector: { sectorA: ['route-1'] },
@@ -80,6 +105,7 @@ test('buildCompetitionLiveEntryPayload computes score from completedBlockNumbers
   });
 
   assert.equal(result.score, 3);
+  assert.equal(result.categoryId, 'open');
   assert.deepEqual(result.completedBlockNumbers, [1, 2, 3]);
   assert.deepEqual(result.completedRouteIds, ['route-1']);
   assert.deepEqual(result.completedBySector, { sectorA: ['route-1'] });
@@ -111,9 +137,11 @@ test('normalizeCompetitionLiveEntryRecord falls back to legacy route-based score
     gymId: 'g',
     eventId: 'e',
     userId: 'u',
+    categoryId: 'u16',
     completedRouteIds: ['route-1', 'route-2'],
   });
 
+  assert.equal(result.categoryId, 'u16');
   assert.equal(result.score, 2);
   assert.deepEqual(result.completedBlockNumbers, []);
 });

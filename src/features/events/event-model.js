@@ -47,6 +47,7 @@ export function getDefaultCompetitionLive() {
     enabled: false,
     status: COMPETITION_LIVE_STATUS_DRAFT,
     blocksCount: 0,
+    categories: [],
     format: '',
     label: '',
     startsAt: null,
@@ -66,6 +67,7 @@ export function normalizeCompetitionLive(input = {}) {
     enabled: Boolean(source.enabled),
     status: normalizeCompetitionLiveStatus(source.status) || defaults.status,
     blocksCount: normalizeCompetitionLiveBlocksCount(source.blocksCount),
+    categories: normalizeCompetitionLiveCategories(source.categories),
     format: normalizeText(source.format),
     label: normalizeText(source.label),
     startsAt: normalizeOptionalDateValue(source.startsAt),
@@ -145,6 +147,30 @@ export function normalizeCompetitionLiveBlocksCount(value) {
   const numeric = Number(value);
   if (!Number.isInteger(numeric) || numeric < 0) return 0;
   return numeric;
+}
+
+export function normalizeCompetitionLiveCategories(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item, index) => normalizeCompetitionLiveCategory(item, index))
+    .filter((item) => item.id)
+    .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }) || a.id.localeCompare(b.id));
+}
+
+export function normalizeCompetitionLiveCategory(value = {}, index = 0) {
+  const source = value && typeof value === 'object' ? value : {};
+  return {
+    id: normalizeText(source.id),
+    label: normalizeText(source.label),
+    order: normalizeCompetitionLiveCategoryOrder(source.order, index),
+    enabled: Boolean(source.enabled),
+  };
+}
+
+export function normalizeCompetitionLiveCategoryOrder(value, fallback = 0) {
+  const numeric = Number(value);
+  if (!Number.isInteger(numeric)) return Number.isInteger(fallback) && fallback >= 0 ? fallback : 0;
+  return numeric >= 0 ? numeric : 0;
 }
 
 function normalizeCompetitionLiveSectorIds(value) {
