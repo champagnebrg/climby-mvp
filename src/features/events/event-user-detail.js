@@ -185,8 +185,8 @@ function renderCompetitionLiveCategoriesSection({ categories = [], selectedCateg
       </div>
       <div style="display:grid; gap:8px;">
         ${categories.map((category) => `
-          <label style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid ${selectedCategoryId === category.id ? 'rgba(98,242,155,0.42)' : 'rgba(255,255,255,0.10)'}; background:${selectedCategoryId === category.id ? 'rgba(98,242,155,0.10)' : 'rgba(255,255,255,0.02)'}; ${disabled ? 'opacity:0.7;' : ''}">
-            <input type="radio" name="competition-live-category" data-select-competition-category data-category-id="${escapeHtml(category.id)}" style="margin:0; inline-size:16px; block-size:16px; flex:0 0 16px;" ${selectedCategoryId === category.id ? 'checked' : ''} ${disabled || competitionEntryLoading ? 'disabled' : ''}>
+          <label style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid ${selectedCategoryId === category.id ? 'rgba(98,242,155,0.42)' : 'rgba(255,255,255,0.10)'}; background:${selectedCategoryId === category.id ? 'rgba(98,242,155,0.10)' : 'rgba(255,255,255,0.02)'}; cursor:${disabled || competitionEntryLoading ? 'default' : 'pointer'}; ${disabled ? 'opacity:0.7;' : ''}">
+            <input type="radio" name="competition-live-category" data-select-competition-category data-category-id="${escapeHtml(category.id)}" style="margin:0; inline-size:14px; block-size:14px; flex:0 0 auto;" ${selectedCategoryId === category.id ? 'checked' : ''} ${disabled || competitionEntryLoading ? 'disabled' : ''}>
             <span style="font-weight:600;">${escapeHtml(category.label || category.id)}</span>
           </label>
         `).join('')}
