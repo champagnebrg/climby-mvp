@@ -85,9 +85,26 @@ export function renderUserEventDetail({
     onCloseCompetitionLive?.(event, competitionEntry);
   });
   container.querySelectorAll('[data-toggle-competition-block]').forEach((button) => {
+    console.info('[competition-blocks] bind block button', {
+      blockNumber: Number(button.dataset.blockNumber || 0),
+      disabled: button.disabled,
+      competitionEntryLoading,
+      hasClickHandler: typeof onToggleCompetitionBlock === 'function',
+      entryCompletedBlockNumbers: Array.isArray(competitionEntry?.completedBlockNumbers) ? [...competitionEntry.completedBlockNumbers] : [],
+    });
     button.addEventListener('click', () => {
       const blockNumber = Number(button.dataset.blockNumber || 0);
-      if (!Number.isInteger(blockNumber) || blockNumber <= 0) return;
+      console.info('[competition-blocks] click received', {
+        blockNumber,
+        disabled: button.disabled,
+        competitionEntryLoading,
+        entryStatus: competitionEntry?.status || null,
+        entryCompletedBlockNumbers: Array.isArray(competitionEntry?.completedBlockNumbers) ? [...competitionEntry.completedBlockNumbers] : [],
+      });
+      if (!Number.isInteger(blockNumber) || blockNumber <= 0) {
+        console.warn('[competition-blocks] guard invalid blockNumber', { blockNumber });
+        return;
+      }
       onToggleCompetitionBlock?.(event, blockNumber, competitionEntry);
     });
   });
