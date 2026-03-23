@@ -1803,7 +1803,7 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
-        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCompletedBlocks, saveCompetitionLiveCompletedRoutes } from "./src/features/events/index.js";
+        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCompletedBlocks, saveCompetitionLiveCompletedRoutes, normalizeCompetitionLive } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
         import { renderUserEventList } from "./src/features/events/event-user-list.js";
