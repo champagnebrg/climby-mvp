@@ -243,7 +243,7 @@ service cloud.firestore {
     }
 
     match /gymFollowers/{followId} {
-      allow read: if verifiedEmail() || isSuperadmin();
+      allow read: if verifiedEmail() || isSuperadmin() || canManageGym(resource.data.gymId);
       allow create: if isSuperadmin() || (
         verifiedEmail()
         && request.resource.data.userId == request.auth.uid
@@ -261,8 +261,7 @@ service cloud.firestore {
     match /notifications/{notificationId} {
       allow read: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
       allow create: if isSuperadmin() || (
-        verifiedEmail()
-        && request.resource.data.read == false
+        request.resource.data.read == false
         && request.resource.data.userId is string
         && request.resource.data.type is string
         && request.resource.data.message is string
@@ -274,13 +273,17 @@ service cloud.firestore {
           "userId", "type", "message", "actorId", "postId", "gymId", "sectorId", "createdAt", "read"
         ])
         && (
-          request.resource.data.userId == request.auth.uid
+          (
+            verifiedEmail()
+            && request.resource.data.userId == request.auth.uid
+          )
           || (
             request.resource.data.gymId is string
             && canManageGym(request.resource.data.gymId)
           )
           || (
-            request.resource.data.type in ["POST_LIKE", "POST_COMMENT"]
+            verifiedEmail()
+            && request.resource.data.type in ["POST_LIKE", "POST_COMMENT"]
             && request.resource.data.actorId is string
             && request.resource.data.actorId == request.auth.uid
             && request.resource.data.postId is string
