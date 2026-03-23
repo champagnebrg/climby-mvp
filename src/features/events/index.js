@@ -1,3 +1,11 @@
+import {
+  saveCompetitionLiveCategorySelection as saveCompetitionLiveCategorySelectionForDebug,
+} from './event-competition-live-entry-repository.js';
+
+console.info('[events/index] module loaded 2026-03-23T00:00:00Z', {
+  hasSaveCompetitionLiveCategorySelection: typeof saveCompetitionLiveCategorySelectionForDebug === 'function',
+});
+
 export {
   EVENT_TYPE_STANDARD,
   EVENT_STATUS_DRAFT,
