@@ -1803,7 +1803,7 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
-        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCompletedBlocks, saveCompetitionLiveCompletedRoutes, normalizeCompetitionLive } from "./src/features/events/index.js";
+        import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCategorySelection, saveCompetitionLiveCompletedBlocks, saveCompetitionLiveCompletedRoutes, normalizeCompetitionLive } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
         import { renderUserEventList } from "./src/features/events/event-user-list.js";
@@ -5637,6 +5637,68 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         selectedGymCompetitionViewOpen = false;
                         renderUserEventsPanel();
                     },
+                    onSelectCompetitionCategory: async (_eventRecord, categoryId) => {
+                        const selectedEvent = visibleEvents.find((event) => event.id === selectedGymEventId) || null;
+                        if (!selectedEvent?.id || !activeUser?.uid || !categoryId) return;
+                        if (!hasAdminConfirmedEventCheckIn(selectedGymEventRegistration)) {
+                            alert(t('gym.eventsCompetitionLiveCheckInAlert'));
+                            return;
+                        }
+                        const competitionLive = normalizeCompetitionLive(selectedEvent?.competition_live || {});
+                        const enabledCategories = Array.isArray(competitionLive?.categories)
+                            ? competitionLive.categories.filter((category) => category?.enabled && category?.id)
+                            : [];
+                        if (!enabledCategories.some((category) => category.id === categoryId)) return;
+                        const completedBlockNumbers = Array.isArray(selectedGymCompetitionEntry?.completedBlockNumbers)
+                            ? selectedGymCompetitionEntry.completedBlockNumbers
+                            : [];
+                        if (completedBlockNumbers.length > 0 && String(selectedGymCompetitionEntry?.categoryId || '') !== String(categoryId)) {
+                            alert('Categoria bloccata dopo il primo blocco completato.');
+                            return;
+                        }
+                        const previousCompetitionEntry = selectedGymCompetitionEntry;
+                        const previousCompetitionEntries = [...(selectedGymCompetitionEntries || [])];
+                        selectedGymCompetitionEntryLoading = true;
+                        selectedGymCompetitionEntry = {
+                            ...(selectedGymCompetitionEntry || {
+                                eventId: selectedEvent.id,
+                                gymId: gId,
+                                userId: activeUser.uid,
+                                score: 0,
+                                completedBlockNumbers: [],
+                            }),
+                            categoryId,
+                        };
+                        selectedGymCompetitionEntries = [...previousCompetitionEntries.filter((entry) => String(entry?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
+                            .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
+                        renderUserEventsPanel();
+                        try {
+                            selectedGymCompetitionEntry = await saveCompetitionLiveCategorySelection({
+                                db,
+                                doc,
+                                getDoc,
+                                setDoc,
+                                gymId: gId,
+                                eventId: selectedEvent.id,
+                                userId: activeUser.uid,
+                                data: {
+                                    ...await buildCompetitionEntryIdentityPayload(activeUser.uid),
+                                    categoryId,
+                                },
+                                event: selectedEvent,
+                            });
+                            selectedGymCompetitionEntries = [...previousCompetitionEntries.filter((entry) => String(entry?.userId || '') !== String(activeUser.uid)), selectedGymCompetitionEntry]
+                                .sort((a, b) => Number(b?.score || 0) - Number(a?.score || 0));
+                        } catch (err) {
+                            selectedGymCompetitionEntry = previousCompetitionEntry;
+                            selectedGymCompetitionEntries = previousCompetitionEntries;
+                            console.error('[events] failed to save competition category', err);
+                            alert(err?.message || 'Unable to save competition category.');
+                        } finally {
+                            selectedGymCompetitionEntryLoading = false;
+                            renderUserEventsPanel();
+                        }
+                    },
                     onToggleCompetitionBlock: async (_eventRecord, blockNumber) => {
                         console.info('[competition-blocks] toggle handler start', {
                             blockNumber,
@@ -5669,6 +5731,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             return;
                         }
                         const competitionLive = normalizeCompetitionLive(selectedEvent?.competition_live || {});
+                        const enabledCategories = Array.isArray(competitionLive?.categories)
+                            ? competitionLive.categories.filter((category) => category?.enabled && category?.id)
+                            : [];
+                        const requiresCategorySelection = enabledCategories.length > 0;
                         const endsAt = Date.parse(competitionLive?.endsAt || '') || 0;
                         if ((competitionLive?.status || '') === 'closed' || (endsAt > 0 && endsAt < Date.now())) {
                             console.warn('[competition-blocks] guard competition closed', {
@@ -5687,6 +5753,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             score: 0,
                             completedBlockNumbers: [],
                         };
+                        if (requiresCategorySelection && !enabledCategories.some((category) => category.id === String(entry?.categoryId || ''))) {
+                            alert('Seleziona una categoria prima di segnare i blocchi.');
+                            return;
+                        }
                         const previousCompletedBlockNumbers = Array.isArray(entry?.completedBlockNumbers) ? [...entry.completedBlockNumbers] : [];
                         console.info('[competition-blocks] completedBlockNumbers before toggle', {
                             blockNumber,

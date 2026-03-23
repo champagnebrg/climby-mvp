@@ -34,7 +34,7 @@ export function renderAdminEventEditor({
     ? renderRegistrationRows({ registrations, registrationsLoading, registrationsSearch, t, formatDateTime, registrationStatusSavingUserId })
     : '';
   const competitionLeaderboard = event?.id && competitionLive.enabled
-    ? renderCompetitionLeaderboard({ competitionEntries, competitionEntriesLoading, registrations })
+    ? renderCompetitionLeaderboard({ competitionEntries, competitionEntriesLoading, registrations, categories: Array.isArray(competitionLive.categories) ? competitionLive.categories.filter((category) => category?.enabled && category?.id) : [] })
     : '';
   container.innerHTML = `
     <div class="admin-tab-header">
@@ -103,6 +103,18 @@ export function renderAdminEventEditor({
 	                <span style="font-size:0.85rem; color:var(--muted);">Numero blocchi gara</span>
 	                <input type="number" min="0" step="1" id="admin-event-competition-live-blocks-count" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(String(Number.isFinite(competitionLive.blocksCount) ? competitionLive.blocksCount : 0))}" placeholder="Es. 20">
 	              </label>
+                <div class="full" style="display:grid; gap:8px;">
+                  <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <div>
+                      <span style="font-size:0.85rem; color:var(--muted);">Categorie gara</span>
+                      <p style="margin:4px 0 0; color:var(--muted); font-size:0.8rem;">Label, ordine e attiva/disattiva. Id gestito internamente.</p>
+                    </div>
+                    <button type="button" class="btn-sec" id="admin-event-competition-live-category-add" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>Aggiungi categoria</button>
+                  </div>
+                  <div id="admin-event-competition-live-categories-list" style="display:grid; gap:8px;">
+                    ${renderCompetitionLiveCategoryRows(competitionLive.categories)}
+                  </div>
+                </div>
 	            </div>
 	          `,
         })}
@@ -158,6 +170,7 @@ export function renderAdminEventEditor({
   if (competitionLiveEnabled) {
     competitionLiveEnabled.addEventListener('change', () => syncCompetitionLiveFieldsState(container));
   }
+  bindCompetitionLiveCategoryActions(container);
   const publishBtn = container.querySelector('#admin-event-publish-btn');
   if (publishBtn) publishBtn.onclick = () => onPublish?.();
   const endBtn = container.querySelector('#admin-event-end-btn');
@@ -175,7 +188,7 @@ export function renderAdminEventEditor({
   });
 }
 
-function renderCompetitionLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, registrations = [] } = {}) {
+function renderCompetitionLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, registrations = [], categories = [] } = {}) {
   if (competitionEntriesLoading) {
     return '<div style="color:var(--muted); font-size:0.85rem;">Caricamento punteggi...</div>';
   }
@@ -184,7 +197,20 @@ function renderCompetitionLeaderboard({ competitionEntries = [], competitionEntr
     return '<div style="color:var(--muted); font-size:0.85rem;">Nessun punteggio disponibile</div>';
   }
 
-  return `<div style="display:grid; gap:8px;">${competitionEntries.map((entry, index) => renderCompetitionLeaderboardRow(entry, index, registrations)).join('')}</div>`;
+  const groups = buildCompetitionLeaderboardGroups(competitionEntries, categories);
+  return `<div style="display:grid; gap:12px;">${groups.map((group) => renderCompetitionLeaderboardGroup(group, registrations)).join('')}</div>`;
+}
+
+function renderCompetitionLeaderboardGroup(group = {}, registrations = []) {
+  const entries = Array.isArray(group.entries) ? group.entries : [];
+  return `
+    <div style="display:grid; gap:8px;">
+      ${group.label ? `<div style="font-size:0.9rem; font-weight:700;">${escapeHtml(group.label)}</div>` : ''}
+      ${entries.length
+        ? entries.map((entry, index) => renderCompetitionLeaderboardRow(entry, index, registrations)).join('')
+        : '<div style="color:var(--muted); font-size:0.85rem;">Nessun punteggio disponibile</div>'}
+    </div>
+  `;
 }
 
 function renderCompetitionLeaderboardRow(entry = {}, index = 0, registrations = []) {
@@ -213,6 +239,18 @@ function resolveCompetitionEntryLabel(entry = {}, registrations = [], index = 0)
     || `Partecipante #${index + 1}`;
 }
 
+function buildCompetitionLeaderboardGroups(competitionEntries = [], categories = []) {
+  const safeEntries = Array.isArray(competitionEntries) ? competitionEntries : [];
+  const safeCategories = Array.isArray(categories) ? categories.filter((category) => category?.id) : [];
+  if (!safeCategories.length) {
+    return [{ label: '', entries: safeEntries }];
+  }
+  return safeCategories.map((category) => ({
+    label: category.label || category.id,
+    entries: safeEntries.filter((entry) => String(entry?.categoryId || '') === String(category.id || '')),
+  }));
+}
+
 export function readFormPayload(container, record = {}) {
   const currentCompetitionLive = normalizeCompetitionLive(record.competition_live || getDefaultCompetitionLive());
   return {
@@ -227,6 +265,7 @@ export function readFormPayload(container, record = {}) {
       enabled: Boolean(container.querySelector('#admin-event-competition-live-enabled')?.checked),
       status: container.querySelector('#admin-event-competition-live-status')?.value || currentCompetitionLive.status,
       blocksCount: Number(container.querySelector('#admin-event-competition-live-blocks-count')?.value || currentCompetitionLive.blocksCount || 0),
+      categories: readCompetitionLiveCategories(container),
       format: currentCompetitionLive.format,
       label: currentCompetitionLive.label,
       routeSelectionMode: currentCompetitionLive.routeSelectionMode,
@@ -261,6 +300,86 @@ function syncCompetitionLiveFieldsState(container) {
   container.querySelectorAll('[data-competition-live-field]').forEach((field) => {
     field.disabled = !enabled;
   });
+}
+
+function renderCompetitionLiveCategoryRows(categories = []) {
+  if (!Array.isArray(categories) || !categories.length) {
+    return renderCompetitionLiveCategoryRow();
+  }
+  return categories.map((category, index) => renderCompetitionLiveCategoryRow(category, index)).join('');
+}
+
+function renderCompetitionLiveCategoryRow(category = {}, index = 0) {
+  const safeOrder = Number.isInteger(category.order) ? category.order : index;
+  return `
+    <div data-competition-live-category-row style="display:grid; gap:8px; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
+      <input type="hidden" data-competition-live-category-id value="${escapeHtml(category.id || '')}">
+      <div style="display:grid; grid-template-columns:minmax(0,1fr) 110px auto; gap:8px; align-items:end;">
+        <label style="display:grid; gap:6px;">
+          <span style="font-size:0.8rem; color:var(--muted);">Label</span>
+          <input type="text" data-competition-live-category-label data-competition-live-field value="${escapeHtml(category.label || '')}" placeholder="Es. Open">
+        </label>
+        <label style="display:grid; gap:6px;">
+          <span style="font-size:0.8rem; color:var(--muted);">Ordine</span>
+          <input type="number" min="0" step="1" data-competition-live-category-order data-competition-live-field value="${escapeHtml(String(safeOrder))}">
+        </label>
+        <button type="button" class="btn-danger-soft" data-competition-live-category-remove data-competition-live-field>Rimuovi</button>
+      </div>
+      <label class="admin-toggle"><input type="checkbox" data-competition-live-category-enabled data-competition-live-field ${category.enabled !== false ? 'checked' : ''}><span>Categoria attiva</span></label>
+    </div>
+  `;
+}
+
+function bindCompetitionLiveCategoryActions(container) {
+  const addButton = container.querySelector('#admin-event-competition-live-category-add');
+  if (addButton) {
+    addButton.onclick = () => addCompetitionLiveCategoryRow(container);
+  }
+  container.querySelector('#admin-event-competition-live-categories-list')?.addEventListener('click', (eventObj) => {
+    const removeButton = eventObj.target?.closest?.('[data-competition-live-category-remove]');
+    if (!removeButton) return;
+    const row = removeButton.closest('[data-competition-live-category-row]');
+    row?.remove();
+    ensureCompetitionLiveCategoriesListNotEmpty(container);
+  });
+}
+
+function addCompetitionLiveCategoryRow(container, category = {}) {
+  const list = container.querySelector('#admin-event-competition-live-categories-list');
+  if (!list) return;
+  list.insertAdjacentHTML('beforeend', renderCompetitionLiveCategoryRow(category, list.querySelectorAll('[data-competition-live-category-row]').length));
+  syncCompetitionLiveFieldsState(container);
+}
+
+function ensureCompetitionLiveCategoriesListNotEmpty(container) {
+  const list = container.querySelector('#admin-event-competition-live-categories-list');
+  if (!list || list.querySelector('[data-competition-live-category-row]')) return;
+  addCompetitionLiveCategoryRow(container);
+}
+
+function readCompetitionLiveCategories(container) {
+  return Array.from(container.querySelectorAll('[data-competition-live-category-row]'))
+    .map((row, index) => {
+      const label = row.querySelector('[data-competition-live-category-label]')?.value || '';
+      const storedId = row.querySelector('[data-competition-live-category-id]')?.value || '';
+      return {
+        id: storedId || buildCompetitionLiveCategoryId(label, index),
+        label,
+        order: Number(row.querySelector('[data-competition-live-category-order]')?.value || index),
+        enabled: Boolean(row.querySelector('[data-competition-live-category-enabled]')?.checked),
+      };
+    });
+}
+
+function buildCompetitionLiveCategoryId(label = '', index = 0) {
+  const normalized = String(label || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return normalized || `category-${index + 1}`;
 }
 
 function toDateTimeLocalValue(value) {

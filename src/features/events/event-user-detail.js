@@ -17,6 +17,7 @@ export function renderUserEventDetail({
   onToggleRegistration = null,
   onOpenCompetitionLive = null,
   onCloseCompetitionLive = null,
+  onSelectCompetitionCategory = null,
   onToggleCompetitionBlock = null,
   t = (key) => key,
   formatDateTime = (value) => value || '-',
@@ -84,6 +85,12 @@ export function renderUserEventDetail({
   container.querySelector('[data-close-competition-live]')?.addEventListener('click', () => {
     onCloseCompetitionLive?.(event, competitionEntry);
   });
+  container.querySelectorAll('[data-select-competition-category]').forEach((input) => {
+    input.addEventListener('change', () => {
+      if (!input.checked) return;
+      onSelectCompetitionCategory?.(event, input.dataset.categoryId || '', competitionEntry);
+    });
+  });
   container.querySelectorAll('[data-toggle-competition-block]').forEach((button) => {
     console.info('[competition-blocks] bind block button', {
       blockNumber: Number(button.dataset.blockNumber || 0),
@@ -116,18 +123,32 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
   const completedCount = completedBlockNumbers.length;
   const score = Number.isFinite(competitionEntry?.score) ? competitionEntry.score : completedCount;
   const isClosed = isCompetitionLiveClosed(competitionLive);
+  const categories = getEnabledCompetitionCategories(competitionLive);
+  const requiresCategorySelection = categories.length > 0;
+  const selectedCategoryId = String(competitionEntry?.categoryId || '').trim();
+  const hasSelectedCategory = !requiresCategorySelection || categories.some((category) => category.id === selectedCategoryId);
+  const isCategoryLocked = completedCount > 0;
   const accessLabel = getCompetitionAccessLabel({ competitionEntryLoading, hasCompetitionLiveCheckIn, competitionEntry, competitionViewOpen, isClosed, t });
   const helperMessage = isClosed
     ? t('gym.eventsCompetitionClosedMessage')
-    : (hasCompetitionLiveCheckIn ? t('gym.eventsCompetitionLiveReadyHint') : t('gym.eventsCompetitionLiveCheckInRequired'));
+    : (!hasCompetitionLiveCheckIn
+      ? t('gym.eventsCompetitionLiveCheckInRequired')
+      : (isCategoryLocked
+        ? 'Categoria bloccata dopo il primo blocco completato.'
+      : (requiresCategorySelection && !hasSelectedCategory
+        ? 'Seleziona una categoria per iniziare la gara.'
+        : t('gym.eventsCompetitionLiveReadyHint'))));
   const competitionViewSection = renderCompetitionLiveViewSection({
     blocksCount,
     completedBlockNumbers,
     competitionEntryLoading,
-    disabled: !hasCompetitionLiveCheckIn || isClosed,
+    disabled: !hasCompetitionLiveCheckIn || isClosed || !hasSelectedCategory,
     t,
   });
-  const leaderboardSection = renderCompetitionLiveLeaderboard({ competitionEntries, competitionEntriesLoading, currentUserId });
+  const leaderboardSection = renderCompetitionLiveLeaderboard({ competitionEntries, competitionEntriesLoading, currentUserId, categories });
+  const categoriesSection = requiresCategorySelection
+    ? renderCompetitionLiveCategoriesSection({ categories, selectedCategoryId, competitionEntryLoading, disabled: !hasCompetitionLiveCheckIn || isClosed || isCategoryLocked, locked: isCategoryLocked })
+    : '';
 
   return `
     <div style="margin-top:16px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px; background:rgba(255,255,255,0.02);">
@@ -142,13 +163,34 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
       <div class="gym-about-content" style="margin-top:10px;">
         ${competitionLive.endsAt ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionLiveEndsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.endsAt))}</span></div>` : ''}
         <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionAccessLabel'))}</span><span class="gym-about-value">${escapeHtml(accessLabel)}</span></div>
+        ${requiresCategorySelection ? `<div class="gym-about-row"><span class="gym-about-label">Categoria</span><span class="gym-about-value">${escapeHtml(resolveCompetitionCategoryLabel(categories, selectedCategoryId) || 'Seleziona categoria')}</span></div>` : ''}
         <div class="gym-about-row"><span class="gym-about-label">Score</span><span class="gym-about-value">${escapeHtml(String(score))}</span></div>
         <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionCompletedLabel'))}</span><span class="gym-about-value">${escapeHtml(String(completedCount))}</span></div>
         <div class="gym-about-row"><span class="gym-about-label">Blocchi gara</span><span class="gym-about-value">${escapeHtml(String(blocksCount))}</span></div>
       </div>
       <div class="profile-subtitle" style="margin-top:10px;">${escapeHtml(helperMessage)}</div>
+      ${categoriesSection}
       ${leaderboardSection}
       ${competitionViewSection}
+    </div>
+  `;
+}
+
+function renderCompetitionLiveCategoriesSection({ categories = [], selectedCategoryId = '', competitionEntryLoading = false, disabled = false, locked = false } = {}) {
+  return `
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
+      <div>
+        <div style="font-size:0.92rem; font-weight:700;">Categoria gara</div>
+        <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">${escapeHtml(locked ? 'Categoria bloccata: hai già almeno un blocco completato.' : 'Puoi selezionare una sola categoria.')}</div>
+      </div>
+      <div style="display:grid; gap:8px;">
+        ${categories.map((category) => `
+          <label style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; border:1px solid ${selectedCategoryId === category.id ? 'rgba(98,242,155,0.42)' : 'rgba(255,255,255,0.10)'}; background:${selectedCategoryId === category.id ? 'rgba(98,242,155,0.10)' : 'rgba(255,255,255,0.02)'}; ${disabled ? 'opacity:0.7;' : ''}">
+            <input type="radio" name="competition-live-category" data-select-competition-category data-category-id="${escapeHtml(category.id)}" ${selectedCategoryId === category.id ? 'checked' : ''} ${disabled || competitionEntryLoading ? 'disabled' : ''}>
+            <span style="font-weight:600;">${escapeHtml(category.label || category.id)}</span>
+          </label>
+        `).join('')}
+      </div>
     </div>
   `;
 }
@@ -199,7 +241,7 @@ function renderCompetitionLiveBlockButton({ blockNumber = 0, completed = false, 
   `;
 }
 
-function renderCompetitionLiveLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, currentUserId = '' } = {}) {
+function renderCompetitionLiveLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, currentUserId = '', categories = [] } = {}) {
   if (competitionEntriesLoading) {
     return `<div style="margin-top:12px; color:var(--muted); font-size:0.85rem;">Caricamento classifica...</div>`;
   }
@@ -208,10 +250,31 @@ function renderCompetitionLiveLeaderboard({ competitionEntries = [], competition
     return `<div style="margin-top:12px; color:var(--muted); font-size:0.85rem;">Classifica non disponibile.</div>`;
   }
 
+  const groups = buildCompetitionLeaderboardGroups(competitionEntries, categories);
+
   return `
     <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:8px;">
       <div style="font-size:0.92rem; font-weight:700;">Leaderboard live</div>
-      ${competitionEntries.map((entry, index) => {
+      ${groups.map((group) => renderCompetitionLeaderboardGroup(group, currentUserId)).join('')}
+    </div>
+  `;
+}
+
+function renderCompetitionLeaderboardGroup(group = {}, currentUserId = '') {
+  const entries = Array.isArray(group.entries) ? group.entries : [];
+  if (!entries.length) {
+    return `
+      <div style="display:grid; gap:8px;">
+        ${group.label ? `<div style="font-size:0.88rem; font-weight:700; color:var(--text);">${escapeHtml(group.label)}</div>` : ''}
+        <div style="color:var(--muted); font-size:0.82rem;">Classifica non disponibile.</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div style="display:grid; gap:8px;">
+      ${group.label ? `<div style="font-size:0.88rem; font-weight:700; color:var(--text);">${escapeHtml(group.label)}</div>` : ''}
+      ${entries.map((entry, index) => {
         const isCurrentUser = String(entry?.userId || '') && String(entry?.userId || '') === String(currentUserId || '');
         const topRank = index + 1;
         const badge = topRank === 1 ? '🥇' : (topRank === 2 ? '🥈' : (topRank === 3 ? '🥉' : `#${topRank}`));
@@ -221,14 +284,14 @@ function renderCompetitionLiveLeaderboard({ competitionEntries = [], competition
             ? 'border:1px solid rgba(255,215,102,0.24); background:rgba(255,215,102,0.06);'
             : 'border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.02);');
         return `
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px; border-radius:10px; ${rowStyle}">
-          <div style="display:grid; gap:2px;">
-            <span style="font-weight:700;">${escapeHtml(String(badge))}</span>
-            <span style="color:${isCurrentUser ? '#62f29b' : 'var(--muted)'}; font-size:0.85rem; font-weight:${isCurrentUser ? '700' : '500'};">${escapeHtml(resolveCompetitionEntryLabel(entry, index))}${isCurrentUser ? ' · Tu' : ''}</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px; border-radius:10px; ${rowStyle}">
+            <div style="display:grid; gap:2px;">
+              <span style="font-weight:700;">${escapeHtml(String(badge))}</span>
+              <span style="color:${isCurrentUser ? '#62f29b' : 'var(--muted)'}; font-size:0.85rem; font-weight:${isCurrentUser ? '700' : '500'};">${escapeHtml(resolveCompetitionEntryLabel(entry, index))}${isCurrentUser ? ' · Tu' : ''}</span>
+            </div>
+            <div style="font-weight:700;">${escapeHtml(String(Number(entry?.score || 0)))}</div>
           </div>
-          <div style="font-weight:700;">${escapeHtml(String(Number(entry?.score || 0)))}</div>
-        </div>
-      `;
+        `;
       }).join('')}
     </div>
   `;
@@ -239,6 +302,28 @@ function getCompletedBlockNumbers(competitionEntry = null) {
   return Array.from(new Set(values
     .map((value) => Number(value))
     .filter((value) => Number.isInteger(value) && value > 0))).sort((a, b) => a - b);
+}
+
+function getEnabledCompetitionCategories(competitionLive = {}) {
+  return Array.isArray(competitionLive?.categories)
+    ? competitionLive.categories.filter((category) => category?.enabled && category?.id)
+    : [];
+}
+
+function resolveCompetitionCategoryLabel(categories = [], categoryId = '') {
+  return (Array.isArray(categories) ? categories : []).find((category) => category.id === categoryId)?.label || '';
+}
+
+function buildCompetitionLeaderboardGroups(competitionEntries = [], categories = []) {
+  const safeEntries = Array.isArray(competitionEntries) ? competitionEntries : [];
+  const safeCategories = Array.isArray(categories) ? categories.filter((category) => category?.id) : [];
+  if (!safeCategories.length) {
+    return [{ label: '', entries: safeEntries }];
+  }
+  return safeCategories.map((category) => ({
+    label: category.label || category.id,
+    entries: safeEntries.filter((entry) => String(entry?.categoryId || '') === String(category.id || '')),
+  }));
 }
 
 function resolveCompetitionEntryLabel(entry = {}, index = 0) {
