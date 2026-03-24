@@ -5,7 +5,8 @@ const DEV_HOSTS = new Set([
   "localhost",
   "127.0.0.1",
   "climby-dev-1.web.app",
-  "climby-dev-1.firebaseapp.com"
+  "climby-dev-1.firebaseapp.com",
+  "champagnebrg.github.io"
 ]);
 
 const PROD_PLACEHOLDER_PREFIX = "__SET_PROD_";
