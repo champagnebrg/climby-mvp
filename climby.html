@@ -1796,6 +1796,7 @@
         import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, onSnapshot, deleteDoc, updateDoc, arrayUnion, arrayRemove, query, where, orderBy, limit, startAfter, serverTimestamp, collectionGroup, increment, writeBatch, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { APP_NAME } from "./src/config/constants.js";
+        import { firebaseConfig } from "./src/config/firebase.js";
         import { formatProfileDate } from "./src/utils/profile.js";
         import { showView } from "./src/utils/view.js";
         import { formatPersonName, formatRelativeTime as formatRelativeTimeUtil, toSafeDate, toYYYYMMDD } from "./src/utils/format.js";
@@ -1818,15 +1819,6 @@
         }
         hydrateClimbyBrandLogos();
         document.title = document.title.replace('Climby', APP_NAME);
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAvt6Mxz6vQNxI755upV7ZxQ11afvQ0U-I",
-  authDomain: "climby-dev-1.firebaseapp.com",
-  projectId: "climby-dev-1",
-  storageBucket: "climby-dev-1.firebasestorage.app",
-  messagingSenderId: "262628352427",
-  appId: "1:262628352427:web:139e114c1e22a2ca88f2ee"
-};
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
