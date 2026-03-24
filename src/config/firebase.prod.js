@@ -1,8 +1,8 @@
 export const firebaseConfigProd = {
-  apiKey: "__SET_PROD_API_KEY__",
-  authDomain: "__SET_PROD_AUTH_DOMAIN__",
-  projectId: "__SET_PROD_PROJECT_ID__",
-  storageBucket: "__SET_PROD_STORAGE_BUCKET__",
-  messagingSenderId: "__SET_PROD_MESSAGING_SENDER_ID__",
-  appId: "__SET_PROD_APP_ID__"
+  apiKey: "AIzaSyBIXviIPnpaoso-_K-v3uR0m2kUJ9uFZjM",
+  authDomain: "climby-mvp-c61d7.firebaseapp.com",
+  projectId: "climby-mvp-c61d7",
+  storageBucket: "climby-mvp-c61d7.firebasestorage.app",
+  messagingSenderId: "938841039375",
+  appId: "1:938841039375:web:068851aac08cc131bc797a"
 };
