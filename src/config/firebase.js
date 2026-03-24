@@ -1,5 +1,5 @@
-import { firebaseConfigDev } from "./firebase.dev.js";
-import { firebaseConfigProd } from "./firebase.prod.js";
+import { firebaseConfig as firebaseConfigDev } from "./firebase.dev.js";
+import { firebaseConfig as firebaseConfigProd } from "./firebase.prod.js";
 
 const DEV_HOSTS = new Set([
   "localhost",
