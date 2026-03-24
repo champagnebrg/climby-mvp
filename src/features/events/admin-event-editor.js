@@ -268,8 +268,6 @@ export function readFormPayload(container, record = {}) {
       categories: readCompetitionLiveCategories(container),
       format: currentCompetitionLive.format,
       label: currentCompetitionLive.label,
-      routeSelectionMode: currentCompetitionLive.routeSelectionMode,
-      sectorIds: currentCompetitionLive.sectorIds,
       startsAt: currentCompetitionLive.startsAt,
       endsAt: currentCompetitionLive.endsAt,
       notes: currentCompetitionLive.notes,
@@ -413,36 +411,87 @@ function renderRegistrationRows({ registrations = [], registrationsLoading = fal
       const username = String(registration.username || '').toLowerCase();
       return displayName.includes(searchValue) || username.includes(searchValue);
     })
-    .sort((a, b) => String(a.displayName || '').localeCompare(String(b.displayName || ''), undefined, { sensitivity: 'base' }));
+    .sort((a, b) => {
+      const priority = getRegistrationStatusPriority(a?.status) - getRegistrationStatusPriority(b?.status);
+      if (priority !== 0) return priority;
+      return String(a.displayName || '').localeCompare(String(b.displayName || ''), undefined, { sensitivity: 'base' });
+    });
 
   if (!filteredRegistrations.length) {
     return `<div style="color:var(--muted);">${escapeHtml(searchValue ? t('admin.eventsRegistrationsSearchEmpty') : t('admin.eventsRegistrationsEmpty'))}</div>`;
   }
 
-  return filteredRegistrations.map((registration) => {
+  const summary = {
+    registered: filteredRegistrations.filter((registration) => registration.status === 'registered').length,
+    checkedIn: filteredRegistrations.filter((registration) => registration.status === 'checked_in').length,
+    cancelled: filteredRegistrations.filter((registration) => registration.status === 'cancelled').length,
+  };
+
+  return `
+  <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+    <span class="admin-file-chip">Da check-in: ${escapeHtml(String(summary.registered))}</span>
+    <span class="admin-file-chip">Checked-in: ${escapeHtml(String(summary.checkedIn))}</span>
+    <span class="admin-file-chip">Annullate: ${escapeHtml(String(summary.cancelled))}</span>
+  </div>
+  ${filteredRegistrations.map((registration) => {
     const isSaving = registrationStatusSavingUserId && registrationStatusSavingUserId === registration.userId;
     const canCheckIn = registration.status === 'registered';
     const canUndoCheckIn = registration.status === 'checked_in';
     const canCancel = registration.status === 'registered';
+    const statusMeta = getRegistrationStatusMeta(registration.status, t);
     return `
-    <div style="display:grid; gap:10px; padding:10px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
-      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:700; font-size:1rem;">${escapeHtml(registration.displayName || '-')}</div>
-          ${registration.username ? `<div style="color:var(--muted); font-size:0.82rem; margin-top:2px;">@${escapeHtml(registration.username)}</div>` : ''}
-          <div style="color:var(--muted); font-size:0.78rem; margin-top:4px;">${escapeHtml(t('admin.eventsRegistrationsRegisteredAt'))}: ${escapeHtml(formatDateTime(registration.registeredAt))}</div>
-        </div>
-        <span class="admin-file-chip">${escapeHtml(t(`gym.eventsRegistration${capitalize(registration.status || 'NotRegistered')}`))}</span>
-      </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        ${canCheckIn ? `<button type="button" class="btn-main" data-registration-status="checked_in" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>${escapeHtml(t('admin.eventsRegistrationCheckIn'))}</button>` : ''}
-        ${canUndoCheckIn ? `<button type="button" class="btn-sec" data-registration-status="registered" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>${escapeHtml(t('admin.eventsRegistrationUndoCheckIn'))}</button>` : ''}
-        ${canCancel ? `<button type="button" class="btn-danger-soft" data-registration-status="cancelled" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>${escapeHtml(t('admin.eventsCancelRegistration'))}</button>` : ''}
-        ${isSaving ? `<span style="color:var(--muted); font-size:0.82rem;">${escapeHtml(t('gym.eventsRegistrationUpdating'))}</span>` : ''}
-      </div>
-    </div>
+	    <div style="display:grid; gap:10px; padding:12px; border:1px solid ${statusMeta.borderColor}; border-radius:12px; background:${statusMeta.background};">
+	      <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+	        <div>
+	          <div style="font-weight:700; font-size:1rem;">${escapeHtml(registration.displayName || '-')}</div>
+	          ${registration.username ? `<div style="color:var(--muted); font-size:0.82rem; margin-top:2px;">@${escapeHtml(registration.username)}</div>` : ''}
+	          <div style="color:var(--muted); font-size:0.78rem; margin-top:4px;">${escapeHtml(t('admin.eventsRegistrationsRegisteredAt'))}: ${escapeHtml(formatDateTime(registration.registeredAt))}</div>
+	          <div style="color:${statusMeta.textColor}; font-size:0.82rem; font-weight:600; margin-top:6px;">${escapeHtml(statusMeta.helperText)}</div>
+	        </div>
+	        <span class="admin-file-chip" style="border-color:${statusMeta.borderColor}; color:${statusMeta.textColor};">${escapeHtml(t(`gym.eventsRegistration${capitalize(registration.status || 'NotRegistered')}`))}</span>
+	      </div>
+	      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+	        ${canCheckIn ? `<button type="button" class="btn-main" data-registration-status="checked_in" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>✅ ${escapeHtml(t('admin.eventsRegistrationCheckIn'))}</button>` : ''}
+	        ${canUndoCheckIn ? `<button type="button" class="btn-sec" data-registration-status="registered" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>↩️ ${escapeHtml(t('admin.eventsRegistrationUndoCheckIn'))}</button>` : ''}
+	        ${canCancel ? `<button type="button" class="btn-danger-soft" data-registration-status="cancelled" data-registration-user-id="${escapeHtml(registration.userId || '')}" ${isSaving ? 'disabled' : ''}>${escapeHtml(t('admin.eventsCancelRegistration'))}</button>` : ''}
+	        ${isSaving ? `<span style="color:var(--muted); font-size:0.82rem;">${escapeHtml(t('gym.eventsRegistrationUpdating'))}</span>` : ''}
+	      </div>
+	    </div>
+	  `;
+  }).join('')}
   `;
-  }).join('');
+}
+
+function getRegistrationStatusPriority(status = '') {
+  if (status === 'registered') return 0;
+  if (status === 'checked_in') return 1;
+  if (status === 'cancelled') return 2;
+  return 3;
+}
+
+function getRegistrationStatusMeta(status = '', t = (key) => key) {
+  if (status === 'checked_in') {
+    return {
+      borderColor: 'rgba(98,242,155,0.28)',
+      background: 'rgba(98,242,155,0.08)',
+      textColor: '#62f29b',
+      helperText: 'Check-in completato',
+    };
+  }
+  if (status === 'cancelled') {
+    return {
+      borderColor: 'rgba(255,107,107,0.24)',
+      background: 'rgba(255,107,107,0.06)',
+      textColor: '#ff9b9b',
+      helperText: t('gym.eventsRegistrationCancelled'),
+    };
+  }
+  return {
+    borderColor: 'rgba(255,193,92,0.24)',
+    background: 'rgba(255,193,92,0.06)',
+    textColor: '#ffd36f',
+    helperText: 'Pronto per check-in',
+  };
 }
 
 function capitalize(value) {
