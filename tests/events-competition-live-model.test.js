@@ -19,7 +19,7 @@ test('normalizeCompetitionLiveBlocksCount accepts only non-negative integers', (
   assert.equal(normalizeCompetitionLiveBlocksCount('abc'), 0);
 });
 
-test('normalizeCompetitionLive keeps legacy fields and normalizes blocksCount', () => {
+test('normalizeCompetitionLive keeps block-based competition fields only', () => {
   const result = normalizeCompetitionLive({
     enabled: true,
     status: 'live',
@@ -29,8 +29,6 @@ test('normalizeCompetitionLive keeps legacy fields and normalizes blocksCount', 
       { id: '', label: 'Invalid', order: 0, enabled: true },
       { id: 'u16', label: 'Under 16', order: '1', enabled: 0 },
     ],
-    sectorIds: ['a', 'a', 'b'],
-    routeSelectionMode: 'manual',
   });
 
   assert.deepEqual(result, {
@@ -46,8 +44,6 @@ test('normalizeCompetitionLive keeps legacy fields and normalizes blocksCount', 
     startsAt: null,
     endsAt: null,
     notes: '',
-    sectorIds: ['a', 'b'],
-    routeSelectionMode: 'manual',
     updatedAt: null,
   });
 });
@@ -71,35 +67,25 @@ test('normalizeCompletedBlockNumbers returns sorted unique positive integers onl
   assert.deepEqual(normalizeCompletedBlockNumbers([3.1, '5.5', 6]), [6]);
 });
 
-test('computeCompetitionLiveEntryScore prefers completed blocks over legacy routes and fallback score', () => {
+test('computeCompetitionLiveEntryScore uses completed blocks and then fallback score', () => {
   assert.equal(computeCompetitionLiveEntryScore({
     completedBlockNumbers: [1, 2, 3],
-    completedRouteIds: ['r1', 'r2'],
     fallbackScore: 99,
   }), 3);
 
   assert.equal(computeCompetitionLiveEntryScore({
     completedBlockNumbers: [],
-    completedRouteIds: ['r1', 'r2'],
-    fallbackScore: 99,
-  }), 2);
-
-  assert.equal(computeCompetitionLiveEntryScore({
-    completedBlockNumbers: [],
-    completedRouteIds: [],
     fallbackScore: 7,
   }), 7);
 });
 
-test('buildCompetitionLiveEntryPayload computes score from completedBlockNumbers and keeps legacy fields', () => {
+test('buildCompetitionLiveEntryPayload computes score from completedBlockNumbers only', () => {
   const result = buildCompetitionLiveEntryPayload({
     gymId: 'g',
     eventId: 'e',
     userId: 'u',
     categoryId: 'open',
     completedBlockNumbers: [3, '2', 2, 1],
-    completedRouteIds: ['route-1'],
-    completedBySector: { sectorA: ['route-1'] },
   }, {
     now: new Date('2026-03-22T00:00:00.000Z'),
   });
@@ -107,8 +93,6 @@ test('buildCompetitionLiveEntryPayload computes score from completedBlockNumbers
   assert.equal(result.score, 3);
   assert.equal(result.categoryId, 'open');
   assert.deepEqual(result.completedBlockNumbers, [1, 2, 3]);
-  assert.deepEqual(result.completedRouteIds, ['route-1']);
-  assert.deepEqual(result.completedBySector, { sectorA: ['route-1'] });
 });
 
 
@@ -132,13 +116,13 @@ test('buildCompetitionLiveEntryPayload preserves readable user identity fields',
   assert.equal(result.lastName, 'Rossi');
 });
 
-test('normalizeCompetitionLiveEntryRecord falls back to legacy route-based score when blocks are absent', () => {
+test('normalizeCompetitionLiveEntryRecord falls back to stored score when blocks are absent', () => {
   const result = normalizeCompetitionLiveEntryRecord('u', {
     gymId: 'g',
     eventId: 'e',
     userId: 'u',
     categoryId: 'u16',
-    completedRouteIds: ['route-1', 'route-2'],
+    score: 2,
   });
 
   assert.equal(result.categoryId, 'u16');

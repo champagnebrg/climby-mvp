@@ -20,8 +20,6 @@ export function getDefaultCompetitionLiveEntry() {
     status: COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
     score: 0,
     completedBlockNumbers: [],
-    completedRouteIds: [],
-    completedBySector: {},
     createdAt: null,
     updatedAt: null,
   };
@@ -37,7 +35,6 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
   const createdAt = normalizeOptionalDateValue(input.createdAt) || existing?.createdAt || normalizeOptionalDateValue(now);
   const updatedAt = normalizeOptionalDateValue(now);
   const completedBlockNumbers = normalizeCompletedBlockNumbers(input.completedBlockNumbers);
-  const completedRouteIds = normalizeRouteIds(input.completedRouteIds);
 
   return {
     eventId: normalizeText(input.eventId),
@@ -49,13 +46,8 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
     lastName: normalizeNullableText(input.lastName) || existing?.lastName || null,
     categoryId: normalizeCompetitionLiveEntryCategoryId(input.categoryId) || existing?.categoryId || defaults.categoryId,
     status: normalizeCompetitionLiveEntryStatus(input.status) || existing?.status || defaults.status,
-    score: computeCompetitionLiveEntryScore({
-      completedBlockNumbers,
-      completedRouteIds,
-    }),
+    score: computeCompetitionLiveEntryScore({ completedBlockNumbers, fallbackScore: existing?.score }),
     completedBlockNumbers,
-    completedRouteIds,
-    completedBySector: normalizeCompletedBySector(input.completedBySector),
     createdAt,
     updatedAt,
   };
@@ -63,7 +55,6 @@ export function buildCompetitionLiveEntryPayload(input = {}, { now = new Date(),
 
 export function normalizeCompetitionLiveEntryRecord(id, input = {}) {
   const completedBlockNumbers = normalizeCompletedBlockNumbers(input.completedBlockNumbers);
-  const completedRouteIds = normalizeRouteIds(input.completedRouteIds);
 
   return {
     id: normalizeText(id || input.userId),
@@ -76,32 +67,11 @@ export function normalizeCompetitionLiveEntryRecord(id, input = {}) {
     lastName: normalizeNullableText(input.lastName),
     categoryId: normalizeCompetitionLiveEntryCategoryId(input.categoryId),
     status: normalizeCompetitionLiveEntryStatus(input.status) || COMPETITION_LIVE_ENTRY_STATUS_ACTIVE,
-    score: computeCompetitionLiveEntryScore({
-      completedBlockNumbers,
-      completedRouteIds,
-      fallbackScore: input.score,
-    }),
+    score: computeCompetitionLiveEntryScore({ completedBlockNumbers, fallbackScore: input.score }),
     completedBlockNumbers,
-    completedRouteIds,
-    completedBySector: normalizeCompletedBySector(input.completedBySector),
     createdAt: normalizeOptionalDateValue(input.createdAt),
     updatedAt: normalizeOptionalDateValue(input.updatedAt),
   };
-}
-
-export function normalizeCompletedBySector(input = {}) {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) return {};
-
-  return Object.fromEntries(
-    Object.entries(input)
-      .map(([sectorId, routeIds]) => [normalizeText(sectorId), normalizeRouteIds(routeIds)])
-      .filter(([sectorId, routeIds]) => sectorId && routeIds.length)
-  );
-}
-
-export function normalizeRouteIds(input = []) {
-  if (!Array.isArray(input)) return [];
-  return Array.from(new Set(input.map((routeId) => normalizeText(routeId)).filter(Boolean)));
 }
 
 export function normalizeCompletedBlockNumbers(input = []) {
@@ -115,11 +85,9 @@ export function normalizeCompletedBlockNumbers(input = []) {
 
 export function computeCompetitionLiveEntryScore({
   completedBlockNumbers = [],
-  completedRouteIds = [],
   fallbackScore = null,
 } = {}) {
   if (completedBlockNumbers.length) return completedBlockNumbers.length;
-  if (completedRouteIds.length) return completedRouteIds.length;
   if (Number.isFinite(fallbackScore)) return fallbackScore;
   return 0;
 }

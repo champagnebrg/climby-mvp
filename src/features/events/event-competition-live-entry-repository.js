@@ -91,12 +91,6 @@ export async function getOrCreateCompetitionLiveEntry(options = {}) {
 
 export async function saveCompetitionLiveCompletedBlocks(options = {}) {
   const { gymId, eventId, userId } = options;
-  console.info('[competition-blocks] repository save start', {
-    gymId: gymId || null,
-    eventId: eventId || null,
-    userId: userId || null,
-    requestedCompletedBlockNumbers: Array.isArray(options?.data?.completedBlockNumbers) ? [...options.data.completedBlockNumbers] : [],
-  });
   if (!gymId || !eventId || !userId) {
     console.warn('[competition-blocks] repository guard missing identifiers', {
       gymId: gymId || null,
@@ -114,10 +108,6 @@ export async function saveCompetitionLiveCompletedBlocks(options = {}) {
 
   ensureSetDoc(options);
   const existing = await getOrCreateCompetitionLiveEntry(options);
-  console.info('[competition-blocks] repository existing entry', {
-    completedBlockNumbers: Array.isArray(existing?.completedBlockNumbers) ? [...existing.completedBlockNumbers] : [],
-    score: existing?.score ?? null,
-  });
   const payload = buildCompetitionLiveEntryPayload({
     ...existing,
     ...options.data,
@@ -131,15 +121,7 @@ export async function saveCompetitionLiveCompletedBlocks(options = {}) {
   });
 
   await options.setDoc(getCompetitionLiveEntryDocRef(options, gymId, eventId, userId), payload, { merge: true });
-  console.info('[competition-blocks] repository save ok', {
-    completedBlockNumbers: Array.isArray(payload?.completedBlockNumbers) ? [...payload.completedBlockNumbers] : [],
-    score: payload?.score ?? null,
-  });
   return normalizeCompetitionLiveEntryRecord(userId, payload);
-}
-
-export async function saveCompetitionLiveCompletedRoutes(options = {}) {
-  return saveCompetitionLiveCompletedBlocks(options);
 }
 
 export async function saveCompetitionLiveCategorySelection(options = {}) {

@@ -1,11 +1,3 @@
-import {
-  saveCompetitionLiveCategorySelection as saveCompetitionLiveCategorySelectionForDebug,
-} from './event-competition-live-entry-repository.js';
-
-console.info('[events/index] module loaded 2026-03-23T00:00:00Z', {
-  hasSaveCompetitionLiveCategorySelection: typeof saveCompetitionLiveCategorySelectionForDebug === 'function',
-});
-
 export {
   EVENT_TYPE_STANDARD,
   EVENT_STATUS_DRAFT,
@@ -18,9 +10,6 @@ export {
   COMPETITION_LIVE_STATUS_LIVE,
   COMPETITION_LIVE_STATUS_CLOSED,
   COMPETITION_LIVE_STATUSES,
-  COMPETITION_LIVE_ROUTE_SELECTION_MODE_ALL,
-  COMPETITION_LIVE_ROUTE_SELECTION_MODE_MANUAL,
-  COMPETITION_LIVE_ROUTE_SELECTION_MODES,
   buildEventPayload,
   getDefaultCompetitionLive,
   normalizeCompetitionLive,
@@ -29,7 +18,6 @@ export {
   normalizeCompetitionLiveCategoryOrder,
   normalizeCompetitionLiveBlocksCount,
   normalizeCompetitionLiveStatus,
-  normalizeCompetitionLiveRouteSelectionMode,
   normalizeEventRecord,
   isEventVisibleToUsers,
 } from './event-model.js';
@@ -75,8 +63,6 @@ export {
   normalizeCompletedBlockNumbers,
   normalizeCompetitionLiveEntryCategoryId,
   normalizeCompetitionLiveEntryRecord,
-  normalizeCompletedBySector,
-  normalizeRouteIds,
 } from './event-competition-live-entry-model.js';
 
 export {
@@ -87,5 +73,4 @@ export {
   getOrCreateCompetitionLiveEntry,
   saveCompetitionLiveCategorySelection,
   saveCompetitionLiveCompletedBlocks,
-  saveCompetitionLiveCompletedRoutes,
 } from './event-competition-live-entry-repository.js';
