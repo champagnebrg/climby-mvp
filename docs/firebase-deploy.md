@@ -35,3 +35,7 @@ npm run deploy:firestore
 ```
 
 > Prima del primo deploy prod: sostituisci `__SET_PROD_PROJECT_ID__` in `package.json`.
+
+## Nota routing config frontend
+La selezione Firebase runtime ora è **allowlist-based** per host DEV/PROD.
+Se viene aggiunto un nuovo dominio (es. custom domain prod), aggiornare `DEV_HOSTS`/`PROD_HOSTS` in `src/config/firebase.js` prima del deploy.
