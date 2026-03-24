@@ -7,8 +7,8 @@
     "deploy:firestore": "npm run deploy:firestore:dev",
     "deploy:indexes:dev": "firebase deploy --project climby-dev-1 --only firestore:indexes",
     "deploy:firestore:dev": "firebase deploy --project climby-dev-1 --only firestore:rules,firestore:indexes",
-    "deploy:indexes:prod": "firebase deploy --project __SET_PROD_PROJECT_ID__ --only firestore:indexes",
-    "deploy:firestore:prod": "firebase deploy --project __SET_PROD_PROJECT_ID__ --only firestore:rules,firestore:indexes"
+    "deploy:indexes:prod": "firebase deploy --project climby-mvp-c61d7 --only firestore:indexes",
+    "deploy:firestore:prod": "firebase deploy --project climby-mvp-c61d7 --only firestore:rules,firestore:indexes"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.0",
