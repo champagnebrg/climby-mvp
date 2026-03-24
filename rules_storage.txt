@@ -1,6 +1,8 @@
 rules_version = '2';
+rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+
     function signedIn() {
       return request.auth != null;
     }
@@ -13,13 +15,13 @@ service firebase.storage {
       return request.auth.uid;
     }
 
-    // Nota: assume documento users/{uid} allineato con auth.uid.
     function userDoc() {
       return firestore.get(/databases/(default)/documents/users/$(myUid()));
     }
 
     function role() {
-      return signedIn() && firestore.exists(/databases/(default)/documents/users/$(myUid()))
+      return signedIn() &&
+        firestore.exists(/databases/(default)/documents/users/$(myUid()))
         ? userDoc().data.role
         : null;
     }
@@ -49,37 +51,44 @@ service firebase.storage {
       return isSuperadmin() || isGymOwner(gymId) || managesGym(gymId);
     }
 
-    // 3D meshes uploaded by gym managers/admins.
-    // Path used by app: meshes/{gymId}/{sectorId}.glb
+    // 🔵 3D MESHES (PRODUZIONE)
     match /meshes/{gymId}/{fileName} {
+
+      // lettura: utenti autenticati e verificati
       allow read: if verifiedEmail() || isSuperadmin();
 
+      // scrittura: solo admin del gym + solo file .glb
       allow write: if fileName.matches('.*\\.glb$')
         && canManageGym(gymId);
     }
 
-
-    // Gym logo/floor map uploads.
-    // Path used by app: gymMedia/{gymId}/{fileName}
+    // 🟢 MEDIA PALESTRA (logo + piantina)
     match /gymMedia/{gymId}/{fileName} {
       allow read: if verifiedEmail() || isSuperadmin();
-      allow write: if verifiedEmail()
+
+      allow create, update: if verifiedEmail()
         && canManageGym(gymId)
         && request.resource.size < 8 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
+
+      allow delete: if verifiedEmail()
+        && canManageGym(gymId);
     }
 
-    // User profile avatars.
-    // Path used by app: avatars/{uid}/{fileName}
+    // 🟡 AVATAR UTENTE
     match /avatars/{uid}/{fileName} {
       allow read: if verifiedEmail() || isSuperadmin();
-      allow write: if verifiedEmail()
+
+      allow create, update: if verifiedEmail()
         && uid == myUid()
         && request.resource.size < 5 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
+
+      allow delete: if verifiedEmail()
+        && uid == myUid();
     }
 
-    // Deny everything else by default.
+    // 🔴 BLOCCA TUTTO IL RESTO
     match /{allPaths=**} {
       allow read, write: if false;
     }
