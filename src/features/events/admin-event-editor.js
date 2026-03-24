@@ -57,14 +57,16 @@ export function renderAdminEventEditor({
                 <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldSummary'))}</span>
                 <input type="text" id="admin-event-summary" value="${escapeHtml(record.summary || '')}" placeholder="${escapeHtml(t('admin.eventsFieldSummary'))}">
               </label>
-              <label style="display:grid; gap:6px;">
-                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldStartsAt'))}</span>
-                <input type="datetime-local" id="admin-event-starts-at" value="${escapeHtml(toDateTimeLocalValue(record.startsAt))}">
-              </label>
-              <label style="display:grid; gap:6px;">
-                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldEndsAt'))}</span>
-                <input type="datetime-local" id="admin-event-ends-at" value="${escapeHtml(toDateTimeLocalValue(record.endsAt))}">
-              </label>
+              <div class="full" style="display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); align-items:end;">
+                <label style="display:grid; gap:6px; min-width:0;">
+                  <span style="font-size:0.85rem; color:var(--muted);">Data inizio</span>
+                  <input type="datetime-local" id="admin-event-starts-at" value="${escapeHtml(toDateTimeLocalValue(record.startsAt))}" style="width:100%;">
+                </label>
+                <label style="display:grid; gap:6px; min-width:0;">
+                  <span style="font-size:0.85rem; color:var(--muted);">Data fine</span>
+                  <input type="datetime-local" id="admin-event-ends-at" value="${escapeHtml(toDateTimeLocalValue(record.endsAt))}" style="width:100%;">
+                </label>
+              </div>
               <label class="full" style="display:grid; gap:6px;">
                 <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldDescription'))}</span>
                 <textarea id="admin-event-description" rows="5" placeholder="${escapeHtml(t('admin.eventsFieldDescription'))}">${escapeHtml(record.description || '')}</textarea>
