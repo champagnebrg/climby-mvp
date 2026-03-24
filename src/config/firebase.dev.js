@@ -1,4 +1,4 @@
-export const firebaseConfigDev = {
+export const firebaseConfig = {
   apiKey: "AIzaSyAvt6Mxz6vQNxI755upV7ZxQ11afvQ0U-I",
   authDomain: "climby-dev-1.firebaseapp.com",
   projectId: "climby-dev-1",
