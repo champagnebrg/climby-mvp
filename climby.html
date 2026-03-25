@@ -1867,6 +1867,7 @@
         let activeSocialCommentsActivityId = null;
         let gymCoverageUnsubscribers = [];
         let activeGymDetailId = null;
+        let refreshActiveGymDetailI18n = null;
         let routeProgressUnsubscriber = null;
         let currentRouteProgressUnsubscriber = null;
         let currentViewerRoutesUnsubscriber = null;
@@ -1963,7 +1964,24 @@
             }
             const lt = document.getElementById('loading-text'); if (lt) lt.innerText = t('loading.init');
         }
-        window.setLang = (lang) => { currentLang = lang; setCurrentLang(lang); auth.languageCode = lang; localStorage.setItem(LANG_KEY, lang); applyLang(); populateAdminColorOptions(); if (typeof renderProfileDashboard === 'function') renderProfileDashboard(); if (typeof renderChallengesHub === 'function') renderChallengesHub(); if (typeof renderUserGymList === 'function') renderUserGymList(); if (typeof renderFollowingSection === 'function') renderFollowingSection(); if (typeof renderActivePublicProfile === 'function') renderActivePublicProfile(); if (activeGymDetailId) renderGymCoverage(currentGymCoverage); if (currentMode === 'admin' && realUserGymId) { renderAdminCoverage(); renderAdminEventsPanel(); } };
+        window.setLang = (lang) => {
+            currentLang = lang;
+            setCurrentLang(lang);
+            auth.languageCode = lang;
+            localStorage.setItem(LANG_KEY, lang);
+            applyLang();
+            populateAdminColorOptions();
+            if (typeof renderProfileDashboard === 'function') renderProfileDashboard();
+            if (typeof renderChallengesHub === 'function') renderChallengesHub();
+            if (typeof renderUserGymList === 'function') renderUserGymList();
+            if (typeof renderFollowingSection === 'function') renderFollowingSection();
+            if (typeof renderActivePublicProfile === 'function') renderActivePublicProfile();
+            if (activeGymDetailId && typeof refreshActiveGymDetailI18n === 'function') refreshActiveGymDetailI18n();
+            if (currentMode === 'admin' && realUserGymId) {
+                renderAdminCoverage();
+                renderAdminEventsPanel();
+            }
+        };
 
         const showLoading = (msg, showRetry = false) => {
             document.getElementById('loading-text').innerText = msg;
@@ -3379,6 +3397,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
         function cleanupExploreViewState() {
             stopGymCoverageListeners();
             stopGymDetailListener();
+            refreshActiveGymDetailI18n = null;
             activeGymDetailId = null;
             activeGymId = null;
             activeSectorId = null;
@@ -5318,6 +5337,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
         };
 
         async function openGymDetail(gId) {
+            refreshActiveGymDetailI18n = null;
             const sectorsSnap = await getDocs(collection(db, "gyms", gId, "Sectors"));
             const sectorMapRows = sectorsSnap.docs.map((d) => ({
                 sectorId: d.id,
@@ -5556,7 +5576,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     await loadSelectedGymEventRegistration();
                 } catch (err) {
                     console.error('[events] failed to update registration', err);
-                    alert(err?.message || 'Unable to update registration.');
+                    alert(err?.message || t('gym.eventsRegistrationUpdateError'));
                 } finally {
                     selectedGymEventRegistrationSaving = false;
                     renderUserEventsPanel();
@@ -5615,7 +5635,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 	                            selectedGymCompetitionViewOpen = true;
                         } catch (err) {
                             console.error('[events] failed to open competition live', err);
-                            alert(err?.message || 'Unable to open competition.');
+                            alert(err?.message || t('gym.eventsCompetitionOpenError'));
                         } finally {
                             selectedGymCompetitionEntryLoading = false;
                             renderUserEventsPanel();
@@ -5641,7 +5661,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             ? selectedGymCompetitionEntry.completedBlockNumbers
                             : [];
                         if (completedBlockNumbers.length > 0 && String(selectedGymCompetitionEntry?.categoryId || '') !== String(categoryId)) {
-                            alert('Categoria bloccata dopo il primo blocco completato.');
+                            alert(t('gym.eventsCompetitionCategoryLockedAfterFirstBlock'));
                             return;
                         }
                         const previousCompetitionEntry = selectedGymCompetitionEntry;
@@ -5681,7 +5701,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             selectedGymCompetitionEntry = previousCompetitionEntry;
                             selectedGymCompetitionEntries = previousCompetitionEntries;
                             console.error('[events] failed to save competition category', err);
-                            alert(err?.message || 'Unable to save competition category.');
+                            alert(err?.message || t('gym.eventsCompetitionCategorySaveError'));
                         } finally {
                             selectedGymCompetitionEntryLoading = false;
                             renderUserEventsPanel();
@@ -5731,7 +5751,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             completedBlockNumbers: [],
                         };
                         if (requiresCategorySelection && !enabledCategories.some((category) => category.id === String(entry?.categoryId || ''))) {
-                            alert('Seleziona una categoria prima di segnare i blocchi.');
+                            alert(t('gym.eventsCompetitionSelectCategoryBeforeBlocks'));
                             return;
                         }
                         const previousCompletedBlockNumbers = Array.isArray(entry?.completedBlockNumbers) ? [...entry.completedBlockNumbers] : [];
@@ -5771,7 +5791,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             selectedGymCompetitionEntry = previousCompetitionEntry;
                             selectedGymCompetitionEntries = previousCompetitionEntries;
                             console.error('[events] failed to toggle competition block', err);
-                            alert(err?.message || 'Unable to save competition block.');
+                            alert(err?.message || t('gym.eventsCompetitionBlockSaveError'));
                         } finally {
                             selectedGymCompetitionEntryLoading = false;
                             renderUserEventsPanel();
@@ -5889,6 +5909,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             }
             document.getElementById('user-gym-detail-back').onclick = () => {
                 stopGymDetailListener();
+                refreshActiveGymDetailI18n = null;
                 activeGymDetailId = null;
                 document.getElementById('user-gym-detail').style.display = 'none';
                 document.getElementById('user-main-tabs').style.display = 'none';
@@ -5920,12 +5941,20 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             Object.entries(gymTabs).forEach(([key, item]) => {
                 if (item.btn) item.btn.onclick = () => setGymTab(key);
             });
+            refreshActiveGymDetailI18n = () => {
+                renderGymDetailInfo(firstGymData);
+                renderUserEventsPanel();
+                document.getElementById('gym-tab-leaderboard').textContent = t('gym.leaderboardTitle');
+                document.getElementById('gym-tab-events').textContent = t('gym.tabEvents');
+                document.getElementById('gym-tab-details').textContent = t('gym.tabDetails');
+            };
             applyLang();
         }
 
         window.showUserGymList = function showUserGymList() {
             stopGymCoverageListeners();
             stopGymDetailListener();
+            refreshActiveGymDetailI18n = null;
             activeGymDetailId = null;
             document.getElementById('user-gym-detail').style.display = 'none';
             document.getElementById('user-main-tabs').style.display = 'none';
@@ -6582,7 +6611,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         await notifyGymMembers(
                             realUserGymId,
                             'NEW_EVENT_PUBLISHED',
-                            `Nuovo evento pubblicato: ${publishedEvent?.title || selectedEvent?.title || 'Evento Climby'}`
+                            `${t('notifications.NEW_EVENT_PUBLISHED')}: ${publishedEvent?.title || selectedEvent?.title || t('gym.eventsUntitled')}`
                         );
                         await refreshAdminEventsPanel();
                         alert(t('admin.eventsPublished'));

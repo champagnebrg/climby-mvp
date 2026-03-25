@@ -34,7 +34,7 @@ export function renderAdminEventEditor({
     ? renderRegistrationRows({ registrations, registrationsLoading, registrationsSearch, t, formatDateTime, registrationStatusSavingUserId })
     : '';
   const competitionLeaderboard = event?.id && competitionLive.enabled
-    ? renderCompetitionLeaderboard({ competitionEntries, competitionEntriesLoading, registrations, categories: Array.isArray(competitionLive.categories) ? competitionLive.categories.filter((category) => category?.enabled && category?.id) : [] })
+    ? renderCompetitionLeaderboard({ competitionEntries, competitionEntriesLoading, registrations, categories: Array.isArray(competitionLive.categories) ? competitionLive.categories.filter((category) => category?.enabled && category?.id) : [], t })
     : '';
   container.innerHTML = `
     <div class="admin-tab-header">
@@ -59,11 +59,11 @@ export function renderAdminEventEditor({
               </label>
               <div class="full" style="display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); align-items:end;">
                 <label style="display:grid; gap:6px; min-width:0;">
-                  <span style="font-size:0.85rem; color:var(--muted);">Data inizio</span>
+                  <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldStartsAt'))}</span>
                   <input type="datetime-local" id="admin-event-starts-at" value="${escapeHtml(toDateTimeLocalValue(record.startsAt))}" style="width:100%;">
                 </label>
                 <label style="display:grid; gap:6px; min-width:0;">
-                  <span style="font-size:0.85rem; color:var(--muted);">Data fine</span>
+                  <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsFieldEndsAt'))}</span>
                   <input type="datetime-local" id="admin-event-ends-at" value="${escapeHtml(toDateTimeLocalValue(record.endsAt))}" style="width:100%;">
                 </label>
               </div>
@@ -102,19 +102,19 @@ export function renderAdminEventEditor({
 	                </select>
 	              </label>
 	              <label style="display:grid; gap:6px;">
-	                <span style="font-size:0.85rem; color:var(--muted);">Numero blocchi gara</span>
-	                <input type="number" min="0" step="1" id="admin-event-competition-live-blocks-count" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(String(Number.isFinite(competitionLive.blocksCount) ? competitionLive.blocksCount : 0))}" placeholder="Es. 20">
+	                <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionBlocksCountLabel'))}</span>
+	                <input type="number" min="0" step="1" id="admin-event-competition-live-blocks-count" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''} value="${escapeHtml(String(Number.isFinite(competitionLive.blocksCount) ? competitionLive.blocksCount : 0))}" placeholder="${escapeHtml(t('admin.eventsCompetitionBlocksCountPlaceholder'))}">
 	              </label>
                 <div class="full" style="display:grid; gap:8px;">
                   <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
                     <div>
-                      <span style="font-size:0.85rem; color:var(--muted);">Categorie gara</span>
-                      <p style="margin:4px 0 0; color:var(--muted); font-size:0.8rem;">Nome categoria e attiva/disattiva. Ordine = ordine righe. Id gestito internamente.</p>
+                      <span style="font-size:0.85rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionCategoriesLabel'))}</span>
+                      <p style="margin:4px 0 0; color:var(--muted); font-size:0.8rem;">${escapeHtml(t('admin.eventsCompetitionCategoriesHint'))}</p>
                     </div>
-                    <button type="button" class="btn-sec" id="admin-event-competition-live-category-add" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>Aggiungi categoria</button>
+                    <button type="button" class="btn-sec" id="admin-event-competition-live-category-add" data-competition-live-field ${competitionLiveFieldsDisabled ? 'disabled' : ''}>${escapeHtml(t('admin.eventsCompetitionAddCategory'))}</button>
                   </div>
                   <div id="admin-event-competition-live-categories-list" style="display:grid; gap:8px;">
-                    ${renderCompetitionLiveCategoryRows(competitionLive.categories)}
+                    ${renderCompetitionLiveCategoryRows(competitionLive.categories, t)}
                   </div>
                 </div>
 	            </div>
@@ -133,10 +133,10 @@ export function renderAdminEventEditor({
           <div class="card admin-block-card" style="display:block; margin-top:12px;">
             <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap;">
               <div>
-                <h4 class="admin-section-title" style="margin:0;">Leaderboard competition live</h4>
-                <p style="margin:4px 0 0; color:var(--muted); font-size:0.9rem;">Posizione, identificativo e punteggio live attuale.</p>
+                <h4 class="admin-section-title" style="margin:0;">${escapeHtml(t('admin.eventsCompetitionLeaderboardTitle'))}</h4>
+                <p style="margin:4px 0 0; color:var(--muted); font-size:0.9rem;">${escapeHtml(t('admin.eventsCompetitionLeaderboardHint'))}</p>
               </div>
-              <span class="admin-file-chip">${escapeHtml(String(Array.isArray(competitionEntries) ? competitionEntries.length : 0))} partecipanti</span>
+              <span class="admin-file-chip">${escapeHtml(String(Array.isArray(competitionEntries) ? competitionEntries.length : 0))} ${escapeHtml(t('admin.eventsParticipantsCount'))}</span>
             </div>
             <div style="margin-top:12px; display:grid; gap:8px;">
               ${competitionLeaderboard}
@@ -172,7 +172,7 @@ export function renderAdminEventEditor({
   if (competitionLiveEnabled) {
     competitionLiveEnabled.addEventListener('change', () => syncCompetitionLiveFieldsState(container));
   }
-  bindCompetitionLiveCategoryActions(container);
+  bindCompetitionLiveCategoryActions(container, t);
   const publishBtn = container.querySelector('#admin-event-publish-btn');
   if (publishBtn) publishBtn.onclick = () => onPublish?.();
   const endBtn = container.querySelector('#admin-event-end-btn');
@@ -190,33 +190,33 @@ export function renderAdminEventEditor({
   });
 }
 
-function renderCompetitionLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, registrations = [], categories = [] } = {}) {
+function renderCompetitionLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, registrations = [], categories = [], t = (key) => key } = {}) {
   if (competitionEntriesLoading) {
-    return '<div style="color:var(--muted); font-size:0.85rem;">Caricamento punteggi...</div>';
+    return `<div style="color:var(--muted); font-size:0.85rem;">${escapeHtml(t('admin.eventsCompetitionScoresLoading'))}</div>`;
   }
 
   if (!competitionEntries.length) {
-    return '<div style="color:var(--muted); font-size:0.85rem;">Nessun punteggio disponibile</div>';
+    return `<div style="color:var(--muted); font-size:0.85rem;">${escapeHtml(t('admin.eventsCompetitionScoresEmpty'))}</div>`;
   }
 
   const groups = buildCompetitionLeaderboardGroups(competitionEntries, categories);
-  return `<div style="display:grid; gap:12px;">${groups.map((group) => renderCompetitionLeaderboardGroup(group, registrations)).join('')}</div>`;
+  return `<div style="display:grid; gap:12px;">${groups.map((group) => renderCompetitionLeaderboardGroup(group, registrations, t)).join('')}</div>`;
 }
 
-function renderCompetitionLeaderboardGroup(group = {}, registrations = []) {
+function renderCompetitionLeaderboardGroup(group = {}, registrations = [], t = (key) => key) {
   const entries = Array.isArray(group.entries) ? group.entries : [];
   return `
     <div style="display:grid; gap:8px;">
       ${group.label ? `<div style="font-size:0.9rem; font-weight:700;">${escapeHtml(group.label)}</div>` : ''}
       ${entries.length
-        ? entries.map((entry, index) => renderCompetitionLeaderboardRow(entry, index, registrations)).join('')
-        : '<div style="color:var(--muted); font-size:0.85rem;">Nessun punteggio disponibile</div>'}
+        ? entries.map((entry, index) => renderCompetitionLeaderboardRow(entry, index, registrations, t)).join('')
+        : `<div style="color:var(--muted); font-size:0.85rem;">${escapeHtml(t('admin.eventsCompetitionScoresEmpty'))}</div>`}
     </div>
   `;
 }
 
-function renderCompetitionLeaderboardRow(entry = {}, index = 0, registrations = []) {
-  const label = resolveCompetitionEntryLabel(entry, registrations, index);
+function renderCompetitionLeaderboardRow(entry = {}, index = 0, registrations = [], t = (key) => key) {
+  const label = resolveCompetitionEntryLabel(entry, registrations, index, t);
   const rank = index + 1;
   const badge = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : `#${rank}`));
   const rowStyle = rank <= 3
@@ -233,12 +233,12 @@ function renderCompetitionLeaderboardRow(entry = {}, index = 0, registrations = 
   `;
 }
 
-function resolveCompetitionEntryLabel(entry = {}, registrations = [], index = 0) {
+function resolveCompetitionEntryLabel(entry = {}, registrations = [], index = 0, t = (key) => key) {
   const registration = (Array.isArray(registrations) ? registrations : [])
     .find((item) => String(item?.userId || '') === String(entry?.userId || ''));
   return resolveReadableCompetitionEntryLabel(registration)
     || resolveReadableCompetitionEntryLabel(entry)
-    || `Partecipante #${index + 1}`;
+    || `${t('admin.eventsCompetitionParticipantLabel')} #${index + 1}`;
 }
 
 function buildCompetitionLeaderboardGroups(competitionEntries = [], categories = []) {
@@ -302,54 +302,54 @@ function syncCompetitionLiveFieldsState(container) {
   });
 }
 
-function renderCompetitionLiveCategoryRows(categories = []) {
+function renderCompetitionLiveCategoryRows(categories = [], t = (key) => key) {
   if (!Array.isArray(categories) || !categories.length) {
-    return renderCompetitionLiveCategoryRow();
+    return renderCompetitionLiveCategoryRow({}, t);
   }
-  return categories.map((category) => renderCompetitionLiveCategoryRow(category)).join('');
+  return categories.map((category) => renderCompetitionLiveCategoryRow(category, t)).join('');
 }
 
-function renderCompetitionLiveCategoryRow(category = {}) {
+function renderCompetitionLiveCategoryRow(category = {}, t = (key) => key) {
   return `
     <div data-competition-live-category-row style="display:grid; gap:8px; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:12px;">
       <input type="hidden" data-competition-live-category-id value="${escapeHtml(category.id || '')}">
       <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:end;">
         <label style="display:grid; gap:6px;">
-          <span style="font-size:0.8rem; color:var(--muted);">Nome categoria</span>
-          <input type="text" data-competition-live-category-label data-competition-live-field value="${escapeHtml(category.label || '')}" placeholder="Es. Open">
+          <span style="font-size:0.8rem; color:var(--muted);">${escapeHtml(t('admin.eventsCompetitionCategoryNameLabel'))}</span>
+          <input type="text" data-competition-live-category-label data-competition-live-field value="${escapeHtml(category.label || '')}" placeholder="${escapeHtml(t('admin.eventsCompetitionCategoryNamePlaceholder'))}">
         </label>
-        <button type="button" class="btn-danger-soft" data-competition-live-category-remove data-competition-live-field>Rimuovi</button>
+        <button type="button" class="btn-danger-soft" data-competition-live-category-remove data-competition-live-field>${escapeHtml(t('admin.eventsCompetitionRemoveCategory'))}</button>
       </div>
-      <label class="admin-toggle"><input type="checkbox" data-competition-live-category-enabled data-competition-live-field ${category.enabled !== false ? 'checked' : ''}><span>Categoria attiva</span></label>
+      <label class="admin-toggle"><input type="checkbox" data-competition-live-category-enabled data-competition-live-field ${category.enabled !== false ? 'checked' : ''}><span>${escapeHtml(t('admin.eventsCompetitionCategoryEnabled'))}</span></label>
     </div>
   `;
 }
 
-function bindCompetitionLiveCategoryActions(container) {
+function bindCompetitionLiveCategoryActions(container, t = (key) => key) {
   const addButton = container.querySelector('#admin-event-competition-live-category-add');
   if (addButton) {
-    addButton.onclick = () => addCompetitionLiveCategoryRow(container);
+    addButton.onclick = () => addCompetitionLiveCategoryRow(container, {}, t);
   }
   container.querySelector('#admin-event-competition-live-categories-list')?.addEventListener('click', (eventObj) => {
     const removeButton = eventObj.target?.closest?.('[data-competition-live-category-remove]');
     if (!removeButton) return;
     const row = removeButton.closest('[data-competition-live-category-row]');
     row?.remove();
-    ensureCompetitionLiveCategoriesListNotEmpty(container);
+    ensureCompetitionLiveCategoriesListNotEmpty(container, t);
   });
 }
 
-function addCompetitionLiveCategoryRow(container, category = {}) {
+function addCompetitionLiveCategoryRow(container, category = {}, t = (key) => key) {
   const list = container.querySelector('#admin-event-competition-live-categories-list');
   if (!list) return;
-  list.insertAdjacentHTML('beforeend', renderCompetitionLiveCategoryRow(category));
+  list.insertAdjacentHTML('beforeend', renderCompetitionLiveCategoryRow(category, t));
   syncCompetitionLiveFieldsState(container);
 }
 
-function ensureCompetitionLiveCategoriesListNotEmpty(container) {
+function ensureCompetitionLiveCategoriesListNotEmpty(container, t = (key) => key) {
   const list = container.querySelector('#admin-event-competition-live-categories-list');
   if (!list || list.querySelector('[data-competition-live-category-row]')) return;
-  addCompetitionLiveCategoryRow(container);
+  addCompetitionLiveCategoryRow(container, {}, t);
 }
 
 function readCompetitionLiveCategories(container) {
@@ -431,9 +431,9 @@ function renderRegistrationRows({ registrations = [], registrationsLoading = fal
 
   return `
   <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-    <span class="admin-file-chip">Da check-in: ${escapeHtml(String(summary.registered))}</span>
-    <span class="admin-file-chip">Checked-in: ${escapeHtml(String(summary.checkedIn))}</span>
-    <span class="admin-file-chip">Annullate: ${escapeHtml(String(summary.cancelled))}</span>
+    <span class="admin-file-chip">${escapeHtml(t('admin.eventsRegistrationsSummaryPending'))}: ${escapeHtml(String(summary.registered))}</span>
+    <span class="admin-file-chip">${escapeHtml(t('admin.eventsRegistrationsSummaryCheckedIn'))}: ${escapeHtml(String(summary.checkedIn))}</span>
+    <span class="admin-file-chip">${escapeHtml(t('admin.eventsRegistrationsSummaryCancelled'))}: ${escapeHtml(String(summary.cancelled))}</span>
   </div>
   ${filteredRegistrations.map((registration) => {
     const isSaving = registrationStatusSavingUserId && registrationStatusSavingUserId === registration.userId;
@@ -477,7 +477,7 @@ function getRegistrationStatusMeta(status = '', t = (key) => key) {
       borderColor: 'rgba(98,242,155,0.28)',
       background: 'rgba(98,242,155,0.08)',
       textColor: '#62f29b',
-      helperText: 'Check-in completato',
+      helperText: t('admin.eventsRegistrationCheckInCompleted'),
     };
   }
   if (status === 'cancelled') {
@@ -492,7 +492,7 @@ function getRegistrationStatusMeta(status = '', t = (key) => key) {
     borderColor: 'rgba(255,193,92,0.24)',
     background: 'rgba(255,193,92,0.06)',
     textColor: '#ffd36f',
-    helperText: 'Pronto per check-in',
+    helperText: t('admin.eventsRegistrationReadyForCheckIn'),
   };
 }
 

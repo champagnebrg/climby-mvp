@@ -219,7 +219,26 @@ const adminEventFallbacks = {
     eventsCompetitionUseEventSchedule: { it: 'Usa gli stessi orari dell\'evento', en: 'Use the same schedule as the event' },
     eventsCompetitionScheduleHint: { it: 'Compila questi campi solo se la gara live ha orari diversi dall\'evento principale.', en: 'Fill these fields only if the live competition has a different schedule from the main event.' },
     eventsCompetitionStartsAtLabel: { it: 'Inizio gara live', en: 'Competition start' },
-    eventsCompetitionEndsAtLabel: { it: 'Fine gara live', en: 'Competition end' }
+    eventsCompetitionEndsAtLabel: { it: 'Fine gara live', en: 'Competition end' },
+    eventsCompetitionBlocksCountLabel: { it: 'Numero blocchi gara', en: 'Competition blocks count' },
+    eventsCompetitionBlocksCountPlaceholder: { it: 'Es. 20', en: 'E.g. 20' },
+    eventsCompetitionCategoriesLabel: { it: 'Categorie gara', en: 'Competition categories' },
+    eventsCompetitionCategoriesHint: { it: 'Nome categoria e attiva/disattiva. Ordine = ordine righe. Id gestito internamente.', en: 'Category name and active/inactive toggle. Order follows row order. Id is managed internally.' },
+    eventsCompetitionAddCategory: { it: 'Aggiungi categoria', en: 'Add category' },
+    eventsCompetitionCategoryNameLabel: { it: 'Nome categoria', en: 'Category name' },
+    eventsCompetitionCategoryNamePlaceholder: { it: 'Es. Open', en: 'E.g. Open' },
+    eventsCompetitionRemoveCategory: { it: 'Rimuovi', en: 'Remove' },
+    eventsCompetitionCategoryEnabled: { it: 'Categoria attiva', en: 'Active category' },
+    eventsCompetitionLeaderboardTitle: { it: 'Leaderboard competition live', en: 'Live competition leaderboard' },
+    eventsCompetitionLeaderboardHint: { it: 'Posizione, identificativo e punteggio live attuale.', en: 'Position, participant id, and current live score.' },
+    eventsCompetitionScoresLoading: { it: 'Caricamento punteggi...', en: 'Loading scores...' },
+    eventsCompetitionScoresEmpty: { it: 'Nessun punteggio disponibile', en: 'No scores available' },
+    eventsCompetitionParticipantLabel: { it: 'Partecipante', en: 'Participant' },
+    eventsRegistrationsSummaryPending: { it: 'Da check-in', en: 'Pending check-in' },
+    eventsRegistrationsSummaryCheckedIn: { it: 'Checked-in', en: 'Checked in' },
+    eventsRegistrationsSummaryCancelled: { it: 'Annullate', en: 'Cancelled' },
+    eventsRegistrationCheckInCompleted: { it: 'Check-in completato', en: 'Check-in completed' },
+    eventsRegistrationReadyForCheckIn: { it: 'Pronto per check-in', en: 'Ready for check-in' }
 };
 
 const gymEventFallbacks = {
@@ -293,7 +312,31 @@ const gymEventFallbacks = {
     eventsCompetitionSectorListHint: { it: 'Apri un settore per continuare dal modello 3D.', en: 'Open a sector to continue from the 3D model.' },
     eventsCompetitionOpenSectorCta: { it: 'Apri settore nel 3D', en: 'Open sector in 3D' },
     eventsCompetitionCloseCta: { it: 'Chiudi gara', en: 'Close competition' },
-    eventsCompetitionNoSectors: { it: 'Nessun settore disponibile nella gara.', en: 'No sectors available in this competition.' }
+    eventsCompetitionNoSectors: { it: 'Nessun settore disponibile nella gara.', en: 'No sectors available in this competition.' },
+    eventsCompetitionCategoryLockedAfterFirstBlock: { it: 'Categoria bloccata dopo il primo blocco completato.', en: 'Category is locked after the first completed block.' },
+    eventsCompetitionSelectCategoryToStart: { it: 'Seleziona una categoria per iniziare la gara.', en: 'Select a category to start the competition.' },
+    eventsCompetitionCategoryLabel: { it: 'Categoria', en: 'Category' },
+    eventsCompetitionSelectCategoryFallback: { it: 'Seleziona categoria', en: 'Select category' },
+    eventsCompetitionScoreLabel: { it: 'Score', en: 'Score' },
+    eventsCompetitionBlocksLabel: { it: 'Blocchi gara', en: 'Competition blocks' },
+    eventsCompetitionCategorySectionTitle: { it: 'Categoria gara', en: 'Competition category' },
+    eventsCompetitionCategoryLockedHint: { it: 'Categoria bloccata: hai già almeno un blocco completato.', en: 'Category locked: you already completed at least one block.' },
+    eventsCompetitionCategorySingleSelectionHint: { it: 'Puoi selezionare una sola categoria.', en: 'You can select only one category.' },
+    eventsCompetitionBlocksSectionTitle: { it: 'Blocchi gara', en: 'Competition blocks' },
+    eventsCompetitionBlocksHint: { it: 'Tocca un blocco per segnare o rimuovere il completamento.', en: 'Tap a block to mark or remove completion.' },
+    eventsCompetitionNoBlocksConfigured: { it: 'Nessun blocco configurato.', en: 'No blocks configured.' },
+    eventsCompetitionBlockCompleted: { it: '✅ Completata', en: '✅ Completed' },
+    eventsCompetitionBlockNotCompleted: { it: '○ Non completata', en: '○ Not completed' },
+    eventsCompetitionLeaderboardLoading: { it: 'Caricamento classifica...', en: 'Loading leaderboard...' },
+    eventsCompetitionLeaderboardUnavailable: { it: 'Classifica non disponibile.', en: 'Leaderboard unavailable.' },
+    eventsCompetitionLeaderboardTitle: { it: 'Leaderboard live', en: 'Live leaderboard' },
+    eventsYouLabel: { it: 'Tu', en: 'You' },
+    eventsCompetitionParticipantLabel: { it: 'Partecipante', en: 'Participant' },
+    eventsCompetitionSelectCategoryBeforeBlocks: { it: 'Seleziona una categoria prima di segnare i blocchi.', en: 'Select a category before marking blocks.' },
+    eventsRegistrationUpdateError: { it: 'Impossibile aggiornare la registrazione.', en: 'Unable to update registration.' },
+    eventsCompetitionOpenError: { it: 'Impossibile aprire la gara.', en: 'Unable to open competition.' },
+    eventsCompetitionCategorySaveError: { it: 'Impossibile salvare la categoria gara.', en: 'Unable to save competition category.' },
+    eventsCompetitionBlockSaveError: { it: 'Impossibile salvare il blocco gara.', en: 'Unable to save competition block.' }
 };
 
 export const emailVerificationFallbacks = {
@@ -317,7 +360,7 @@ export const notificationsFallbacks = {
             SECTOR_RESET: { it: 'Nuova tracciatura in un settore della palestra.', en: 'New route setting in a gym sector.' },
             TOP10_ENTER: { it: 'Sei entrato nella Top 10 della palestra.', en: 'You entered the gym Top 10.' },
             RANK_OVERTAKEN: { it: 'Qualcuno ti ha superato in classifica.', en: 'Someone overtook you in leaderboard.' },
-            WELCOME: { it: 'Benvenuto su Climby! Inizia ad esplorare le palestre.', en: 'Welcome to Climby! Start exploring gyms.' }, gymFollowEnabled: { it: 'Riceverai notifiche da questa palestra', en: 'You will receive notifications from this gym' }, gymFollowDisabled: { it: 'Notifiche disattivate per questa palestra', en: 'Notifications disabled for this gym' }, gymFollowOnShort: { it: 'Notifiche ON', en: 'Alerts ON' }, gymFollowOffShort: { it: 'Notifiche OFF', en: 'Alerts OFF' }
+            WELCOME: { it: 'Benvenuto su Climby! Inizia ad esplorare le palestre.', en: 'Welcome to Climby! Start exploring gyms.' }, NEW_EVENT_PUBLISHED: { it: 'Nuovo evento pubblicato', en: 'New event published' }, gymFollowEnabled: { it: 'Riceverai notifiche da questa palestra', en: 'You will receive notifications from this gym' }, gymFollowDisabled: { it: 'Notifiche disattivate per questa palestra', en: 'Notifications disabled for this gym' }, gymFollowOnShort: { it: 'Notifiche ON', en: 'Alerts ON' }, gymFollowOffShort: { it: 'Notifiche OFF', en: 'Alerts OFF' }
         };
 
 for (const lang of ['it', 'en']) {
