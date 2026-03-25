@@ -1723,11 +1723,11 @@
             <div id="competition-live-panel" class="bottom-sheet" style="display:none; max-height:96dvh;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
                     <div>
-                        <h2 id="competition-live-panel-title" style="margin:0; color:var(--primary);">Competition live</h2>
+                        <h2 id="competition-live-panel-title" style="margin:0; color:var(--primary);" data-i18n="gym.eventsCompetitionLiveTitle"></h2>
                         <div id="competition-live-panel-subtitle" style="color:var(--muted); margin-top:5px;"></div>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <button type="button" class="btn-sec" onclick="window.exitCompetitionLiveMode()">Esci gara</button>
+                        <button type="button" class="btn-sec" onclick="window.exitCompetitionLiveMode()" data-i18n="gym.eventsCompetitionExitViewerCta"></button>
                         <button type="button" onclick="window.closeCompetitionLivePanel()" style="background:none; border:none; color:var(--text); font-size:28px;">×</button>
                     </div>
                 </div>
@@ -8195,7 +8195,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 return;
             }
 
-            titleEl.textContent = 'Competition live';
+            titleEl.textContent = t('gym.eventsCompetitionLiveTitle');
             subtitleEl.textContent = competitionLiveViewerState.sectorName || competitionLiveViewerState.sectorId || '';
             const competitionClosed = isCompetitionLiveClosedForViewer();
             const completedIds = new Set(Array.isArray(competitionLiveViewerState.entry?.completedRouteIds) ? competitionLiveViewerState.entry.completedRouteIds : []);
@@ -8210,13 +8210,13 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                                 <div style="display:grid; gap:2px;">
                                     <b>${escapeHtml(route.grade || route.name || routeId || '-')}</b>
                                 </div>
-                                <span style="color:${completed ? '#62f29b' : 'var(--muted)'}; font-size:0.85rem;">${completed ? '✅ Completata' : '⭕ Non completata'}</span>
+                                <span style="color:${completed ? '#62f29b' : 'var(--muted)'}; font-size:0.85rem;">${escapeHtml(completed ? t('gym.eventsCompetitionRouteCompleted') : t('gym.eventsCompetitionRouteNotCompleted'))}</span>
                             </div>
-                            <button type="button" class="btn-sec" data-competition-route-toggle="1" data-route-id="${escapeHtml(routeId)}" ${(saving || competitionClosed) ? 'disabled' : ''}>${completed ? 'Segna non completata' : 'Segna completata'}</button>
+                            <button type="button" class="btn-sec" data-competition-route-toggle="1" data-route-id="${escapeHtml(routeId)}" ${(saving || competitionClosed) ? 'disabled' : ''}>${escapeHtml(completed ? t('gym.eventsCompetitionMarkRouteIncomplete') : t('gym.eventsCompetitionMarkRouteComplete'))}</button>
                         </div>
                     `;
                 }).join('')}`
-                : '<div class="profile-subtitle">Nessuna route disponibile in questo settore.</div>';
+                : `<div class="profile-subtitle">${escapeHtml(t('gym.eventsCompetitionNoRoutesInSector'))}</div>`;
             listEl.querySelectorAll('[data-competition-route-toggle]').forEach((button) => {
                 button.onclick = async () => {
                     const routeId = String(button.dataset.routeId || '').trim();
