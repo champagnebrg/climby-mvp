@@ -50,3 +50,30 @@ export const formatPersonName = (value) => {
     .join(' ')
     .trim();
 };
+
+export const formatKpiNumber = (v, suffix = '') => {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return `0${suffix}`;
+  return `${n.toLocaleString('it-IT', { maximumFractionDigits: 2 })}${suffix}`;
+};
+
+export const sanitizeSocialCount = (value) => {
+  return Math.max(0, Number(value || 0));
+};
+
+export const getMillisFromAny = (value) => {
+  if (!value) return 0;
+  if (typeof value?.toMillis === 'function') return value.toMillis();
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const t = Date.parse(value);
+    return Number.isFinite(t) ? t : 0;
+  }
+  return 0;
+};
+
+export const getMonthKeyFromDateValue = (value) => {
+  const d = toSafeDate(value);
+  if (!d) return '';
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
