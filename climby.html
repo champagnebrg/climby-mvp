@@ -296,10 +296,25 @@
                             </header>
                             <div class="admin-create-sector-card admin-block-card">
                                 <input type="text" id="new-sector-name" data-i18n-placeholder="admin.sectorNamePlaceholder">
-                                <div class="admin-file-row">
-                                    <input type="file" id="file-mesh-new" class="admin-file-hidden" accept=".glb">
-                                    <button type="button" class="btn-sec" onclick="document.getElementById('file-mesh-new').click()" data-i18n="admin.select3dModel"></button>
-                                    <span id="file-mesh-new-label" class="admin-file-chip" data-i18n="admin.noModelSelected"></span>
+                                <label class="admin-form-label" for="new-sector-mode">Tipo visualizzazione settore</label>
+                                <select id="new-sector-mode" class="admin-sector-mode-select">
+                                    <option value="3D">Modello 3D</option>
+                                    <option value="PHOTO">Foto statica</option>
+                                </select>
+                                <p id="new-sector-mode-helper" class="admin-viewer-mode-helper"></p>
+                                <div id="new-sector-file-row" class="admin-mode-panel">
+                                    <div class="admin-file-row">
+                                        <input type="file" id="file-mesh-new" class="admin-file-hidden" accept=".glb">
+                                        <button type="button" class="btn-sec" onclick="document.getElementById('file-mesh-new').click()" data-i18n="admin.select3dModel"></button>
+                                        <span id="file-mesh-new-label" class="admin-file-chip" data-i18n="admin.noModelSelected"></span>
+                                    </div>
+                                    <div id="new-sector-3d-preview-copy" class="admin-preview-chip">Anteprima utente: viewer 3D interattivo</div>
+                                </div>
+                                <div id="new-sector-photo-panel" class="admin-mode-panel" style="display:none;">
+                                    <input type="url" id="new-sector-image-url" placeholder="https://...">
+                                    <div id="new-sector-photo-preview-copy" class="admin-preview-chip">Anteprima utente: foto con zoom e spostamento</div>
+                                    <img id="new-sector-photo-preview" class="admin-photo-preview" alt="Photo preview" style="display:none;">
+                                    <small id="new-sector-photo-preview-status" class="admin-photo-preview-status"></small>
                                 </div>
                             </div>
                             <h4 class="admin-section-title" data-i18n="admin.yourSectors"></h4>
@@ -543,6 +558,12 @@
             <p data-i18n="viewer.moveGuideText"></p>
             <button type="button" class="btn-sec" id="viewer-move-guide-close" data-i18n="viewer.moveGuideClose"></button>
         </div>
+        <div id="photo-viewer-stage" class="photo-viewer-stage" style="display:none;">
+            <div id="photo-viewer-viewport" class="photo-viewer-viewport">
+                <img id="sector-photo-image" class="sector-photo-image" alt="Sector photo" draggable="false">
+            </div>
+            <div id="photo-viewer-fallback" class="photo-viewer-fallback" style="display:none;"></div>
+        </div>
         <model-viewer id="main-viewer" camera-controls shadow-intensity="1">
             <button id="ghost" class="hotspot" slot="hotspot-ghost" style="display:none; border:2px dashed var(--primary); background:transparent"></button>
 
@@ -765,7 +786,14 @@
         let currentModelLoadToken = 0;
         let currentModelLoadCleanup = null;
         let currentModelLoadTimeout = null;
+        let currentPhotoLoadCleanup = null;
+        let currentPhotoLoadTimeout = null;
         let lastOpen3DRequest = null;
+        let activeSectorViewMode = '3D';
+        let activeSectorImageUrl = '';
+        let photoViewerPointers = new Map();
+        let photoViewerBaseTransform = null;
+        let photoViewerTransform = { scale: 1, translateX: 0, translateY: 0 };
         let gymLevelOrderMap = new Map();
         let currentGymGradeSystem = null;
         let forcedGradeSetupActive = false;
@@ -835,6 +863,8 @@
             if (typeof renderFollowingSection === 'function') renderFollowingSection();
             if (typeof renderActivePublicProfile === 'function') renderActivePublicProfile();
             if (activeGymDetailId && typeof refreshActiveGymDetailI18n === 'function') refreshActiveGymDetailI18n();
+            if (typeof updateCreateSectorModeUI === 'function') updateCreateSectorModeUI();
+            if (typeof refreshAdminSectorModeUIs === 'function') refreshAdminSectorModeUIs();
             if (currentMode === 'admin' && realUserGymId) {
                 renderAdminCoverage();
                 renderAdminEventsPanel();
@@ -1120,6 +1150,15 @@
                 if (lbl) lbl.textContent = newSectorFileInput.files?.[0]?.name || t('admin.noModelSelected');
             };
         }
+        const newSectorModeInput = document.getElementById('new-sector-mode');
+        if (newSectorModeInput) newSectorModeInput.onchange = () => updateCreateSectorModeUI();
+        const newSectorPhotoUrlInput = document.getElementById('new-sector-image-url');
+        const newSectorPhotoPreview = document.getElementById('new-sector-photo-preview');
+        const newSectorPhotoPreviewStatus = document.getElementById('new-sector-photo-preview-status');
+        if (newSectorPhotoUrlInput) {
+            newSectorPhotoUrlInput.oninput = () => updatePhotoPreviewFromUrl(newSectorPhotoUrlInput.value, newSectorPhotoPreview, newSectorPhotoPreviewStatus);
+        }
+        updateCreateSectorModeUI();
 
         const usernameInput = document.getElementById('f-name');
         if (usernameInput) {
@@ -1741,6 +1780,100 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             return true;
         }
 
+        function updateCreateSectorModeUI() {
+            const modeSelect = document.getElementById('new-sector-mode');
+            const imageInput = document.getElementById('new-sector-image-url');
+            const filePanel = document.getElementById('new-sector-file-row');
+            const photoPanel = document.getElementById('new-sector-photo-panel');
+            const helperEl = document.getElementById('new-sector-mode-helper');
+            const labelEl = document.querySelector('label[for="new-sector-mode"]');
+            const photoPreview = document.getElementById('new-sector-photo-preview');
+            const previewStatus = document.getElementById('new-sector-photo-preview-status');
+            const preview3dCopy = document.getElementById('new-sector-3d-preview-copy');
+            const previewPhotoCopy = document.getElementById('new-sector-photo-preview-copy');
+            if (!modeSelect || !imageInput || !filePanel || !photoPanel) return;
+            const mode3dCopy = getViewerModeCopy('3D');
+            const modePhotoCopy = getViewerModeCopy('PHOTO');
+            if (labelEl) labelEl.textContent = currentLang === 'it' ? 'Vista settore' : 'Sector view';
+            if (modeSelect.options?.[0]) modeSelect.options[0].textContent = mode3dCopy.optionLabel;
+            if (modeSelect.options?.[1]) modeSelect.options[1].textContent = modePhotoCopy.optionLabel;
+            imageInput.placeholder = 'https://...';
+            const isPhoto = String(modeSelect.value || '').toUpperCase() === 'PHOTO';
+            filePanel.style.display = isPhoto ? 'none' : '';
+            photoPanel.style.display = isPhoto ? '' : 'none';
+            if (helperEl) {
+                helperEl.textContent = getViewerModeHelperText(isPhoto ? 'PHOTO' : '3D');
+            }
+            if (preview3dCopy) preview3dCopy.textContent = mode3dCopy.previewCopy;
+            if (previewPhotoCopy) previewPhotoCopy.textContent = modePhotoCopy.previewCopy;
+            if (!isPhoto && photoPreview) {
+                photoPreview.style.display = 'none';
+                photoPreview.removeAttribute('src');
+                if (previewStatus) previewStatus.textContent = '';
+            }
+            if (isPhoto) updatePhotoPreviewFromUrl(imageInput.value, photoPreview, previewStatus);
+        }
+
+        function getViewerModeCopy(mode = '3D') {
+            const normalizedMode = String(mode || '3D').toUpperCase();
+            if (normalizedMode === 'PHOTO') {
+                return {
+                    optionLabel: currentLang === 'it' ? 'Foto con zoom' : 'Photo with zoom',
+                    helper: currentLang === 'it' ? 'Mostra una foto del settore. Gli utenti possono zoomare e spostarsi sulla foto.' : 'Show a sector photo. Users can zoom and pan the image.',
+                    previewCopy: currentLang === 'it' ? 'Anteprima utente: foto con zoom e spostamento' : 'User preview: photo with zoom and pan'
+                };
+            }
+            return {
+                optionLabel: currentLang === 'it' ? 'Vista 3D interattiva' : 'Interactive 3D view',
+                helper: currentLang === 'it' ? 'Mostra il modello 3D del settore con navigazione interattiva.' : 'Show the sector 3D model with interactive navigation.',
+                previewCopy: currentLang === 'it' ? 'Anteprima utente: vista 3D interattiva' : 'User preview: interactive 3D view'
+            };
+        }
+
+        function getViewerModeHelperText(mode = '3D') {
+            return getViewerModeCopy(mode).helper;
+        }
+
+        function updatePhotoPreviewFromUrl(url = '', imgEl, statusEl = null) {
+            if (!imgEl) return;
+            const cleanUrl = String(url || '').trim();
+            if (!cleanUrl) {
+                imgEl.style.display = 'none';
+                imgEl.removeAttribute('src');
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Inserisci il link della foto.' : 'Enter the photo link.';
+                return;
+            }
+            let parsedUrl = null;
+            try {
+                parsedUrl = new URL(cleanUrl);
+            } catch (_) {
+                parsedUrl = null;
+            }
+            if (!parsedUrl) {
+                imgEl.style.display = 'none';
+                imgEl.removeAttribute('src');
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Il link della foto non è valido.' : 'The photo link is not valid.';
+                return;
+            }
+            imgEl.style.display = 'none';
+            imgEl.src = cleanUrl;
+            imgEl.onload = () => {
+                imgEl.style.display = 'block';
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Anteprima caricata.' : 'Preview loaded.';
+            };
+            imgEl.onerror = () => {
+                imgEl.style.display = 'none';
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Impossibile caricare l’anteprima da questo link.' : 'Unable to load preview from this link.';
+            };
+        }
+
+        function refreshAdminSectorModeUIs() {
+            document.querySelectorAll('[id^="sector-mode-"]').forEach((selectEl) => {
+                if (!selectEl || typeof selectEl.onchange !== 'function') return;
+                selectEl.onchange();
+            });
+        }
+
         // --- DASHBOARD ---
         async function initDashboard() {
             if (userRole !== 'admin' && userRole !== 'superadmin') currentMode = 'user';
@@ -1785,24 +1918,86 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     }
                     snap.forEach(d => {
                         const sec = d.data() || {};
-                        const hasModel = !!sec.meshUrl;
+                        const { mode, imageUrl } = normalizeSectorViewerMode(sec);
+                        const hasModel = mode === 'PHOTO' ? !!imageUrl : !!sec.meshUrl;
+                        const statusLabel = mode === 'PHOTO'
+                            ? (currentLang === 'it' ? '✅ Foto settore configurata' : '✅ Sector photo configured')
+                            : `✅ ${t('admin.modelLoaded')}`;
+                        const missingLabel = mode === 'PHOTO'
+                            ? (currentLang === 'it' ? '⚠️ Foto settore mancante' : '⚠️ Sector photo missing')
+                            : `⚠️ ${t('admin.no3dModel')}`;
                         const card = document.createElement('div'); card.className = 'admin-sector-card';
                         card.innerHTML = `
                             <div class="admin-sector-head">
                                 <h5 class="admin-sector-title">${escapeHtml(sec.name || d.id)}</h5>
                             </div>
-                            <div class="admin-sector-status ${hasModel ? 'ok' : 'warn'}">${hasModel ? `✅ ${t('admin.modelLoaded')}` : `⚠️ ${t('admin.no3dModel')}`}</div>
+                            <div class="admin-sector-status ${hasModel ? 'ok' : 'warn'}">${hasModel ? statusLabel : missingLabel}</div>
                             <div class="admin-sector-actions">
                                 <button class="btn-main" type="button" onclick="open3D('${realUserGymId}', '${d.id}')">${t('dash.manageRoutes')}</button>
-                                <button class="btn-sec" type="button" onclick="document.getElementById('file-update-${d.id}').click()">${t('admin.replaceModel3d')}</button>
+                                <button class="btn-sec" type="button" data-role="replace-3d-btn" onclick="document.getElementById('file-update-${d.id}').click()">${t('admin.replaceModel3d')}</button>
                                 <button class="btn-danger-soft" type="button" onclick="window.confirmDeleteSector('${d.id}', '${escapeHtml(sec.name || d.id)}')">🗑 ${t('admin.deleteSector')}</button>
                             </div>
                             <input type="file" id="file-update-${d.id}" class="admin-file-hidden" accept=".glb">
-                            <div class="admin-file-row" style="margin-top:8px;">
-                                <span id="file-update-label-${d.id}" class="admin-file-chip">${t('admin.noModelSelected')}</span>
+                            <div class="admin-file-row" style="margin-top:8px; gap:8px; flex-wrap:wrap;">
+                                <label class="admin-form-label" style="margin:0; width:100%;">${currentLang === 'it' ? 'Tipo visualizzazione settore' : 'Sector viewer type'}</label>
+                                <select id="sector-mode-${d.id}" class="admin-sector-mode-select">
+                                    <option value="3D">${currentLang === 'it' ? 'Modello 3D' : '3D model'}</option>
+                                    <option value="PHOTO">${currentLang === 'it' ? 'Foto statica' : 'Static photo'}</option>
+                                </select>
+                                <p id="sector-mode-helper-${d.id}" class="admin-viewer-mode-helper"></p>
+                                <div id="sector-3d-panel-${d.id}" class="admin-mode-panel" style="width:100%;">
+                                    <div class="admin-file-row" style="margin-top:0;">
+                                        <span id="file-update-label-${d.id}" class="admin-file-chip">${t('admin.noModelSelected')}</span>
+                                    </div>
+                                    <div class="admin-preview-chip">${currentLang === 'it' ? 'Anteprima utente: viewer 3D interattivo' : 'User preview: interactive 3D viewer'}</div>
+                                </div>
+                                <div id="sector-photo-panel-${d.id}" class="admin-mode-panel" style="width:100%; display:none;">
+                                    <input id="sector-photo-url-${d.id}" type="url" value="${escapeHtml(imageUrl || '')}" placeholder="https://..." style="min-width:220px; flex:1;">
+                                    <div class="admin-preview-chip">${currentLang === 'it' ? 'Anteprima utente: foto con zoom e spostamento' : 'User preview: photo with zoom and pan'}</div>
+                                    <img id="sector-photo-preview-${d.id}" class="admin-photo-preview" alt="Sector photo preview" style="display:none;">
+                                    <small id="sector-photo-preview-status-${d.id}" class="admin-photo-preview-status"></small>
+                                </div>
+                                <button type="button" class="btn-sec" onclick="window.saveSectorViewerMode('${d.id}')">${currentLang === 'it' ? 'Salva vista settore' : 'Save sector view'}</button>
                             </div>
                         `;
                         adminList.appendChild(card);
+                        const modeSelect = card.querySelector(`#sector-mode-${d.id}`);
+                        const photoUrlInput = card.querySelector(`#sector-photo-url-${d.id}`);
+                        const helperEl = card.querySelector(`#sector-mode-helper-${d.id}`);
+                        const photoPreviewEl = card.querySelector(`#sector-photo-preview-${d.id}`);
+                        const photoPreviewStatusEl = card.querySelector(`#sector-photo-preview-status-${d.id}`);
+                        const panel3d = card.querySelector(`#sector-3d-panel-${d.id}`);
+                        const panelPhoto = card.querySelector(`#sector-photo-panel-${d.id}`);
+                        const replace3dBtn = card.querySelector('[data-role="replace-3d-btn"]');
+                        const syncModeUI = () => {
+                            const selectedMode = String(modeSelect?.value || '3D').toUpperCase();
+                            const isPhoto = selectedMode === 'PHOTO';
+                            const mode3dCopy = getViewerModeCopy('3D');
+                            const modePhotoCopy = getViewerModeCopy('PHOTO');
+                            if (modeSelect?.options?.[0]) modeSelect.options[0].textContent = mode3dCopy.optionLabel;
+                            if (modeSelect?.options?.[1]) modeSelect.options[1].textContent = modePhotoCopy.optionLabel;
+                            const labelEl = card.querySelector('.admin-form-label');
+                            if (labelEl) labelEl.textContent = currentLang === 'it' ? 'Vista settore' : 'Sector view';
+                            const preview3dEl = panel3d?.querySelector('.admin-preview-chip');
+                            const previewPhotoEl = panelPhoto?.querySelector('.admin-preview-chip');
+                            if (preview3dEl) preview3dEl.textContent = mode3dCopy.previewCopy;
+                            if (previewPhotoEl) previewPhotoEl.textContent = modePhotoCopy.previewCopy;
+                            if (panel3d) panel3d.style.display = isPhoto ? 'none' : '';
+                            if (panelPhoto) panelPhoto.style.display = isPhoto ? '' : 'none';
+                            if (replace3dBtn) replace3dBtn.style.display = isPhoto ? 'none' : '';
+                            if (helperEl) helperEl.textContent = getViewerModeHelperText(isPhoto ? 'PHOTO' : '3D');
+                            if (!isPhoto) updatePhotoPreviewFromUrl('', photoPreviewEl, photoPreviewStatusEl);
+                            if (isPhoto) updatePhotoPreviewFromUrl(photoUrlInput?.value || '', photoPreviewEl, photoPreviewStatusEl);
+                        };
+                        if (modeSelect) {
+                            modeSelect.value = mode;
+                            modeSelect.onchange = syncModeUI;
+                            syncModeUI();
+                        }
+                        if (photoUrlInput) {
+                            photoUrlInput.oninput = () => updatePhotoPreviewFromUrl(photoUrlInput.value, photoPreviewEl, photoPreviewStatusEl);
+                            updatePhotoPreviewFromUrl(photoUrlInput.value, photoPreviewEl, photoPreviewStatusEl);
+                        }
                         const fileInput = card.querySelector(`#file-update-${d.id}`);
                         const fileLabel = card.querySelector(`#file-update-label-${d.id}`);
                         if (fileInput && fileLabel) fileInput.onchange = async () => {
@@ -1883,7 +2078,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             gymsSnapshot.forEach(g => {
                 const unsub = onSnapshot(collection(db, 'gyms', g.id, 'Sectors'), (snap) => {
                     let has3D = false;
-                    snap.forEach(sec => { if (sec.data()?.meshUrl) has3D = true; sectorNameByGymSector.set(`${g.id}__${sec.id}`, sec.data()?.name || sec.id); });
+                    snap.forEach(sec => {
+                        const data = sec.data() || {};
+                        const { mode, imageUrl } = normalizeSectorViewerMode(data);
+                        if ((mode === 'PHOTO' && imageUrl) || (mode !== 'PHOTO' && data.meshUrl)) has3D = true;
+                        sectorNameByGymSector.set(`${g.id}__${sec.id}`, data?.name || sec.id);
+                    });
                     gym3DStatusMap.set(g.id, { has3D, sectors: snap.size });
                     renderUserGymList();
                 });
@@ -6467,6 +6667,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             for (const sectorDoc of sectorsSnap.docs) {
                 const sectorId = sectorDoc.id;
                 const sectorData = sectorDoc.data() || {};
+                const { mode, imageUrl } = normalizeSectorViewerMode(sectorData);
                 const routesSnap = await getDocs(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes`));
                 const preserveStarts = !(replacedSectorId && replacedSectorId === sectorId);
                 const routes = routesSnap.docs.map((routeDoc) => {
@@ -6493,6 +6694,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 sectors.push({
                     sectorId,
                     name: sectorData.name || sectorId,
+                    mode,
+                    imageUrl,
                     meshGlbUrl: meshUrl,
                     routes,
                     startPositions3D: preserveStarts
@@ -6560,9 +6763,52 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             console.info('[gym-sectors] deactivated previous routes for sector', { gymId, sectorId, total: routesSnap.size });
         }
 
+        window.saveSectorViewerMode = async (sectorId) => {
+            if (!activeUser || !realUserGymId || !sectorId) return;
+            const modeEl = document.getElementById(`sector-mode-${sectorId}`);
+            const imageEl = document.getElementById(`sector-photo-url-${sectorId}`);
+            const mode = String(modeEl?.value || '3D').trim().toUpperCase() === 'PHOTO' ? 'PHOTO' : '3D';
+            const imageUrl = String(imageEl?.value || '').trim();
+            if (mode === 'PHOTO' && !imageUrl) {
+                alert(currentLang === 'it' ? 'Inserisci il link della foto del settore.' : 'Please enter the sector photo link.');
+                return;
+            }
+            showLoading(currentLang === 'it' ? 'Salvataggio modalità viewer...' : 'Saving viewer mode...');
+            try {
+                const sectorSnap = await getDoc(doc(db, "gyms", realUserGymId, "Sectors", sectorId));
+                const sectorData = sectorSnap.exists() ? (sectorSnap.data() || {}) : {};
+                if (mode === '3D' && !String(sectorData.meshUrl || '').trim()) {
+                    throw new Error(currentLang === 'it'
+                        ? 'Per usare la vista 3D devi prima caricare il file 3D del settore.'
+                        : 'To use 3D view, upload the sector 3D file first.');
+                }
+                await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sectorId), {
+                    mode,
+                    imageUrl: mode === 'PHOTO' ? imageUrl : null,
+                    meshUrl: mode === 'PHOTO' ? null : (sectorData.meshUrl || null)
+                }, { merge: true });
+                await createGymModelVersion(realUserGymId, {
+                    source: 'sector_viewer_mode_update',
+                    replacedSectorId: null,
+                    replacedMeshUrl: null
+                });
+                if (activeGymId === realUserGymId && activeSectorId === sectorId && document.getElementById('viewer-container')?.style.display === 'block') {
+                    await open3D(realUserGymId, sectorId);
+                }
+            } catch (error) {
+                alertWriteError(error);
+            } finally {
+                hideLoading();
+            }
+        };
+
         window.handleUpload = async (existingSId) => {
             if (!activeUser || !realUserGymId) { alert(t('errors.authRequired')); return; }
             let file, name, sId;
+            const createModeEl = document.getElementById('new-sector-mode');
+            const createImageUrlEl = document.getElementById('new-sector-image-url');
+            const createMode = String(createModeEl?.value || '3D').trim().toUpperCase() === 'PHOTO' ? 'PHOTO' : '3D';
+            const createImageUrl = String(createImageUrlEl?.value || '').trim();
             if(existingSId) {
                 file = document.getElementById(`file-update-${existingSId}`)?.files?.[0];
                 sId = existingSId;
@@ -6571,11 +6817,15 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             } else {
                 file = document.getElementById('file-mesh-new')?.files?.[0];
                 name = (document.getElementById('new-sector-name')?.value || '').trim();
-                if(!name || !file) return alert(t('errors.completeData'));
+                if(!name) return alert(t('errors.completeData'));
                 sId = name.replace(/\s+/g, '-');
             }
-            if(!file) return alert(t('errors.selectFile'));
-            if (!existingSId) { const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = file.name; }
+            if (!existingSId && createMode === 'PHOTO') {
+                if (!createImageUrl) return alert(currentLang === 'it' ? 'Inserisci il link della foto del settore.' : 'Please enter the sector photo link.');
+            } else {
+                if(!file) return alert(t('errors.selectFile'));
+                if (!existingSId) { const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = file.name; }
+            }
 
             if (existingSId && !confirm(t('admin.replaceModelConfirm'))) {
                 const fileInput = document.getElementById(`file-update-${existingSId}`);
@@ -6591,6 +6841,28 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     const sectorSnap = await getDoc(doc(db, 'gyms', realUserGymId, 'Sectors', sId));
                     if (sectorSnap.exists()) {
                         throw new Error(t('errors.sectorExists'));
+                    }
+                    if (createMode === 'PHOTO') {
+                        await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sId), {
+                            name,
+                            mode: 'PHOTO',
+                            imageUrl: createImageUrl || null,
+                            meshUrl: null,
+                            analyticsResetAt: null
+                        }, { merge: true });
+                        await createGymModelVersion(realUserGymId, {
+                            source: 'sector_photo_create',
+                            replacedSectorId: null,
+                            replacedMeshUrl: null
+                        });
+                        const nameInput = document.getElementById('new-sector-name'); if (nameInput) nameInput.value = '';
+                        const modeInput = document.getElementById('new-sector-mode'); if (modeInput) modeInput.value = '3D';
+                        const imageInput = document.getElementById('new-sector-image-url'); if (imageInput) imageInput.value = '';
+                        const fileInput = document.getElementById('file-mesh-new'); if (fileInput) fileInput.value = '';
+                        const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = t('admin.noModelSelected');
+                        updateCreateSectorModeUI();
+                        setTimeout(() => open3D(realUserGymId, sId), 0);
+                        return;
                     }
                 }
 
@@ -6658,6 +6930,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 try {
                     await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sId), {
                         name,
+                        mode: '3D',
+                        imageUrl: null,
                         meshUrl: url,
                         analyticsResetAt: existingSId ? new Date().toISOString() : null
                     }, { merge: true });
@@ -6711,8 +6985,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             }
             if (!existingSId) {
                 const nameInput = document.getElementById('new-sector-name'); if (nameInput) nameInput.value = '';
+                const modeInput = document.getElementById('new-sector-mode'); if (modeInput) modeInput.value = '3D';
+                const imageInput = document.getElementById('new-sector-image-url'); if (imageInput) imageInput.value = '';
                 const fileInput = document.getElementById('file-mesh-new'); if (fileInput) fileInput.value = '';
                 const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = t('admin.noModelSelected');
+                updatePhotoPreviewFromUrl('', document.getElementById('new-sector-photo-preview'));
+                updateCreateSectorModeUI();
             } else {
                 const fileInput = document.getElementById(`file-update-${existingSId}`);
                 const fileLabel = document.getElementById(`file-update-label-${existingSId}`);
@@ -6733,6 +7011,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 clearTimeout(currentModelLoadTimeout);
                 currentModelLoadTimeout = null;
             }
+            if (typeof currentPhotoLoadCleanup === 'function') currentPhotoLoadCleanup();
+            currentPhotoLoadCleanup = null;
+            if (currentPhotoLoadTimeout) {
+                clearTimeout(currentPhotoLoadTimeout);
+                currentPhotoLoadTimeout = null;
+            }
         }
 
 
@@ -6745,16 +7029,164 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             currentRouteProgressUnsubscriber = null;
         }
 
+        function normalizeSectorViewerMode(sector = {}) {
+            const modeRaw = String(sector?.mode || '').trim().toUpperCase();
+            const mode = modeRaw === 'PHOTO' ? 'PHOTO' : '3D';
+            const imageUrl = mode === 'PHOTO' ? String(sector?.imageUrl || '').trim() : '';
+            return { mode, imageUrl };
+        }
+
+        function resetPhotoViewerTransform() {
+            photoViewerPointers.clear();
+            photoViewerBaseTransform = null;
+            photoViewerTransform = { scale: 1, translateX: 0, translateY: 0 };
+            const imageEl = document.getElementById('sector-photo-image');
+            if (imageEl) imageEl.style.transform = 'translate3d(0px, 0px, 0) scale(1)';
+        }
+
+        function applyPhotoViewerTransform() {
+            const imageEl = document.getElementById('sector-photo-image');
+            if (!imageEl) return;
+            const nextScale = Math.max(1, Math.min(6, Number(photoViewerTransform.scale) || 1));
+            const nextTranslateX = Number(photoViewerTransform.translateX) || 0;
+            const nextTranslateY = Number(photoViewerTransform.translateY) || 0;
+            photoViewerTransform = { scale: nextScale, translateX: nextTranslateX, translateY: nextTranslateY };
+            imageEl.style.transform = `translate3d(${nextTranslateX}px, ${nextTranslateY}px, 0) scale(${nextScale})`;
+        }
+
+        function hidePhotoViewerStage() {
+            const stageEl = document.getElementById('photo-viewer-stage');
+            const imageEl = document.getElementById('sector-photo-image');
+            const fallbackEl = document.getElementById('photo-viewer-fallback');
+            if (stageEl) stageEl.style.display = 'none';
+            if (imageEl) {
+                imageEl.style.display = 'none';
+                imageEl.removeAttribute('src');
+            }
+            if (fallbackEl) fallbackEl.style.display = 'none';
+            resetPhotoViewerTransform();
+        }
+
+        function showPhotoViewerFallback() {
+            const fallbackEl = document.getElementById('photo-viewer-fallback');
+            const imageEl = document.getElementById('sector-photo-image');
+            if (imageEl) imageEl.style.display = 'none';
+            if (!fallbackEl) return;
+            fallbackEl.style.display = 'grid';
+            fallbackEl.textContent = currentLang === 'it'
+                ? 'Foto settore non disponibile.'
+                : 'Sector photo not available.';
+        }
+
+        function setupPhotoViewerGestures() {
+            const viewportEl = document.getElementById('photo-viewer-viewport');
+            const imageEl = document.getElementById('sector-photo-image');
+            if (!viewportEl || !imageEl || viewportEl.dataset.bound === '1') return;
+
+            const getPointerCenter = (values = []) => {
+                if (!values.length) return { x: 0, y: 0 };
+                const sum = values.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
+                return { x: sum.x / values.length, y: sum.y / values.length };
+            };
+            const getPinchDistance = (values = []) => {
+                if (values.length < 2) return 0;
+                const [a, b] = values;
+                return Math.hypot(a.x - b.x, a.y - b.y);
+            };
+            const onPointerDown = (event) => {
+                viewportEl.setPointerCapture(event.pointerId);
+                photoViewerPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                const points = Array.from(photoViewerPointers.values());
+                if (points.length >= 2) {
+                    photoViewerBaseTransform = {
+                        scale: photoViewerTransform.scale,
+                        translateX: photoViewerTransform.translateX,
+                        translateY: photoViewerTransform.translateY,
+                        center: getPointerCenter(points),
+                        distance: getPinchDistance(points)
+                    };
+                } else {
+                    photoViewerBaseTransform = {
+                        scale: photoViewerTransform.scale,
+                        translateX: photoViewerTransform.translateX,
+                        translateY: photoViewerTransform.translateY,
+                        center: getPointerCenter(points),
+                        distance: 0
+                    };
+                }
+            };
+            const onPointerMove = (event) => {
+                if (!photoViewerPointers.has(event.pointerId)) return;
+                photoViewerPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                const points = Array.from(photoViewerPointers.values());
+                if (!photoViewerBaseTransform) {
+                    photoViewerBaseTransform = {
+                        scale: photoViewerTransform.scale,
+                        translateX: photoViewerTransform.translateX,
+                        translateY: photoViewerTransform.translateY,
+                        center: getPointerCenter(points),
+                        distance: getPinchDistance(points)
+                    };
+                }
+                if (points.length >= 2) {
+                    const currentDistance = getPinchDistance(points);
+                    const startDistance = photoViewerBaseTransform.distance || currentDistance || 1;
+                    const scaleRatio = currentDistance > 0 ? (currentDistance / startDistance) : 1;
+                    const center = getPointerCenter(points);
+                    photoViewerTransform = {
+                        scale: (photoViewerBaseTransform.scale || 1) * scaleRatio,
+                        translateX: (photoViewerBaseTransform.translateX || 0) + (center.x - (photoViewerBaseTransform.center?.x || center.x)),
+                        translateY: (photoViewerBaseTransform.translateY || 0) + (center.y - (photoViewerBaseTransform.center?.y || center.y))
+                    };
+                } else {
+                    const center = getPointerCenter(points);
+                    photoViewerTransform = {
+                        scale: photoViewerBaseTransform.scale || 1,
+                        translateX: (photoViewerBaseTransform.translateX || 0) + (center.x - (photoViewerBaseTransform.center?.x || center.x)),
+                        translateY: (photoViewerBaseTransform.translateY || 0) + (center.y - (photoViewerBaseTransform.center?.y || center.y))
+                    };
+                }
+                applyPhotoViewerTransform();
+            };
+            const onPointerUp = (event) => {
+                photoViewerPointers.delete(event.pointerId);
+                if (!photoViewerPointers.size) {
+                    photoViewerBaseTransform = null;
+                    if (photoViewerTransform.scale <= 1.02) {
+                        resetPhotoViewerTransform();
+                    }
+                    return;
+                }
+                const points = Array.from(photoViewerPointers.values());
+                photoViewerBaseTransform = {
+                    scale: photoViewerTransform.scale,
+                    translateX: photoViewerTransform.translateX,
+                    translateY: photoViewerTransform.translateY,
+                    center: getPointerCenter(points),
+                    distance: getPinchDistance(points)
+                };
+            };
+            viewportEl.addEventListener('pointerdown', onPointerDown);
+            viewportEl.addEventListener('pointermove', onPointerMove);
+            viewportEl.addEventListener('pointerup', onPointerUp);
+            viewportEl.addEventListener('pointercancel', onPointerUp);
+            viewportEl.dataset.bound = '1';
+        }
+
         function resetViewerBeforeLoad() {
             const viewer = document.getElementById('main-viewer');
             if (!viewer) return;
             cleanupViewerDataSubscriptions();
             document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
             setSocialPanelVisible(false);
+            setCompetitionLivePanelVisible(false);
             activeRouteId = null;
             socialRouteContext = null;
             socialTrackerState = null;
             viewer.src = '';
+            hidePhotoViewerStage();
+            viewer.style.display = '';
+            viewer.setAttribute('camera-controls', '');
         }
 
         function failModelLoad(message, token) {
@@ -6941,7 +7373,73 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 
             try {
                 const snap = await getDoc(doc(db, "gyms", gId, "Sectors", sId));
-                const meshUrl = snap.exists() ? snap.data()?.meshUrl : null;
+                const sectorData = snap.exists() ? (snap.data() || {}) : {};
+                const { mode, imageUrl } = normalizeSectorViewerMode(sectorData);
+                activeSectorViewMode = mode;
+                activeSectorImageUrl = imageUrl;
+                if (mode === 'PHOTO') {
+                    cleanupModelLoadGuards();
+                    document.getElementById('viewer-container').style.display = 'block';
+                    const nav = document.getElementById('app-bottom-nav');
+                    if (nav) nav.style.display = 'none';
+                    const photoStageEl = document.getElementById('photo-viewer-stage');
+                    const photoImageEl = document.getElementById('sector-photo-image');
+                    const fallbackEl = document.getElementById('photo-viewer-fallback');
+                    if (photoStageEl) photoStageEl.style.display = 'block';
+                    if (viewer) viewer.style.display = 'none';
+                    hideViewerMoveGuide();
+                    setStartGuideVisible(false);
+                    setupPhotoViewerGestures();
+                    if (!photoImageEl) {
+                        hideLoading();
+                        return;
+                    }
+                    resetPhotoViewerTransform();
+                    if (fallbackEl) fallbackEl.style.display = 'none';
+                    if (!imageUrl) {
+                        showPhotoViewerFallback();
+                        hideLoading();
+                        return;
+                    }
+                    await new Promise((resolve) => {
+                        const onImgLoad = () => {
+                            if (token !== currentModelLoadToken) return;
+                            cleanupModelLoadGuards();
+                            photoImageEl.removeEventListener('load', onImgLoad);
+                            photoImageEl.removeEventListener('error', onImgError);
+                            photoImageEl.style.display = 'block';
+                            hideLoading();
+                            resolve();
+                        };
+                        const onImgError = () => {
+                            if (token !== currentModelLoadToken) return;
+                            cleanupModelLoadGuards();
+                            photoImageEl.removeEventListener('load', onImgLoad);
+                            photoImageEl.removeEventListener('error', onImgError);
+                            showPhotoViewerFallback();
+                            hideLoading();
+                            resolve();
+                        };
+                        currentPhotoLoadCleanup = () => {
+                            photoImageEl.removeEventListener('load', onImgLoad);
+                            photoImageEl.removeEventListener('error', onImgError);
+                        };
+                        currentPhotoLoadTimeout = setTimeout(() => {
+                            if (token !== currentModelLoadToken) return;
+                            cleanupModelLoadGuards();
+                            showPhotoViewerFallback();
+                            hideLoading();
+                            resolve();
+                        }, 15000);
+                        photoImageEl.addEventListener('load', onImgLoad);
+                        photoImageEl.addEventListener('error', onImgError);
+                        photoImageEl.style.display = 'none';
+                        photoImageEl.src = freshViewerSrc(imageUrl);
+                    });
+                    return;
+                }
+                if (viewer) viewer.style.display = '';
+                const meshUrl = sectorData.meshUrl || null;
                 const storageRef = ref(storage, requestedPath);
                 let resolvedDownloadUrl = null;
                 try {
@@ -6977,6 +7475,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 failModelLoad(`${t('errors.modelLoadFailed')} (GLB/CORS)`, token);
             }
 
+            if (activeSectorViewMode !== '3D') {
+                cleanupViewerDataSubscriptions();
+                return;
+            }
             if (typeof currentViewerRoutesUnsubscriber === 'function') currentViewerRoutesUnsubscriber();
             currentViewerRoutesUnsubscriber = onSnapshot(collection(db, `gyms/${gId}/Sectors/${sId}/routes`), (s) => {
                 document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
