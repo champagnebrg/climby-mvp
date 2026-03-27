@@ -1,0 +1,175 @@
+import { isNormalizedMarker } from '../maps/map-validation.js';
+import { getRenderedImageContentRect } from '../maps/map-render-geometry.js';
+import { getRoutePhoto2DAnchor } from './route-anchor-model.js';
+
+const OVERLAY_SELECTOR = '[data-photo-route-overlay="1"]';
+const OVERLAY_CLEANUP_KEY = '__climbyPhotoRouteOverlayCleanup';
+const STAGE_CLICK_KEY = '__climbyPhotoRouteStageClick';
+
+function clamp01(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.min(1, Math.max(0, numeric));
+}
+
+function clearStageClick(viewportEl) {
+  if (!viewportEl) return;
+  if (typeof viewportEl[STAGE_CLICK_KEY] === 'function') {
+    viewportEl.removeEventListener('click', viewportEl[STAGE_CLICK_KEY]);
+    viewportEl[STAGE_CLICK_KEY] = null;
+  }
+}
+
+export function clearPhotoRouteOverlay(viewportEl) {
+  if (!viewportEl) return;
+  if (typeof viewportEl[OVERLAY_CLEANUP_KEY] === 'function') viewportEl[OVERLAY_CLEANUP_KEY]();
+  clearStageClick(viewportEl);
+  viewportEl.querySelectorAll(OVERLAY_SELECTOR).forEach((node) => node.remove());
+}
+
+function syncOverlayRect({ overlayEl, viewportEl, imageEl } = {}) {
+  if (!overlayEl || !viewportEl || !imageEl) return null;
+  const geometry = getRenderedImageContentRect({ containerEl: viewportEl, imageEl });
+  if (!geometry) return null;
+  const { overlayLeft, overlayTop, width, height } = geometry;
+  overlayEl.style.left = `${overlayLeft}px`;
+  overlayEl.style.top = `${overlayTop}px`;
+  overlayEl.style.width = `${width}px`;
+  overlayEl.style.height = `${height}px`;
+  return geometry;
+}
+
+function setupOverlaySync({ overlayEl, viewportEl, imageEl } = {}) {
+  if (!overlayEl || !viewportEl || !imageEl) return () => {};
+  const sync = () => syncOverlayRect({ overlayEl, viewportEl, imageEl });
+  const onLoad = () => sync();
+  imageEl.addEventListener('load', onLoad);
+  window.addEventListener('resize', sync);
+  const resizeObserver = typeof ResizeObserver === 'function'
+    ? new ResizeObserver(() => sync())
+    : null;
+  resizeObserver?.observe(viewportEl);
+  resizeObserver?.observe(imageEl);
+  const raf = window.requestAnimationFrame(sync);
+  return () => {
+    window.cancelAnimationFrame(raf);
+    imageEl.removeEventListener('load', onLoad);
+    window.removeEventListener('resize', sync);
+    resizeObserver?.disconnect();
+  };
+}
+
+export function syncPhotoRouteOverlay(viewportEl) {
+  if (!viewportEl) return;
+  const overlay = viewportEl.querySelector(OVERLAY_SELECTOR);
+  const imageEl = viewportEl.querySelector('#sector-photo-image');
+  if (!overlay || !imageEl) return;
+  syncOverlayRect({ overlayEl: overlay, viewportEl, imageEl });
+}
+
+export function renderPhotoRouteMarkers({
+  viewportEl,
+  imageEl,
+  routes = [],
+  draftMarker = null,
+  selectedRouteId = null,
+  interactive = true,
+  editable = false,
+  onMarkerClick,
+  onStageClick
+} = {}) {
+  if (!viewportEl || !imageEl) return { markerCount: 0 };
+  clearPhotoRouteOverlay(viewportEl);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'photo-route-overlay';
+  overlay.dataset.photoRouteOverlay = '1';
+
+  const validRoutes = routes.map((route) => {
+    const routeId = String(route?.id || route?.routeId || '').trim();
+    if (!routeId) return null;
+    const anchor = getRoutePhoto2DAnchor(route);
+    if (!isNormalizedMarker(anchor)) return { routeId, route, anchor: null };
+    return { routeId, route, anchor };
+  }).filter(Boolean);
+
+  const overlapCount = new Map();
+  validRoutes.forEach((row) => {
+    if (!isNormalizedMarker(row.anchor)) return;
+    const key = `${row.anchor.x.toFixed(3)}:${row.anchor.y.toFixed(3)}`;
+    overlapCount.set(key, Number(overlapCount.get(key) || 0) + 1);
+  });
+  const overlapIndex = new Map();
+
+  validRoutes.forEach(({ routeId, route, anchor }) => {
+    if (!anchor) return;
+    const key = `${anchor.x.toFixed(3)}:${anchor.y.toFixed(3)}`;
+    const bucketSize = Number(overlapCount.get(key) || 1);
+    const idx = Number(overlapIndex.get(key) || 0);
+    overlapIndex.set(key, idx + 1);
+    const angle = bucketSize > 1 ? ((Math.PI * 2) / bucketSize) * idx : 0;
+    const radiusPx = bucketSize > 1 ? 12 : 0;
+    const dx = Math.cos(angle) * radiusPx;
+    const dy = Math.sin(angle) * radiusPx;
+    const markerBtn = document.createElement('button');
+    markerBtn.type = 'button';
+    markerBtn.className = `gym-floor-map-marker photo-route-marker${selectedRouteId && String(selectedRouteId) === String(routeId) ? ' selected' : ''}`;
+    markerBtn.style.left = `${anchor.x * 100}%`;
+    markerBtn.style.top = `${anchor.y * 100}%`;
+    if (radiusPx > 0) markerBtn.style.transform = `translate(-50%, -50%) translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+    markerBtn.dataset.routeId = routeId;
+    markerBtn.title = route?.grade || routeId;
+    markerBtn.setAttribute('aria-label', route?.grade || routeId);
+    if (!interactive) markerBtn.disabled = true;
+    markerBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof onMarkerClick === 'function') onMarkerClick({ routeId, route, anchor });
+    });
+    overlay.appendChild(markerBtn);
+  });
+
+  if (isNormalizedMarker(draftMarker)) {
+    const draftEl = document.createElement('button');
+    draftEl.type = 'button';
+    draftEl.className = 'gym-floor-map-marker photo-route-marker photo-route-draft-marker';
+    draftEl.style.left = `${Number(draftMarker.x) * 100}%`;
+    draftEl.style.top = `${Number(draftMarker.y) * 100}%`;
+    draftEl.title = 'draft';
+    draftEl.setAttribute('aria-label', 'draft');
+    draftEl.disabled = true;
+    overlay.appendChild(draftEl);
+  }
+
+  viewportEl.appendChild(overlay);
+  const cleanupOverlaySync = setupOverlaySync({ overlayEl: overlay, viewportEl, imageEl });
+  viewportEl[OVERLAY_CLEANUP_KEY] = () => {
+    cleanupOverlaySync();
+    clearStageClick(viewportEl);
+    if (viewportEl[OVERLAY_CLEANUP_KEY]) viewportEl[OVERLAY_CLEANUP_KEY] = null;
+  };
+
+  if (editable) {
+    clearStageClick(viewportEl);
+    const stageHandler = (event) => {
+      const geometry = getRenderedImageContentRect({ containerEl: viewportEl, imageEl });
+      const rect = geometry?.renderedRect;
+      if (!rect?.width || !rect?.height) return;
+      const rawX = (event.clientX - rect.left) / rect.width;
+      const rawY = (event.clientY - rect.top) / rect.height;
+      if (rawX < 0 || rawX > 1 || rawY < 0 || rawY > 1) return;
+      if (typeof onStageClick === 'function') {
+        onStageClick({
+          x: clamp01(rawX),
+          y: clamp01(rawY)
+        });
+      }
+    };
+    viewportEl[STAGE_CLICK_KEY] = stageHandler;
+    viewportEl.addEventListener('click', stageHandler);
+  }
+
+  return {
+    markerCount: validRoutes.filter((row) => isNormalizedMarker(row.anchor)).length
+  };
+}

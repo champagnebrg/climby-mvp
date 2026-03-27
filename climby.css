@@ -324,6 +324,25 @@
             user-select: none;
             -webkit-user-drag: none;
         }
+        .photo-route-overlay {
+            position: absolute;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .photo-route-marker {
+            pointer-events: auto;
+            z-index: 3;
+        }
+        .photo-route-marker.selected {
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.32), 0 0 0 6px rgba(255,138,30,0.22), 0 4px 10px rgba(0,0,0,0.35);
+        }
+        .photo-route-draft-marker {
+            border: 2px dashed var(--primary);
+            background: rgba(255,138,30,0.15);
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.2), 0 4px 10px rgba(0,0,0,0.35);
+            cursor: default;
+        }
+        .photo-route-draft-marker:disabled { opacity: 1; }
         .photo-viewer-fallback {
             position: absolute;
             inset: 0;
