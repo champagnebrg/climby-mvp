@@ -593,7 +593,15 @@
                 <input id="route-grade" type="text" required autocomplete="off" spellcheck="false" data-i18n-placeholder="viewer.routeGradePlaceholder">
                 <select id="route-color" required></select>
                 <div class="admin-route-color-preview"><span class="admin-route-color-swatch" id="admin-route-color-swatch"></span><span id="admin-route-color-name">-</span></div>
+                <div id="photo-route-picker-wrap" style="display:none; margin-top:8px;">
+                    <label class="admin-form-label" style="margin:0 0 6px 0;">Via esistente (foto)</label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <select id="photo-route-picker" style="flex:1; min-height:38px;"></select>
+                        <button id="photo-route-new-btn" type="button" class="btn-sec">Nuova via</button>
+                    </div>
+                </div>
                 <button class="btn-main" onclick="window.saveRoute()" data-i18n="viewer.save"></button>
+                <button id="btn-remove-photo-anchor" class="btn-sec" style="display:none;" type="button">Rimuovi marker foto</button>
                 <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()" data-i18n="viewer.delete"></button>
             </div>
 
@@ -683,6 +691,8 @@
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
+        import { getRoute3DAnchor, getRoutePhoto2DAnchor, withRoute3DAnchor, withRoutePhoto2DAnchor } from "./src/features/routes/route-anchor-model.js";
+        import { clearPhotoRouteOverlay, renderPhotoRouteMarkers, syncPhotoRouteOverlay } from "./src/features/routes/photo-route-markers.js";
         import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCategorySelection, saveCompetitionLiveCompletedBlocks, normalizeCompetitionLive } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
@@ -712,6 +722,9 @@
         let activeUser, realUserGymId, activeGymId, activeSectorId, activeRouteId, currentUserName, currentUserProfileRef = null;
         let pendingRouteOpenId = null;
         let isLogin = false, currentMode = 'user', userRole = 'user', tempPos, tempNorm, selectedStars = 0;
+        let tempPhotoAnchor = null;
+        let photoRoutesCache = [];
+        let photoViewerBlockStageClickUntil = 0;
         let superadminKpiUnsub = null;
         let userFavouriteGyms = [];
         let followedGymNotifications = new Set();
@@ -7169,6 +7182,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             photoViewerTransform = { scale: 1, translateX: 0, translateY: 0 };
             const imageEl = document.getElementById('sector-photo-image');
             if (imageEl) imageEl.style.transform = 'translate3d(0px, 0px, 0) scale(1)';
+            const viewportEl = document.getElementById('photo-viewer-viewport');
+            syncPhotoRouteOverlay(viewportEl);
         }
 
         function applyPhotoViewerTransform() {
@@ -7179,17 +7194,23 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const nextTranslateY = Number(photoViewerTransform.translateY) || 0;
             photoViewerTransform = { scale: nextScale, translateX: nextTranslateX, translateY: nextTranslateY };
             imageEl.style.transform = `translate3d(${nextTranslateX}px, ${nextTranslateY}px, 0) scale(${nextScale})`;
+            const viewportEl = document.getElementById('photo-viewer-viewport');
+            syncPhotoRouteOverlay(viewportEl);
         }
 
         function hidePhotoViewerStage() {
             const stageEl = document.getElementById('photo-viewer-stage');
             const imageEl = document.getElementById('sector-photo-image');
+            const viewportEl = document.getElementById('photo-viewer-viewport');
             const fallbackEl = document.getElementById('photo-viewer-fallback');
             if (stageEl) stageEl.style.display = 'none';
             if (imageEl) {
                 imageEl.style.display = 'none';
                 imageEl.removeAttribute('src');
             }
+            clearPhotoRouteOverlay(viewportEl);
+            photoRoutesCache = [];
+            tempPhotoAnchor = null;
             if (fallbackEl) fallbackEl.style.display = 'none';
             resetPhotoViewerTransform();
         }
@@ -7274,6 +7295,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     };
                 }
                 applyPhotoViewerTransform();
+                photoViewerBlockStageClickUntil = Date.now() + 240;
             };
             const onPointerUp = (event) => {
                 photoViewerPointers.delete(event.pointerId);
@@ -7282,6 +7304,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     if (photoViewerTransform.scale <= 1.02) {
                         resetPhotoViewerTransform();
                     }
+                    photoViewerBlockStageClickUntil = Date.now() + 120;
                     return;
                 }
                 const points = Array.from(photoViewerPointers.values());
@@ -7310,6 +7333,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             activeRouteId = null;
             socialRouteContext = null;
             socialTrackerState = null;
+            tempPhotoAnchor = null;
+            setPhotoAnchorEditorVisible(false);
+            refreshPhotoRoutePicker(null);
             viewer.src = '';
             hidePhotoViewerStage();
             viewer.style.display = '';
@@ -7459,6 +7485,213 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             setSocialPanelVisible(false);
         };
 
+        function renderSectorRouteHotspots3D({ viewer, routesSnapshot, gymId, sectorId }) {
+            if (!viewer || !routesSnapshot) return [];
+            document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
+            const competitionRoutes = [];
+            routesSnapshot.forEach((rd) => {
+                const routeData = rd.data() || {};
+                competitionRoutes.push({ id: rd.id, ...routeData });
+                const anchor3d = getRoute3DAnchor(routeData);
+                if (!anchor3d) return;
+                const btn = document.createElement('button');
+                btn.className = 'hotspot';
+                btn.slot = `hotspot-${rd.id}`;
+                btn.dataset.position = anchor3d.position;
+                btn.dataset.normal = anchor3d.normal;
+                btn.style.background = 'transparent';
+                btn.style.borderColor = routeData.color || '#ffffff';
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    if (currentMode === 'admin' && activeGymId === realUserGymId) {
+                        activeRouteId = rd.id;
+                        document.getElementById('route-grade').value = routeData.grade;
+                        ensureRouteColorOption(routeData.color);
+                        document.getElementById('route-color').value = routeData.color;
+                        updateAdminRouteColorPreview();
+                        document.getElementById('btn-delete-route').style.display = 'block';
+                        document.getElementById('admin-editor-panel').style.display = 'block';
+                        return;
+                    }
+                    if (isCompetitionLiveSectorAllowed(gymId, sectorId)) {
+                        setSocialPanelVisible(false);
+                        await toggleCompetitionLiveRoute(rd.id);
+                        return;
+                    }
+                    openSocial(rd.id, routeData);
+                };
+                viewer.appendChild(btn);
+                if (pendingRouteOpenId && pendingRouteOpenId === rd.id && !(currentMode === 'admin' && activeGymId === realUserGymId) && !isCompetitionLiveSectorAllowed(gymId, sectorId)) {
+                    pendingRouteOpenId = null;
+                    openSocial(rd.id, routeData);
+                }
+            });
+            return competitionRoutes;
+        }
+
+        function setPhotoAnchorEditorVisible(visible) {
+            const removeBtn = document.getElementById('btn-remove-photo-anchor');
+            if (!removeBtn) return;
+            removeBtn.style.display = visible ? 'block' : 'none';
+            if (!visible) {
+                removeBtn.onclick = null;
+                return;
+            }
+            removeBtn.textContent = currentLang === 'it' ? 'Rimuovi marker foto' : 'Remove photo marker';
+            removeBtn.onclick = async () => {
+                if (!activeRouteId || !activeGymId || !activeSectorId) return;
+                try {
+                    await updateDoc(
+                        doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId),
+                        { 'anchors.photo2d': null }
+                    );
+                    tempPhotoAnchor = null;
+                } catch (error) {
+                    alertWriteError(error);
+                }
+            };
+        }
+
+        function refreshPhotoRoutePicker(selectedRouteId = null) {
+            const wrap = document.getElementById('photo-route-picker-wrap');
+            const selectEl = document.getElementById('photo-route-picker');
+            const newBtn = document.getElementById('photo-route-new-btn');
+            const labelEl = wrap?.querySelector('label');
+            if (!wrap || !selectEl || !newBtn) return;
+            const show = activeSectorViewMode === 'PHOTO' && currentMode === 'admin' && activeGymId === realUserGymId;
+            wrap.style.display = show ? 'block' : 'none';
+            if (!show) {
+                selectEl.innerHTML = '';
+                selectEl.onchange = null;
+                newBtn.onclick = null;
+                return;
+            }
+            if (labelEl) labelEl.textContent = currentLang === 'it' ? 'Via esistente (foto)' : 'Existing route (photo)';
+            const options = [`<option value="">${escapeHtml(currentLang === 'it' ? '-- Nuova via --' : '-- New route --')}</option>`].concat(
+                (photoRoutesCache || []).map((route) => {
+                    const routeId = String(route?.id || '').trim();
+                    const anchor = getRoutePhoto2DAnchor(route);
+                    const markerState = anchor ? '📍' : '○';
+                    const label = `${markerState} ${route?.grade || '-'} · ${routeId}`;
+                    return `<option value="${escapeHtml(routeId)}">${escapeHtml(label)}</option>`;
+                })
+            );
+            selectEl.innerHTML = options.join('');
+            selectEl.value = selectedRouteId ? String(selectedRouteId) : '';
+            selectEl.onchange = () => {
+                const routeId = String(selectEl.value || '').trim();
+                if (!routeId) {
+                    activeRouteId = null;
+                    tempPhotoAnchor = null;
+                    document.getElementById('route-grade').value = '';
+                    ensureRouteColorOption('#ffffff');
+                    document.getElementById('route-color').value = '#ffffff';
+                    updateAdminRouteColorPreview();
+                    document.getElementById('btn-delete-route').style.display = 'none';
+                    setPhotoAnchorEditorVisible(false);
+                    renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
+                    return;
+                }
+                const route = photoRoutesCache.find((row) => String(row?.id || '') === routeId);
+                const anchor = getRoutePhoto2DAnchor(route || {});
+                openAdminPhotoRouteEditor(routeId, route || {}, anchor);
+                renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
+            };
+            newBtn.textContent = currentLang === 'it' ? 'Nuova via' : 'New route';
+            newBtn.onclick = () => {
+                activeRouteId = null;
+                tempPhotoAnchor = null;
+                selectEl.value = '';
+                document.getElementById('route-grade').value = '';
+                ensureRouteColorOption('#ffffff');
+                document.getElementById('route-color').value = '#ffffff';
+                updateAdminRouteColorPreview();
+                document.getElementById('btn-delete-route').style.display = 'none';
+                setPhotoAnchorEditorVisible(false);
+                renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
+            };
+        }
+
+        function openAdminPhotoRouteEditor(routeId = null, routeData = {}, anchor = null) {
+            if (currentMode !== 'admin' || activeGymId !== realUserGymId) return;
+            activeRouteId = routeId || null;
+            tempPhotoAnchor = anchor && Number.isFinite(anchor.x) && Number.isFinite(anchor.y)
+                ? { x: Number(anchor.x), y: Number(anchor.y) }
+                : null;
+            document.getElementById('route-grade').value = routeData?.grade || '';
+            ensureRouteColorOption(routeData?.color || '#ffffff');
+            document.getElementById('route-color').value = routeData?.color || '#ffffff';
+            updateAdminRouteColorPreview();
+            document.getElementById('btn-delete-route').style.display = routeId ? 'block' : 'none';
+            setPhotoAnchorEditorVisible(!!routeId && !!anchor);
+            document.getElementById('admin-editor-panel').style.display = 'block';
+            refreshPhotoRoutePicker(routeId || null);
+        }
+
+        function renderSectorRouteMarkersPhoto({ routes = [], gymId, sectorId }) {
+            const viewportEl = document.getElementById('photo-viewer-viewport');
+            const imageEl = document.getElementById('sector-photo-image');
+            if (!viewportEl || !imageEl) return;
+
+            photoRoutesCache = Array.isArray(routes) ? routes : [];
+            const isAdminOwnGym = currentMode === 'admin' && gymId === realUserGymId;
+            refreshPhotoRoutePicker(activeRouteId || null);
+            renderPhotoRouteMarkers({
+                viewportEl,
+                imageEl,
+                routes: photoRoutesCache,
+                draftMarker: isAdminOwnGym ? tempPhotoAnchor : null,
+                selectedRouteId: isAdminOwnGym ? activeRouteId : null,
+                interactive: true,
+                editable: isAdminOwnGym,
+                onMarkerClick: ({ routeId, route, anchor }) => {
+                    if (isAdminOwnGym) {
+                        openAdminPhotoRouteEditor(routeId, route, anchor);
+                        return;
+                    }
+                    openSocial(routeId, route);
+                },
+                onStageClick: ({ x, y }) => {
+                    if (!isAdminOwnGym) return;
+                    if (Date.now() < photoViewerBlockStageClickUntil) return;
+                    tempPhotoAnchor = { x, y };
+                    const selected = photoRoutesCache.find((route) => String(route?.id || '') === String(activeRouteId || '')) || {};
+                    openAdminPhotoRouteEditor(activeRouteId || null, selected, tempPhotoAnchor);
+                    renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId, sectorId });
+                }
+            });
+        }
+
+        function subscribeViewerRoutesByMode({ gymId, sectorId, mode, viewer }) {
+            if (typeof currentViewerRoutesUnsubscriber === 'function') currentViewerRoutesUnsubscriber();
+            currentViewerRoutesUnsubscriber = onSnapshot(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes`), (snapshot) => {
+                if (mode === 'PHOTO') {
+                    const photoRoutes = snapshot.docs.map((routeDoc) => ({ id: routeDoc.id, ...(routeDoc.data() || {}) }));
+                    renderSectorRouteMarkersPhoto({ routes: photoRoutes, gymId, sectorId });
+                    if (pendingRouteOpenId) {
+                        const pendingRoute = photoRoutes.find((route) => String(route?.id || '') === String(pendingRouteOpenId));
+                        if (pendingRoute && !(currentMode === 'admin' && activeGymId === realUserGymId)) {
+                            pendingRouteOpenId = null;
+                            openSocial(String(pendingRoute.id), pendingRoute);
+                        }
+                    }
+                    return;
+                }
+                const competitionRoutes = renderSectorRouteHotspots3D({
+                    viewer,
+                    routesSnapshot: snapshot,
+                    gymId,
+                    sectorId
+                });
+                if (isCompetitionLiveSectorAllowed(gymId, sectorId)) {
+                    competitionLiveViewerState.routes = competitionRoutes;
+                    renderCompetitionLiveRoutesPanel();
+                } else {
+                    setCompetitionLivePanelVisible(false);
+                }
+            });
+        }
+
         window.open3D = async (gId, sId) => {
             const viewer = document.getElementById('main-viewer');
             const token = ++currentModelLoadToken;
@@ -7517,6 +7750,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     hideViewerMoveGuide();
                     setStartGuideVisible(false);
                     setupPhotoViewerGestures();
+                    subscribeViewerRoutesByMode({ gymId: gId, sectorId: sId, mode: 'PHOTO', viewer });
                     if (!photoImageEl) {
                         hideLoading();
                         return;
@@ -7525,6 +7759,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     if (fallbackEl) fallbackEl.style.display = 'none';
                     if (!imageUrl) {
                         showPhotoViewerFallback();
+                        renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: gId, sectorId: sId });
                         hideLoading();
                         return;
                     }
@@ -7563,6 +7798,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         photoImageEl.style.display = 'none';
                         photoImageEl.src = freshViewerSrc(imageUrl);
                     });
+                    renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: gId, sectorId: sId });
                     return;
                 }
                 if (viewer) viewer.style.display = '';
@@ -7606,51 +7842,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 cleanupViewerDataSubscriptions();
                 return;
             }
-            if (typeof currentViewerRoutesUnsubscriber === 'function') currentViewerRoutesUnsubscriber();
-            currentViewerRoutesUnsubscriber = onSnapshot(collection(db, `gyms/${gId}/Sectors/${sId}/routes`), (s) => {
-                document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
-                const competitionRoutes = [];
-                s.forEach(rd => {
-                    const r = rd.data();
-                    competitionRoutes.push({ id: rd.id, ...(r || {}) });
-                    if (!r?.position || !r?.normal) return;
-                    const btn = document.createElement('button');
-                    btn.className = 'hotspot'; btn.slot = `hotspot-${rd.id}`;
-                    btn.dataset.position = r.position; btn.dataset.normal = r.normal;
-                    btn.style.background = 'transparent';
-                    btn.style.borderColor = r.color || '#ffffff';
-                    btn.onclick = async (e) => {
-                        e.stopPropagation();
-                        if(currentMode === 'admin' && activeGymId === realUserGymId) {
-                            activeRouteId = rd.id;
-                            document.getElementById('route-grade').value = r.grade;
-                            ensureRouteColorOption(r.color);
-                            document.getElementById('route-color').value = r.color;
-                            updateAdminRouteColorPreview();
-                            document.getElementById('btn-delete-route').style.display = 'block';
-                            document.getElementById('admin-editor-panel').style.display = 'block';
-                            return;
-                        }
-                        if (isCompetitionLiveSectorAllowed(gId, sId)) {
-                            setSocialPanelVisible(false);
-                            await toggleCompetitionLiveRoute(rd.id);
-                            return;
-                        }
-                        openSocial(rd.id, r);
-                    };
-                    viewer.appendChild(btn);
-                    if (pendingRouteOpenId && pendingRouteOpenId === rd.id && !(currentMode === 'admin' && activeGymId === realUserGymId) && !isCompetitionLiveSectorAllowed(gId, sId)) {
-                        pendingRouteOpenId = null;
-                        openSocial(rd.id, r);
-                    }
-                });
-                if (isCompetitionLiveSectorAllowed(gId, sId)) {
-                    competitionLiveViewerState.routes = competitionRoutes;
-                    renderCompetitionLiveRoutesPanel();
-                } else {
-                    setCompetitionLivePanelVisible(false);
-                }
-            });
+            subscribeViewerRoutesByMode({ gymId: gId, sectorId: sId, mode: '3D', viewer });
         };
 
         document.querySelectorAll('#star-selector span').forEach(s => {
@@ -8014,6 +8206,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if(!hit) return;
             setStartGuideVisible(false);
             activeRouteId = null;
+            tempPhotoAnchor = null;
+            setPhotoAnchorEditorVisible(false);
             tempPos = hit.position.toString();
             tempNorm = hit.normal.toString();
             const ghost = document.getElementById('ghost');
@@ -8114,8 +8308,34 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const selectedColor = document.getElementById('route-color').value;
             if (!selectedColor) return alert(t('errors.completeData'));
             const data = { grade: gradeValue, color: selectedColor };
-            if(activeRouteId) await updateDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId), data);
-            else await addDoc(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`), { ...data, position: tempPos, normal: tempNorm });
+            if (activeSectorViewMode === 'PHOTO') {
+                const hasDraftPhotoAnchor = !!(tempPhotoAnchor && Number.isFinite(tempPhotoAnchor.x) && Number.isFinite(tempPhotoAnchor.y));
+                if (!activeRouteId && !hasDraftPhotoAnchor) {
+                    return alert(currentLang === 'it' ? 'Tocca la foto per posizionare il marker della via.' : 'Tap the photo to position the route marker.');
+                }
+                const nextPayload = hasDraftPhotoAnchor
+                    ? withRoutePhoto2DAnchor(data, { x: tempPhotoAnchor.x, y: tempPhotoAnchor.y })
+                    : data;
+                if (activeRouteId) {
+                    if (hasDraftPhotoAnchor) {
+                        const nextPhotoAnchor = nextPayload?.anchors?.photo2d || null;
+                        await updateDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId), {
+                            ...data,
+                            ...(nextPhotoAnchor ? { 'anchors.photo2d': nextPhotoAnchor } : {})
+                        });
+                    } else {
+                        await updateDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId), data);
+                    }
+                } else {
+                    await addDoc(collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`), nextPayload);
+                }
+            } else {
+                if(activeRouteId) await updateDoc(doc(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`, activeRouteId), data);
+                else await addDoc(
+                    collection(db, `gyms/${activeGymId}/Sectors/${activeSectorId}/routes`),
+                    withRoute3DAnchor(data, { position: tempPos, normal: tempNorm, writeLegacy: true })
+                );
+            }
             window.cancelAdminEdit();
         };
 
@@ -8145,7 +8365,16 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             await initDashboard();
         };
         window.closeViewer = () => { currentModelLoadToken += 1; cleanupModelLoadGuards(); cleanupViewerDataSubscriptions(); resetViewerBeforeLoad(); resetCompetitionLiveViewerState(); setStartGuideVisible(false); hideViewerMoveGuide(); document.getElementById('viewer-container').style.display = 'none'; const nav = document.getElementById('app-bottom-nav'); if (nav && currentMode !== 'admin' && currentMode !== 'superadmin') { nav.style.display = ''; nav.classList.add('active'); } hideLoading(); };
-        window.cancelAdminEdit = () => { document.getElementById('admin-editor-panel').style.display = 'none'; document.getElementById('ghost').style.display = 'none'; updateAdminRouteColorPreview(); };
+        window.cancelAdminEdit = () => {
+            document.getElementById('admin-editor-panel').style.display = 'none';
+            document.getElementById('ghost').style.display = 'none';
+            tempPhotoAnchor = null;
+            setPhotoAnchorEditorVisible(false);
+            updateAdminRouteColorPreview();
+            if (activeSectorViewMode === 'PHOTO') {
+                renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
+            }
+        };
     </script>
 
     <div id="profile-progress-modal" class="admin-modal-backdrop" style="display:none;">
