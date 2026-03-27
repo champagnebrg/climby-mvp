@@ -599,10 +599,10 @@
                         <select id="photo-route-picker" style="flex:1; min-height:38px;"></select>
                         <button id="photo-route-new-btn" type="button" class="btn-sec">Nuova via</button>
                     </div>
-                    <div id="photo-marker-placement-hint" class="photo-marker-placement-hint"></div>
+                    <div id="photo-hotspot-placement-hint" class="photo-hotspot-placement-hint"></div>
                 </div>
                 <button class="btn-main" onclick="window.saveRoute()" data-i18n="viewer.save"></button>
-                <button id="btn-remove-photo-anchor" class="btn-sec" style="display:none;" type="button">Rimuovi marker foto</button>
+                <button id="btn-remove-photo-anchor" class="btn-sec" style="display:none;" type="button">Rimuovi hotspot foto</button>
                 <button id="btn-delete-route" class="btn-danger" style="display:none;" onclick="window.deleteRoute()" data-i18n="viewer.delete"></button>
             </div>
 
@@ -693,7 +693,7 @@
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
         import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
         import { getRoute3DAnchor, getRoutePhoto2DAnchor, withRoute3DAnchor, withRoutePhoto2DAnchor } from "./src/features/routes/route-anchor-model.js";
-        import { clearPhotoRouteOverlay, renderPhotoRouteMarkers, syncPhotoRouteOverlay } from "./src/features/routes/photo-route-markers.js";
+        import { clearPhotoRouteOverlay, renderPhotoRouteHotspots, syncPhotoRouteOverlay } from "./src/features/routes/photo-route-markers.js";
         import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCategorySelection, saveCompetitionLiveCompletedBlocks, normalizeCompetitionLive } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
@@ -7547,7 +7547,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 removeBtn.onclick = null;
                 return;
             }
-            removeBtn.textContent = currentLang === 'it' ? 'Rimuovi marker foto' : 'Remove photo marker';
+            removeBtn.textContent = currentLang === 'it' ? 'Rimuovi hotspot foto' : 'Remove photo hotspot';
             removeBtn.onclick = async () => {
                 if (!activeRouteId || !activeGymId || !activeSectorId) return;
                 try {
@@ -7562,32 +7562,32 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             };
         }
 
-        function setPhotoMarkerPlacementHint(message = '', { active = false } = {}) {
-            const hintEl = document.getElementById('photo-marker-placement-hint');
+        function setPhotoHotspotPlacementHint(message = '', { active = false } = {}) {
+            const hintEl = document.getElementById('photo-hotspot-placement-hint');
             if (!hintEl) return;
             hintEl.textContent = String(message || '');
             hintEl.classList.toggle('active', !!active);
         }
 
-        function refreshPhotoMarkerPlacementHint() {
+        function refreshPhotoHotspotPlacementHint() {
             const shouldShow = activeSectorViewMode === 'PHOTO' && currentMode === 'admin' && activeGymId === realUserGymId;
             if (!shouldShow) {
-                setPhotoMarkerPlacementHint('');
+                setPhotoHotspotPlacementHint('');
                 return;
             }
             if (activeRouteId) {
-                setPhotoMarkerPlacementHint(
+                setPhotoHotspotPlacementHint(
                     currentLang === 'it'
-                        ? 'Modalità modifica attiva: clicca/tocca la foto per riposizionare il marker.'
-                        : 'Marker edit mode active: click/tap the photo to reposition the marker.',
+                        ? 'Modalità hotspot attiva: clicca/tocca la foto per riposizionare l\'hotspot della via.'
+                        : 'Route hotspot edit mode active: click/tap the photo to reposition the hotspot.',
                     { active: true }
                 );
                 return;
             }
-            setPhotoMarkerPlacementHint(
+            setPhotoHotspotPlacementHint(
                 currentLang === 'it'
-                    ? 'Nessuna via selezionata: clicca/tocca la foto per impostare il marker della nuova via.'
-                    : 'No route selected: click/tap the photo to place the marker for a new route.',
+                    ? 'Nessuna via selezionata: clicca/tocca la foto per impostare l\'hotspot della nuova via.'
+                    : 'No route selected: click/tap the photo to place the hotspot for a new route.',
                 { active: false }
             );
         }
@@ -7604,16 +7604,16 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 selectEl.innerHTML = '';
                 selectEl.onchange = null;
                 newBtn.onclick = null;
-                setPhotoMarkerPlacementHint('');
+                setPhotoHotspotPlacementHint('');
                 return;
             }
-            if (labelEl) labelEl.textContent = currentLang === 'it' ? 'Via esistente (foto)' : 'Existing route (photo)';
+            if (labelEl) labelEl.textContent = currentLang === 'it' ? 'Via esistente (hotspot foto)' : 'Existing route (photo hotspot)';
             const options = [`<option value="">${escapeHtml(currentLang === 'it' ? '-- Nuova via --' : '-- New route --')}</option>`].concat(
                 (photoRoutesCache || []).map((route) => {
                     const routeId = String(route?.id || '').trim();
                     const anchor = getRoutePhoto2DAnchor(route);
-                    const markerState = anchor ? '📍' : '○';
-                    const label = `${markerState} ${route?.grade || '-'} · ${routeId}`;
+                    const hotspotState = anchor ? '◎' : '○';
+                    const label = `${hotspotState} ${route?.grade || '-'} · ${routeId}`;
                     return `<option value="${escapeHtml(routeId)}">${escapeHtml(label)}</option>`;
                 })
             );
@@ -7630,13 +7630,13 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     updateAdminRouteColorPreview();
                     document.getElementById('btn-delete-route').style.display = 'none';
                     setPhotoAnchorEditorVisible(false);
-                    renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
+                    renderSectorRouteHotspotsPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
                     return;
                 }
                 const route = photoRoutesCache.find((row) => String(row?.id || '') === routeId);
                 const anchor = getRoutePhoto2DAnchor(route || {});
                 openAdminPhotoRouteEditor(routeId, route || {}, anchor);
-                renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
+                renderSectorRouteHotspotsPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
             };
             newBtn.textContent = currentLang === 'it' ? 'Nuova via' : 'New route';
             newBtn.onclick = () => {
@@ -7649,9 +7649,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 updateAdminRouteColorPreview();
                 document.getElementById('btn-delete-route').style.display = 'none';
                 setPhotoAnchorEditorVisible(false);
-                renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
+                renderSectorRouteHotspotsPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
             };
-            refreshPhotoMarkerPlacementHint();
+            refreshPhotoHotspotPlacementHint();
         }
 
         function openAdminPhotoRouteEditor(routeId = null, routeData = {}, anchor = null) {
@@ -7670,7 +7670,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             refreshPhotoRoutePicker(routeId || null);
         }
 
-        function renderSectorRouteMarkersPhoto({ routes = [], gymId, sectorId }) {
+        function renderSectorRouteHotspotsPhoto({ routes = [], gymId, sectorId }) {
             const viewportEl = document.getElementById('photo-viewer-viewport');
             const imageEl = document.getElementById('sector-photo-image');
             if (!viewportEl || !imageEl) return;
@@ -7678,15 +7678,15 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             photoRoutesCache = Array.isArray(routes) ? routes : [];
             const isAdminOwnGym = currentMode === 'admin' && gymId === realUserGymId;
             refreshPhotoRoutePicker(activeRouteId || null);
-            renderPhotoRouteMarkers({
+            renderPhotoRouteHotspots({
                 viewportEl,
                 imageEl,
                 routes: photoRoutesCache,
-                draftMarker: isAdminOwnGym ? tempPhotoAnchor : null,
+                draftHotspot: isAdminOwnGym ? tempPhotoAnchor : null,
                 selectedRouteId: isAdminOwnGym ? activeRouteId : null,
                 interactive: true,
                 editable: isAdminOwnGym,
-                onMarkerClick: ({ routeId, route, anchor }) => {
+                onHotspotClick: ({ routeId, route, anchor }) => {
                     if (isAdminOwnGym) {
                         openAdminPhotoRouteEditor(routeId, route, anchor);
                         return;
@@ -7696,7 +7696,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 onStageClick: ({ x, y }) => {
                     if (!isAdminOwnGym) return;
                     if (Date.now() < photoViewerBlockStageClickUntil) {
-                        setPhotoMarkerPlacementHint(
+                        setPhotoHotspotPlacementHint(
                             currentLang === 'it'
                                 ? 'Click ignorato: termina pan/zoom e riprova a toccare la foto.'
                                 : 'Click ignored: finish pan/zoom, then tap the photo again.',
@@ -7707,8 +7707,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     tempPhotoAnchor = { x, y };
                     const selected = photoRoutesCache.find((route) => String(route?.id || '') === String(activeRouteId || '')) || {};
                     openAdminPhotoRouteEditor(activeRouteId || null, selected, tempPhotoAnchor);
-                    refreshPhotoMarkerPlacementHint();
-                    renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId, sectorId });
+                    refreshPhotoHotspotPlacementHint();
+                    renderSectorRouteHotspotsPhoto({ routes: photoRoutesCache, gymId, sectorId });
                 }
             });
         }
@@ -7718,7 +7718,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             currentViewerRoutesUnsubscriber = onSnapshot(collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes`), (snapshot) => {
                 if (mode === 'PHOTO') {
                     const photoRoutes = snapshot.docs.map((routeDoc) => ({ id: routeDoc.id, ...(routeDoc.data() || {}) }));
-                    renderSectorRouteMarkersPhoto({ routes: photoRoutes, gymId, sectorId });
+                    renderSectorRouteHotspotsPhoto({ routes: photoRoutes, gymId, sectorId });
                     if (pendingRouteOpenId) {
                         const pendingRoute = photoRoutes.find((route) => String(route?.id || '') === String(pendingRouteOpenId));
                         if (pendingRoute && !(currentMode === 'admin' && activeGymId === realUserGymId)) {
@@ -7810,7 +7810,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     if (fallbackEl) fallbackEl.style.display = 'none';
                     if (!imageUrl) {
                         showPhotoViewerFallback();
-                        renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: gId, sectorId: sId });
+                        renderSectorRouteHotspotsPhoto({ routes: photoRoutesCache, gymId: gId, sectorId: sId });
                         hideLoading();
                         return;
                     }
@@ -7849,7 +7849,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         photoImageEl.style.display = 'none';
                         photoImageEl.src = freshViewerSrc(imageUrl);
                     });
-                    renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: gId, sectorId: sId });
+                    renderSectorRouteHotspotsPhoto({ routes: photoRoutesCache, gymId: gId, sectorId: sId });
                     return;
                 }
                 if (viewer) viewer.style.display = '';
@@ -8362,7 +8362,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (activeSectorViewMode === 'PHOTO') {
                 const hasDraftPhotoAnchor = !!(tempPhotoAnchor && Number.isFinite(tempPhotoAnchor.x) && Number.isFinite(tempPhotoAnchor.y));
                 if (!activeRouteId && !hasDraftPhotoAnchor) {
-                    return alert(currentLang === 'it' ? 'Tocca la foto per posizionare il marker della via.' : 'Tap the photo to position the route marker.');
+                    return alert(currentLang === 'it' ? 'Tocca la foto per posizionare l’hotspot della via.' : 'Tap the photo to position the route hotspot.');
                 }
                 const nextPayload = hasDraftPhotoAnchor
                     ? withRoutePhoto2DAnchor(data, { x: tempPhotoAnchor.x, y: tempPhotoAnchor.y })
@@ -8423,7 +8423,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             setPhotoAnchorEditorVisible(false);
             updateAdminRouteColorPreview();
             if (activeSectorViewMode === 'PHOTO') {
-                renderSectorRouteMarkersPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
+                renderSectorRouteHotspotsPhoto({ routes: photoRoutesCache, gymId: activeGymId, sectorId: activeSectorId });
             }
         };
     </script>
