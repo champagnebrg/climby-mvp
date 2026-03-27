@@ -233,6 +233,12 @@
 
         .admin-sectors-header { margin:0; }
         .admin-create-sector-card { border:1px solid var(--border); border-radius:14px; background:var(--card); padding:14px; display:grid; gap:10px; }
+        .admin-form-label { display:block; font-size:0.82rem; color:var(--muted); font-weight:600; }
+        .admin-viewer-mode-helper { margin:0; font-size:0.85rem; color:var(--muted); }
+        .admin-mode-panel { display:grid; gap:8px; }
+        .admin-preview-chip { border:1px solid rgba(43,224,125,0.28); background:var(--primary-dim); color:var(--primary); border-radius:10px; padding:8px 10px; font-size:0.82rem; font-weight:600; }
+        .admin-photo-preview { width:100%; max-height:220px; object-fit:contain; border-radius:12px; border:1px solid var(--border); background:#000; }
+        .admin-photo-preview-status { color:var(--muted); font-size:0.8rem; min-height:1.1em; }
         .admin-file-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
         .admin-file-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
         .admin-file-chip { border:1px dashed var(--border); border-radius:999px; padding:6px 10px; color:var(--muted); font-size:0.82rem; }
@@ -286,7 +292,57 @@
             background: #000;
             display: none;
         }
-        model-viewer { width: 100%; height: 100%; }
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            transition: opacity .2s ease;
+        }
+        .photo-viewer-stage {
+            position: absolute;
+            inset: 0;
+            z-index: 1001;
+            background: #000;
+            opacity: 1;
+            transition: opacity .2s ease;
+        }
+        .photo-viewer-viewport {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            touch-action: none;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.88) 100%);
+        }
+        .sector-photo-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transform-origin: center center;
+            transition: transform .08s linear;
+            will-change: transform;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        .photo-viewer-fallback {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            text-align: center;
+            padding: 24px;
+            font-weight: 600;
+            background: rgba(0,0,0,0.4);
+        }
+        .admin-sector-mode-select {
+            min-height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface-elevated);
+            color: var(--text);
+            padding: 0 10px;
+        }
         .hotspot {
             width: 28px;
             height: 28px;
@@ -1147,4 +1203,3 @@
             color: var(--text);
         }
         .subhead.muted { color: var(--muted); }
-    
