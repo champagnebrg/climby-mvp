@@ -299,7 +299,7 @@
                                 <label class="admin-form-label" for="new-sector-mode">Tipo visualizzazione settore</label>
                                 <select id="new-sector-mode" class="admin-sector-mode-select">
                                     <option value="3D">Modello 3D</option>
-                                    <option value="PHOTO">Foto statica</option>
+                                    <option value="PHOTO">Foto</option>
                                 </select>
                                 <p id="new-sector-mode-helper" class="admin-viewer-mode-helper"></p>
                                 <div id="new-sector-file-row" class="admin-mode-panel">
@@ -311,8 +311,12 @@
                                     <div id="new-sector-3d-preview-copy" class="admin-preview-chip">Anteprima utente: viewer 3D interattivo</div>
                                 </div>
                                 <div id="new-sector-photo-panel" class="admin-mode-panel" style="display:none;">
-                                    <input type="url" id="new-sector-image-url" placeholder="https://...">
-                                    <div id="new-sector-photo-preview-copy" class="admin-preview-chip">Anteprima utente: foto con zoom e spostamento</div>
+                                    <div class="admin-file-row">
+                                        <input type="file" id="file-photo-new" class="admin-file-hidden" accept="image/*">
+                                        <button type="button" class="btn-sec" onclick="document.getElementById('file-photo-new').click()">Scegli foto</button>
+                                        <span id="file-photo-new-label" class="admin-file-chip">Nessuna foto selezionata</span>
+                                    </div>
+                                    <div id="new-sector-photo-preview-copy" class="admin-preview-chip">Anteprima utente: foto del settore</div>
                                     <img id="new-sector-photo-preview" class="admin-photo-preview" alt="Photo preview" style="display:none;">
                                     <small id="new-sector-photo-preview-status" class="admin-photo-preview-status"></small>
                                 </div>
@@ -1144,6 +1148,8 @@
         }
 
         const newSectorFileInput = document.getElementById('file-mesh-new');
+        let createSectorPhotoFile = null;
+        const pendingSectorPhotoFiles = new Map();
         if (newSectorFileInput) {
             newSectorFileInput.onchange = () => {
                 const lbl = document.getElementById('file-mesh-new-label');
@@ -1152,11 +1158,16 @@
         }
         const newSectorModeInput = document.getElementById('new-sector-mode');
         if (newSectorModeInput) newSectorModeInput.onchange = () => updateCreateSectorModeUI();
-        const newSectorPhotoUrlInput = document.getElementById('new-sector-image-url');
+        const newSectorPhotoInput = document.getElementById('file-photo-new');
+        const newSectorPhotoLabel = document.getElementById('file-photo-new-label');
         const newSectorPhotoPreview = document.getElementById('new-sector-photo-preview');
         const newSectorPhotoPreviewStatus = document.getElementById('new-sector-photo-preview-status');
-        if (newSectorPhotoUrlInput) {
-            newSectorPhotoUrlInput.oninput = () => updatePhotoPreviewFromUrl(newSectorPhotoUrlInput.value, newSectorPhotoPreview, newSectorPhotoPreviewStatus);
+        if (newSectorPhotoInput) {
+            newSectorPhotoInput.onchange = () => {
+                createSectorPhotoFile = newSectorPhotoInput.files?.[0] || null;
+                if (newSectorPhotoLabel) newSectorPhotoLabel.textContent = createSectorPhotoFile?.name || (currentLang === 'it' ? 'Nessuna foto selezionata' : 'No photo selected');
+                updatePhotoPreviewFromFile(createSectorPhotoFile, newSectorPhotoPreview, newSectorPhotoPreviewStatus);
+            };
         }
         updateCreateSectorModeUI();
 
@@ -1782,7 +1793,6 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 
         function updateCreateSectorModeUI() {
             const modeSelect = document.getElementById('new-sector-mode');
-            const imageInput = document.getElementById('new-sector-image-url');
             const filePanel = document.getElementById('new-sector-file-row');
             const photoPanel = document.getElementById('new-sector-photo-panel');
             const helperEl = document.getElementById('new-sector-mode-helper');
@@ -1791,13 +1801,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const previewStatus = document.getElementById('new-sector-photo-preview-status');
             const preview3dCopy = document.getElementById('new-sector-3d-preview-copy');
             const previewPhotoCopy = document.getElementById('new-sector-photo-preview-copy');
-            if (!modeSelect || !imageInput || !filePanel || !photoPanel) return;
+            if (!modeSelect || !filePanel || !photoPanel) return;
             const mode3dCopy = getViewerModeCopy('3D');
             const modePhotoCopy = getViewerModeCopy('PHOTO');
             if (labelEl) labelEl.textContent = currentLang === 'it' ? 'Vista settore' : 'Sector view';
             if (modeSelect.options?.[0]) modeSelect.options[0].textContent = mode3dCopy.optionLabel;
             if (modeSelect.options?.[1]) modeSelect.options[1].textContent = modePhotoCopy.optionLabel;
-            imageInput.placeholder = 'https://...';
             const isPhoto = String(modeSelect.value || '').toUpperCase() === 'PHOTO';
             filePanel.style.display = isPhoto ? 'none' : '';
             photoPanel.style.display = isPhoto ? '' : 'none';
@@ -1807,25 +1816,24 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (preview3dCopy) preview3dCopy.textContent = mode3dCopy.previewCopy;
             if (previewPhotoCopy) previewPhotoCopy.textContent = modePhotoCopy.previewCopy;
             if (!isPhoto && photoPreview) {
-                photoPreview.style.display = 'none';
-                photoPreview.removeAttribute('src');
+                resetPhotoPreview(photoPreview);
                 if (previewStatus) previewStatus.textContent = '';
             }
-            if (isPhoto) updatePhotoPreviewFromUrl(imageInput.value, photoPreview, previewStatus);
+            if (isPhoto) updatePhotoPreviewFromFile(createSectorPhotoFile, photoPreview, previewStatus);
         }
 
         function getViewerModeCopy(mode = '3D') {
             const normalizedMode = String(mode || '3D').toUpperCase();
             if (normalizedMode === 'PHOTO') {
                 return {
-                    optionLabel: currentLang === 'it' ? 'Foto con zoom' : 'Photo with zoom',
-                    helper: currentLang === 'it' ? 'Mostra una foto del settore. Gli utenti possono zoomare e spostarsi sulla foto.' : 'Show a sector photo. Users can zoom and pan the image.',
-                    previewCopy: currentLang === 'it' ? 'Anteprima utente: foto con zoom e spostamento' : 'User preview: photo with zoom and pan'
+                    optionLabel: currentLang === 'it' ? 'Foto' : 'Photo',
+                    helper: currentLang === 'it' ? 'Mostra una foto del settore per una visualizzazione immediata e chiara.' : 'Show a sector photo for a clear and immediate view.',
+                    previewCopy: currentLang === 'it' ? 'Anteprima utente: foto del settore' : 'User preview: sector photo'
                 };
             }
             return {
-                optionLabel: currentLang === 'it' ? 'Vista 3D interattiva' : 'Interactive 3D view',
-                helper: currentLang === 'it' ? 'Mostra il modello 3D del settore con navigazione interattiva.' : 'Show the sector 3D model with interactive navigation.',
+                optionLabel: currentLang === 'it' ? 'Modello 3D' : '3D model',
+                helper: currentLang === 'it' ? 'Vista interattiva del settore in 3D.' : 'Interactive 3D view of the sector.',
                 previewCopy: currentLang === 'it' ? 'Anteprima utente: vista 3D interattiva' : 'User preview: interactive 3D view'
             };
         }
@@ -1834,36 +1842,64 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             return getViewerModeCopy(mode).helper;
         }
 
+        function resetPhotoPreview(imgEl) {
+            if (!imgEl) return;
+            imgEl.style.display = 'none';
+            if (imgEl.dataset.previewObjectUrl) {
+                URL.revokeObjectURL(imgEl.dataset.previewObjectUrl);
+                delete imgEl.dataset.previewObjectUrl;
+            }
+            imgEl.removeAttribute('src');
+        }
+
+        function releasePhotoPreviewObjectUrls(containerEl) {
+            const root = containerEl || document;
+            root.querySelectorAll?.('.admin-photo-preview').forEach((imgEl) => resetPhotoPreview(imgEl));
+        }
+
+        function updatePhotoPreviewFromFile(file = null, imgEl, statusEl = null) {
+            if (!imgEl) return;
+            if (!file) {
+                resetPhotoPreview(imgEl);
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Seleziona una foto dal dispositivo.' : 'Select a photo from your device.';
+                return;
+            }
+            if (!String(file.type || '').startsWith('image/')) {
+                resetPhotoPreview(imgEl);
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Il file selezionato non è un’immagine valida.' : 'The selected file is not a valid image.';
+                return;
+            }
+            resetPhotoPreview(imgEl);
+            const objectUrl = URL.createObjectURL(file);
+            imgEl.dataset.previewObjectUrl = objectUrl;
+            imgEl.src = objectUrl;
+            imgEl.onload = () => {
+                imgEl.style.display = 'block';
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Nuova foto pronta per il salvataggio.' : 'New photo ready to be saved.';
+            };
+            imgEl.onerror = () => {
+                resetPhotoPreview(imgEl);
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Impossibile mostrare l’anteprima della foto selezionata.' : 'Unable to preview the selected photo.';
+            };
+        }
+
         function updatePhotoPreviewFromUrl(url = '', imgEl, statusEl = null) {
             if (!imgEl) return;
             const cleanUrl = String(url || '').trim();
             if (!cleanUrl) {
-                imgEl.style.display = 'none';
-                imgEl.removeAttribute('src');
-                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Inserisci il link della foto.' : 'Enter the photo link.';
+                resetPhotoPreview(imgEl);
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Nessuna foto salvata.' : 'No photo saved yet.';
                 return;
             }
-            let parsedUrl = null;
-            try {
-                parsedUrl = new URL(cleanUrl);
-            } catch (_) {
-                parsedUrl = null;
-            }
-            if (!parsedUrl) {
-                imgEl.style.display = 'none';
-                imgEl.removeAttribute('src');
-                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Il link della foto non è valido.' : 'The photo link is not valid.';
-                return;
-            }
-            imgEl.style.display = 'none';
+            resetPhotoPreview(imgEl);
             imgEl.src = cleanUrl;
             imgEl.onload = () => {
                 imgEl.style.display = 'block';
-                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Anteprima caricata.' : 'Preview loaded.';
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Foto attuale salvata.' : 'Current photo saved.';
             };
             imgEl.onerror = () => {
-                imgEl.style.display = 'none';
-                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Impossibile caricare l’anteprima da questo link.' : 'Unable to load preview from this link.';
+                resetPhotoPreview(imgEl);
+                if (statusEl) statusEl.textContent = currentLang === 'it' ? 'Impossibile caricare la foto attuale.' : 'Unable to load current photo.';
             };
         }
 
@@ -1906,6 +1942,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 profileEntriesMap = new Map();
                 adminMapEditorState = { gymData: adminMapEditorState.gymData || {}, sectors: [], selectedSectorId: null };
                 onSnapshot(collection(db, "gyms", realUserGymId, "Sectors"), (snap) => {
+                    releasePhotoPreviewObjectUrls(adminList);
                     adminList.innerHTML = "";
                     adminMapEditorState.sectors = snap.docs.map((d) => ({
                         sectorId: d.id,
@@ -1942,7 +1979,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                                 <label class="admin-form-label" style="margin:0; width:100%;">${currentLang === 'it' ? 'Tipo visualizzazione settore' : 'Sector viewer type'}</label>
                                 <select id="sector-mode-${d.id}" class="admin-sector-mode-select">
                                     <option value="3D">${currentLang === 'it' ? 'Modello 3D' : '3D model'}</option>
-                                    <option value="PHOTO">${currentLang === 'it' ? 'Foto statica' : 'Static photo'}</option>
+                                    <option value="PHOTO">${currentLang === 'it' ? 'Foto' : 'Photo'}</option>
                                 </select>
                                 <p id="sector-mode-helper-${d.id}" class="admin-viewer-mode-helper"></p>
                                 <div id="sector-3d-panel-${d.id}" class="admin-mode-panel" style="width:100%;">
@@ -1952,8 +1989,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                                     <div class="admin-preview-chip">${currentLang === 'it' ? 'Anteprima utente: viewer 3D interattivo' : 'User preview: interactive 3D viewer'}</div>
                                 </div>
                                 <div id="sector-photo-panel-${d.id}" class="admin-mode-panel" style="width:100%; display:none;">
-                                    <input id="sector-photo-url-${d.id}" type="url" value="${escapeHtml(imageUrl || '')}" placeholder="https://..." style="min-width:220px; flex:1;">
-                                    <div class="admin-preview-chip">${currentLang === 'it' ? 'Anteprima utente: foto con zoom e spostamento' : 'User preview: photo with zoom and pan'}</div>
+                                    <div class="admin-file-row" style="margin-top:0;">
+                                        <input type="file" id="sector-photo-file-${d.id}" class="admin-file-hidden" accept="image/*">
+                                        <button type="button" class="btn-sec" onclick="document.getElementById('sector-photo-file-${d.id}').click()">${currentLang === 'it' ? 'Scegli foto' : 'Choose photo'}</button>
+                                        <span id="sector-photo-file-label-${d.id}" class="admin-file-chip">${currentLang === 'it' ? 'Nessuna nuova foto selezionata' : 'No new photo selected'}</span>
+                                    </div>
+                                    <div class="admin-preview-chip">${currentLang === 'it' ? 'Anteprima utente: foto del settore' : 'User preview: sector photo'}</div>
                                     <img id="sector-photo-preview-${d.id}" class="admin-photo-preview" alt="Sector photo preview" style="display:none;">
                                     <small id="sector-photo-preview-status-${d.id}" class="admin-photo-preview-status"></small>
                                 </div>
@@ -1962,7 +2003,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         `;
                         adminList.appendChild(card);
                         const modeSelect = card.querySelector(`#sector-mode-${d.id}`);
-                        const photoUrlInput = card.querySelector(`#sector-photo-url-${d.id}`);
+                        const photoFileInput = card.querySelector(`#sector-photo-file-${d.id}`);
+                        const photoFileLabel = card.querySelector(`#sector-photo-file-label-${d.id}`);
                         const helperEl = card.querySelector(`#sector-mode-helper-${d.id}`);
                         const photoPreviewEl = card.querySelector(`#sector-photo-preview-${d.id}`);
                         const photoPreviewStatusEl = card.querySelector(`#sector-photo-preview-status-${d.id}`);
@@ -1986,17 +2028,36 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             if (panelPhoto) panelPhoto.style.display = isPhoto ? '' : 'none';
                             if (replace3dBtn) replace3dBtn.style.display = isPhoto ? 'none' : '';
                             if (helperEl) helperEl.textContent = getViewerModeHelperText(isPhoto ? 'PHOTO' : '3D');
-                            if (!isPhoto) updatePhotoPreviewFromUrl('', photoPreviewEl, photoPreviewStatusEl);
-                            if (isPhoto) updatePhotoPreviewFromUrl(photoUrlInput?.value || '', photoPreviewEl, photoPreviewStatusEl);
+                            if (!isPhoto) {
+                                pendingSectorPhotoFiles.delete(d.id);
+                                if (photoFileInput) photoFileInput.value = '';
+                                if (photoFileLabel) photoFileLabel.textContent = currentLang === 'it' ? 'Nessuna nuova foto selezionata' : 'No new photo selected';
+                                resetPhotoPreview(photoPreviewEl);
+                                if (photoPreviewStatusEl) photoPreviewStatusEl.textContent = '';
+                            }
+                            if (isPhoto) {
+                                if (pendingSectorPhotoFiles.has(d.id)) {
+                                    updatePhotoPreviewFromFile(pendingSectorPhotoFiles.get(d.id), photoPreviewEl, photoPreviewStatusEl);
+                                } else {
+                                    updatePhotoPreviewFromUrl(imageUrl || '', photoPreviewEl, photoPreviewStatusEl);
+                                }
+                            }
                         };
                         if (modeSelect) {
                             modeSelect.value = mode;
                             modeSelect.onchange = syncModeUI;
                             syncModeUI();
                         }
-                        if (photoUrlInput) {
-                            photoUrlInput.oninput = () => updatePhotoPreviewFromUrl(photoUrlInput.value, photoPreviewEl, photoPreviewStatusEl);
-                            updatePhotoPreviewFromUrl(photoUrlInput.value, photoPreviewEl, photoPreviewStatusEl);
+                        if (photoFileInput) {
+                            photoFileInput.onchange = () => {
+                                const selectedFile = photoFileInput.files?.[0] || null;
+                                if (selectedFile) pendingSectorPhotoFiles.set(d.id, selectedFile);
+                                else pendingSectorPhotoFiles.delete(d.id);
+                                if (photoFileLabel) photoFileLabel.textContent = selectedFile?.name || (currentLang === 'it' ? 'Nessuna nuova foto selezionata' : 'No new photo selected');
+                                if (selectedFile) updatePhotoPreviewFromFile(selectedFile, photoPreviewEl, photoPreviewStatusEl);
+                                else updatePhotoPreviewFromUrl(imageUrl || '', photoPreviewEl, photoPreviewStatusEl);
+                            };
+                            if (photoFileLabel) photoFileLabel.textContent = currentLang === 'it' ? 'Nessuna nuova foto selezionata' : 'No new photo selected';
                         }
                         const fileInput = card.querySelector(`#file-update-${d.id}`);
                         const fileLabel = card.querySelector(`#file-update-label-${d.id}`);
@@ -6600,6 +6661,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const sectorRef = doc(db, `gyms/${gymId}/Sectors/${sectorId}`);
             const routesCol = collection(db, `gyms/${gymId}/Sectors/${sectorId}/routes`);
             const refsToDelete = [];
+            const sectorSnap = await getDoc(sectorRef);
+            const sectorData = sectorSnap.exists() ? (sectorSnap.data() || {}) : {};
 
             const routesSnap = await getDocs(routesCol);
             for (const routeDoc of routesSnap.docs) {
@@ -6617,6 +6680,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             await setDoc(gymRef, { sectorsCount: increment(-1) }, { merge: true });
 
             try { await deleteObject(ref(storage, `meshes/${gymId}/${sectorId}.glb`)); } catch (_) {}
+            try {
+                const imagePath = String(sectorData.imagePath || '').trim();
+                if (imagePath) await deleteObject(ref(storage, imagePath));
+            } catch (_) {}
         }
 
         window.confirmDeleteSector = (sectorId, sectorName) => {
@@ -6763,30 +6830,82 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             console.info('[gym-sectors] deactivated previous routes for sector', { gymId, sectorId, total: routesSnap.size });
         }
 
+        async function uploadSectorPhotoFile({ gymId, sectorId, file }) {
+            if (!gymId || !sectorId || !file) throw new Error(currentLang === 'it' ? 'Foto settore non valida.' : 'Invalid sector photo.');
+            const extFromType = String(file.type || '').toLowerCase().startsWith('image/')
+                ? String(file.type).split('/')[1]
+                : '';
+            const extFromName = String(file.name || '').toLowerCase().split('.').pop();
+            const fileExt = (extFromType || extFromName || 'jpg').replace(/[^a-z0-9]/gi, '').slice(0, 8) || 'jpg';
+            const storagePath = `sector-images/${gymId}/${sectorId}/cover.${fileExt}`;
+            const storageRef = ref(storage, storagePath);
+            await uploadBytes(storageRef, file, { contentType: file.type || `image/${fileExt}` });
+            const imageUrl = await getDownloadURL(storageRef);
+            return { imageUrl, imagePath: storagePath };
+        }
+
+        function resetCreateSectorPhotoState() {
+            createSectorPhotoFile = null;
+            const photoInput = document.getElementById('file-photo-new');
+            const photoLabel = document.getElementById('file-photo-new-label');
+            const photoPreview = document.getElementById('new-sector-photo-preview');
+            const photoStatus = document.getElementById('new-sector-photo-preview-status');
+            if (photoInput) photoInput.value = '';
+            if (photoLabel) photoLabel.textContent = currentLang === 'it' ? 'Nessuna foto selezionata' : 'No photo selected';
+            resetPhotoPreview(photoPreview);
+            if (photoStatus) photoStatus.textContent = '';
+        }
+
         window.saveSectorViewerMode = async (sectorId) => {
             if (!activeUser || !realUserGymId || !sectorId) return;
             const modeEl = document.getElementById(`sector-mode-${sectorId}`);
-            const imageEl = document.getElementById(`sector-photo-url-${sectorId}`);
+            const photoStatusEl = document.getElementById(`sector-photo-preview-status-${sectorId}`);
+            const photoPreviewEl = document.getElementById(`sector-photo-preview-${sectorId}`);
+            const photoFileInput = document.getElementById(`sector-photo-file-${sectorId}`);
+            const photoFileLabel = document.getElementById(`sector-photo-file-label-${sectorId}`);
             const mode = String(modeEl?.value || '3D').trim().toUpperCase() === 'PHOTO' ? 'PHOTO' : '3D';
-            const imageUrl = String(imageEl?.value || '').trim();
-            if (mode === 'PHOTO' && !imageUrl) {
-                alert(currentLang === 'it' ? 'Inserisci il link della foto del settore.' : 'Please enter the sector photo link.');
-                return;
-            }
             showLoading(currentLang === 'it' ? 'Salvataggio modalità viewer...' : 'Saving viewer mode...');
             try {
                 const sectorSnap = await getDoc(doc(db, "gyms", realUserGymId, "Sectors", sectorId));
                 const sectorData = sectorSnap.exists() ? (sectorSnap.data() || {}) : {};
+                const pendingPhotoFile = pendingSectorPhotoFiles.get(sectorId) || null;
                 if (mode === '3D' && !String(sectorData.meshUrl || '').trim()) {
                     throw new Error(currentLang === 'it'
                         ? 'Per usare la vista 3D devi prima caricare il file 3D del settore.'
                         : 'To use 3D view, upload the sector 3D file first.');
                 }
+                let nextImageUrl = String(sectorData.imageUrl || '').trim() || null;
+                let nextImagePath = String(sectorData.imagePath || '').trim() || null;
+                if (mode === 'PHOTO' && pendingPhotoFile) {
+                    if (photoStatusEl) photoStatusEl.textContent = currentLang === 'it' ? 'Caricamento foto in corso...' : 'Photo upload in progress...';
+                    const uploaded = await uploadSectorPhotoFile({ gymId: realUserGymId, sectorId, file: pendingPhotoFile });
+                    nextImageUrl = uploaded.imageUrl;
+                    nextImagePath = uploaded.imagePath;
+                    if (photoStatusEl) photoStatusEl.textContent = currentLang === 'it' ? 'Foto caricata. Salvataggio in corso...' : 'Photo uploaded. Saving...';
+                }
+                if (mode === 'PHOTO' && !nextImageUrl) {
+                    throw new Error(currentLang === 'it'
+                        ? 'Seleziona una foto prima di salvare la modalità Foto.'
+                        : 'Select a photo before saving Photo mode.');
+                }
                 await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sectorId), {
                     mode,
-                    imageUrl: mode === 'PHOTO' ? imageUrl : null,
+                    imageUrl: mode === 'PHOTO' ? nextImageUrl : null,
+                    imagePath: mode === 'PHOTO' ? nextImagePath : null,
                     meshUrl: mode === 'PHOTO' ? null : (sectorData.meshUrl || null)
                 }, { merge: true });
+                if (mode === 'PHOTO') {
+                    pendingSectorPhotoFiles.delete(sectorId);
+                    if (photoFileInput) photoFileInput.value = '';
+                    if (photoFileLabel) photoFileLabel.textContent = currentLang === 'it' ? 'Nessuna nuova foto selezionata' : 'No new photo selected';
+                    updatePhotoPreviewFromUrl(nextImageUrl || '', photoPreviewEl, photoStatusEl);
+                } else {
+                    pendingSectorPhotoFiles.delete(sectorId);
+                    if (photoFileInput) photoFileInput.value = '';
+                    if (photoFileLabel) photoFileLabel.textContent = currentLang === 'it' ? 'Nessuna nuova foto selezionata' : 'No new photo selected';
+                    resetPhotoPreview(photoPreviewEl);
+                    if (photoStatusEl) photoStatusEl.textContent = '';
+                }
                 await createGymModelVersion(realUserGymId, {
                     source: 'sector_viewer_mode_update',
                     replacedSectorId: null,
@@ -6796,6 +6915,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     await open3D(realUserGymId, sectorId);
                 }
             } catch (error) {
+                if (photoStatusEl && mode === 'PHOTO') {
+                    photoStatusEl.textContent = currentLang === 'it' ? 'Errore durante il caricamento della foto.' : 'Photo upload failed.';
+                }
                 alertWriteError(error);
             } finally {
                 hideLoading();
@@ -6806,9 +6928,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (!activeUser || !realUserGymId) { alert(t('errors.authRequired')); return; }
             let file, name, sId;
             const createModeEl = document.getElementById('new-sector-mode');
-            const createImageUrlEl = document.getElementById('new-sector-image-url');
             const createMode = String(createModeEl?.value || '3D').trim().toUpperCase() === 'PHOTO' ? 'PHOTO' : '3D';
-            const createImageUrl = String(createImageUrlEl?.value || '').trim();
             if(existingSId) {
                 file = document.getElementById(`file-update-${existingSId}`)?.files?.[0];
                 sId = existingSId;
@@ -6821,7 +6941,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 sId = name.replace(/\s+/g, '-');
             }
             if (!existingSId && createMode === 'PHOTO') {
-                if (!createImageUrl) return alert(currentLang === 'it' ? 'Inserisci il link della foto del settore.' : 'Please enter the sector photo link.');
+                if (!createSectorPhotoFile) return alert(currentLang === 'it' ? 'Seleziona una foto del settore prima di salvare.' : 'Select a sector photo before saving.');
             } else {
                 if(!file) return alert(t('errors.selectFile'));
                 if (!existingSId) { const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = file.name; }
@@ -6843,10 +6963,14 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         throw new Error(t('errors.sectorExists'));
                     }
                     if (createMode === 'PHOTO') {
+                        const photoStatusEl = document.getElementById('new-sector-photo-preview-status');
+                        if (photoStatusEl) photoStatusEl.textContent = currentLang === 'it' ? 'Caricamento foto in corso...' : 'Photo upload in progress...';
+                        const uploadedPhoto = await uploadSectorPhotoFile({ gymId: realUserGymId, sectorId: sId, file: createSectorPhotoFile });
                         await setDoc(doc(db, "gyms", realUserGymId, "Sectors", sId), {
                             name,
                             mode: 'PHOTO',
-                            imageUrl: createImageUrl || null,
+                            imageUrl: uploadedPhoto.imageUrl || null,
+                            imagePath: uploadedPhoto.imagePath || null,
                             meshUrl: null,
                             analyticsResetAt: null
                         }, { merge: true });
@@ -6857,9 +6981,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         });
                         const nameInput = document.getElementById('new-sector-name'); if (nameInput) nameInput.value = '';
                         const modeInput = document.getElementById('new-sector-mode'); if (modeInput) modeInput.value = '3D';
-                        const imageInput = document.getElementById('new-sector-image-url'); if (imageInput) imageInput.value = '';
                         const fileInput = document.getElementById('file-mesh-new'); if (fileInput) fileInput.value = '';
                         const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = t('admin.noModelSelected');
+                        resetCreateSectorPhotoState();
                         updateCreateSectorModeUI();
                         setTimeout(() => open3D(realUserGymId, sId), 0);
                         return;
@@ -6978,6 +7102,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     alert(t('admin.replaceModelDone'));
                 }
             } catch (e) {
+                if (!existingSId && createMode === 'PHOTO') {
+                    const photoStatusEl = document.getElementById('new-sector-photo-preview-status');
+                    if (photoStatusEl) photoStatusEl.textContent = currentLang === 'it' ? 'Errore durante il caricamento della foto.' : 'Photo upload failed.';
+                }
                 alertWriteError(e);
                 return;
             } finally {
@@ -6986,10 +7114,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (!existingSId) {
                 const nameInput = document.getElementById('new-sector-name'); if (nameInput) nameInput.value = '';
                 const modeInput = document.getElementById('new-sector-mode'); if (modeInput) modeInput.value = '3D';
-                const imageInput = document.getElementById('new-sector-image-url'); if (imageInput) imageInput.value = '';
                 const fileInput = document.getElementById('file-mesh-new'); if (fileInput) fileInput.value = '';
                 const fl = document.getElementById('file-mesh-new-label'); if (fl) fl.textContent = t('admin.noModelSelected');
-                updatePhotoPreviewFromUrl('', document.getElementById('new-sector-photo-preview'));
+                resetCreateSectorPhotoState();
                 updateCreateSectorModeUI();
             } else {
                 const fileInput = document.getElementById(`file-update-${existingSId}`);
