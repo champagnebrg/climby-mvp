@@ -120,9 +120,9 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
     : (!hasCompetitionLiveCheckIn
       ? t('gym.eventsCompetitionLiveCheckInRequired')
       : (isCategoryLocked
-        ? 'Categoria bloccata dopo il primo blocco completato.'
+        ? t('gym.eventsCompetitionCategoryLockedAfterFirstBlock')
       : (requiresCategorySelection && !hasSelectedCategory
-        ? 'Seleziona una categoria per iniziare la gara.'
+        ? t('gym.eventsCompetitionSelectCategoryToStart')
         : t('gym.eventsCompetitionLiveReadyHint'))));
   const competitionViewSection = renderCompetitionLiveViewSection({
     blocksCount,
@@ -131,9 +131,9 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
     disabled: !hasCompetitionLiveCheckIn || isClosed || !hasSelectedCategory,
     t,
   });
-  const leaderboardSection = renderCompetitionLiveLeaderboard({ competitionEntries, competitionEntriesLoading, currentUserId, categories });
+  const leaderboardSection = renderCompetitionLiveLeaderboard({ competitionEntries, competitionEntriesLoading, currentUserId, categories, t });
   const categoriesSection = requiresCategorySelection
-    ? renderCompetitionLiveCategoriesSection({ categories, selectedCategoryId, competitionEntryLoading, disabled: !hasCompetitionLiveCheckIn || isClosed || isCategoryLocked, locked: isCategoryLocked })
+    ? renderCompetitionLiveCategoriesSection({ categories, selectedCategoryId, competitionEntryLoading, disabled: !hasCompetitionLiveCheckIn || isClosed || isCategoryLocked, locked: isCategoryLocked, t })
     : '';
 
   return `
@@ -149,10 +149,10 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
       <div class="gym-about-content" style="margin-top:10px;">
         ${competitionLive.endsAt ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionLiveEndsLabel'))}</span><span class="gym-about-value">${escapeHtml(formatDateTime(competitionLive.endsAt))}</span></div>` : ''}
         <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionAccessLabel'))}</span><span class="gym-about-value">${escapeHtml(accessLabel)}</span></div>
-        ${requiresCategorySelection ? `<div class="gym-about-row"><span class="gym-about-label">Categoria</span><span class="gym-about-value">${escapeHtml(resolveCompetitionCategoryLabel(categories, selectedCategoryId) || 'Seleziona categoria')}</span></div>` : ''}
-        <div class="gym-about-row"><span class="gym-about-label">Score</span><span class="gym-about-value">${escapeHtml(String(score))}</span></div>
+        ${requiresCategorySelection ? `<div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionCategoryLabel'))}</span><span class="gym-about-value">${escapeHtml(resolveCompetitionCategoryLabel(categories, selectedCategoryId) || t('gym.eventsCompetitionSelectCategoryFallback'))}</span></div>` : ''}
+        <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionScoreLabel'))}</span><span class="gym-about-value">${escapeHtml(String(score))}</span></div>
         <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionCompletedLabel'))}</span><span class="gym-about-value">${escapeHtml(String(completedCount))}</span></div>
-        <div class="gym-about-row"><span class="gym-about-label">Blocchi gara</span><span class="gym-about-value">${escapeHtml(String(blocksCount))}</span></div>
+        <div class="gym-about-row"><span class="gym-about-label">${escapeHtml(t('gym.eventsCompetitionBlocksLabel'))}</span><span class="gym-about-value">${escapeHtml(String(blocksCount))}</span></div>
       </div>
       <div class="profile-subtitle" style="margin-top:10px;">${escapeHtml(helperMessage)}</div>
       ${categoriesSection}
@@ -162,12 +162,12 @@ function renderCompetitionLiveSection({ competitionLive = {}, competitionEntry =
   `;
 }
 
-function renderCompetitionLiveCategoriesSection({ categories = [], selectedCategoryId = '', competitionEntryLoading = false, disabled = false, locked = false } = {}) {
+function renderCompetitionLiveCategoriesSection({ categories = [], selectedCategoryId = '', competitionEntryLoading = false, disabled = false, locked = false, t = (key) => key } = {}) {
   return `
     <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
       <div>
-        <div style="font-size:0.92rem; font-weight:700;">Categoria gara</div>
-        <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">${escapeHtml(locked ? 'Categoria bloccata: hai già almeno un blocco completato.' : 'Puoi selezionare una sola categoria.')}</div>
+        <div style="font-size:0.92rem; font-weight:700;">${escapeHtml(t('gym.eventsCompetitionCategorySectionTitle'))}</div>
+        <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">${escapeHtml(locked ? t('gym.eventsCompetitionCategoryLockedHint') : t('gym.eventsCompetitionCategorySingleSelectionHint'))}</div>
       </div>
       <div style="display:grid; gap:8px;">
         ${categories.map((category) => `
@@ -187,8 +187,8 @@ function renderCompetitionLiveViewSection({ blocksCount = 0, completedBlockNumbe
   return `
     <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:10px;">
       <div>
-        <div style="font-size:0.92rem; font-weight:700;">Blocchi gara</div>
-        <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">Tocca un blocco per segnare o rimuovere il completamento.</div>
+        <div style="font-size:0.92rem; font-weight:700;">${escapeHtml(t('gym.eventsCompetitionBlocksSectionTitle'))}</div>
+        <div style="color:var(--muted); font-size:0.82rem; margin-top:4px;">${escapeHtml(t('gym.eventsCompetitionBlocksHint'))}</div>
       </div>
       ${blocks.length ? `
         <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));">
@@ -196,14 +196,15 @@ function renderCompetitionLiveViewSection({ blocksCount = 0, completedBlockNumbe
             blockNumber,
             completed: completedBlocks.has(blockNumber),
             disabled: competitionEntryLoading || disabled,
+            t,
           })).join('')}
         </div>
-      ` : `<div class="profile-subtitle">Nessun blocco configurato.</div>`}
+      ` : `<div class="profile-subtitle">${escapeHtml(t('gym.eventsCompetitionNoBlocksConfigured'))}</div>`}
     </div>
   `;
 }
 
-function renderCompetitionLiveBlockButton({ blockNumber = 0, completed = false, disabled = false } = {}) {
+function renderCompetitionLiveBlockButton({ blockNumber = 0, completed = false, disabled = false, t = (key) => key } = {}) {
   const borderColor = completed ? 'rgba(98,242,155,0.42)' : 'rgba(255,255,255,0.12)';
   const background = completed
     ? 'linear-gradient(180deg, rgba(98,242,155,0.20) 0%, rgba(98,242,155,0.12) 100%)'
@@ -221,38 +222,38 @@ function renderCompetitionLiveBlockButton({ blockNumber = 0, completed = false, 
     >
       <span style="font-size:1.2rem; font-weight:800; color:var(--text);">#${escapeHtml(String(blockNumber))}</span>
       <span style="display:inline-flex; align-items:center; justify-content:center; min-width:100%; padding:6px 10px; border-radius:999px; background:${badgeBackground}; color:${badgeColor}; font-size:0.79rem; font-weight:700;">
-        ${escapeHtml(completed ? '✅ Completata' : '○ Non completata')}
+        ${escapeHtml(completed ? t('gym.eventsCompetitionBlockCompleted') : t('gym.eventsCompetitionBlockNotCompleted'))}
       </span>
     </button>
   `;
 }
 
-function renderCompetitionLiveLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, currentUserId = '', categories = [] } = {}) {
+function renderCompetitionLiveLeaderboard({ competitionEntries = [], competitionEntriesLoading = false, currentUserId = '', categories = [], t = (key) => key } = {}) {
   if (competitionEntriesLoading) {
-    return `<div style="margin-top:12px; color:var(--muted); font-size:0.85rem;">Caricamento classifica...</div>`;
+    return `<div style="margin-top:12px; color:var(--muted); font-size:0.85rem;">${escapeHtml(t('gym.eventsCompetitionLeaderboardLoading'))}</div>`;
   }
 
   if (!Array.isArray(competitionEntries) || !competitionEntries.length) {
-    return `<div style="margin-top:12px; color:var(--muted); font-size:0.85rem;">Classifica non disponibile.</div>`;
+    return `<div style="margin-top:12px; color:var(--muted); font-size:0.85rem;">${escapeHtml(t('gym.eventsCompetitionLeaderboardUnavailable'))}</div>`;
   }
 
   const groups = buildCompetitionLeaderboardGroups(competitionEntries, categories);
 
   return `
     <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); display:grid; gap:8px;">
-      <div style="font-size:0.92rem; font-weight:700;">Leaderboard live</div>
-      ${groups.map((group) => renderCompetitionLeaderboardGroup(group, currentUserId)).join('')}
+      <div style="font-size:0.92rem; font-weight:700;">${escapeHtml(t('gym.eventsCompetitionLeaderboardTitle'))}</div>
+      ${groups.map((group) => renderCompetitionLeaderboardGroup(group, currentUserId, t)).join('')}
     </div>
   `;
 }
 
-function renderCompetitionLeaderboardGroup(group = {}, currentUserId = '') {
+function renderCompetitionLeaderboardGroup(group = {}, currentUserId = '', t = (key) => key) {
   const entries = Array.isArray(group.entries) ? group.entries : [];
   if (!entries.length) {
     return `
       <div style="display:grid; gap:8px;">
         ${group.label ? `<div style="font-size:0.88rem; font-weight:700; color:var(--text);">${escapeHtml(group.label)}</div>` : ''}
-        <div style="color:var(--muted); font-size:0.82rem;">Classifica non disponibile.</div>
+        <div style="color:var(--muted); font-size:0.82rem;">${escapeHtml(t('gym.eventsCompetitionLeaderboardUnavailable'))}</div>
       </div>
     `;
   }
@@ -273,7 +274,7 @@ function renderCompetitionLeaderboardGroup(group = {}, currentUserId = '') {
           <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px; border-radius:10px; ${rowStyle}">
             <div style="display:grid; gap:2px;">
               <span style="font-weight:700;">${escapeHtml(String(badge))}</span>
-              <span style="color:${isCurrentUser ? '#62f29b' : 'var(--muted)'}; font-size:0.85rem; font-weight:${isCurrentUser ? '700' : '500'};">${escapeHtml(resolveCompetitionEntryLabel(entry, index))}${isCurrentUser ? ' · Tu' : ''}</span>
+              <span style="color:${isCurrentUser ? '#62f29b' : 'var(--muted)'}; font-size:0.85rem; font-weight:${isCurrentUser ? '700' : '500'};">${escapeHtml(resolveCompetitionEntryLabel(entry, index, t))}${isCurrentUser ? ` · ${escapeHtml(t('gym.eventsYouLabel'))}` : ''}</span>
             </div>
             <div style="font-weight:700;">${escapeHtml(String(Number(entry?.score || 0)))}</div>
           </div>
@@ -312,8 +313,8 @@ function buildCompetitionLeaderboardGroups(competitionEntries = [], categories =
   }));
 }
 
-function resolveCompetitionEntryLabel(entry = {}, index = 0) {
-  return resolveReadableCompetitionEntryLabel(entry) || `Partecipante ${index + 1}`;
+function resolveCompetitionEntryLabel(entry = {}, index = 0, t = (key) => key) {
+  return resolveReadableCompetitionEntryLabel(entry) || `${t('gym.eventsCompetitionParticipantLabel')} ${index + 1}`;
 }
 function getCompetitionAccessLabel({ competitionEntryLoading = false, hasCompetitionLiveCheckIn = false, competitionEntry = null, competitionViewOpen = false, isClosed = false, t = (key) => key } = {}) {
   if (competitionEntryLoading) return t('gym.eventsCompetitionLoading');
