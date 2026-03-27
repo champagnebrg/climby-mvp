@@ -67,18 +67,18 @@ export function syncPhotoRouteOverlay(viewportEl) {
   syncOverlayRect({ overlayEl: overlay, viewportEl, imageEl });
 }
 
-export function renderPhotoRouteMarkers({
+export function renderPhotoRouteHotspots({
   viewportEl,
   imageEl,
   routes = [],
-  draftMarker = null,
+  draftHotspot = null,
   selectedRouteId = null,
   interactive = true,
   editable = false,
-  onMarkerClick,
+  onHotspotClick,
   onStageClick
 } = {}) {
-  if (!viewportEl || !imageEl) return { markerCount: 0 };
+  if (!viewportEl || !imageEl) return { hotspotCount: 0 };
   clearPhotoRouteOverlay(viewportEl);
 
   const overlay = document.createElement('div');
@@ -111,34 +111,34 @@ export function renderPhotoRouteMarkers({
     const radiusPx = bucketSize > 1 ? 12 : 0;
     const dx = Math.cos(angle) * radiusPx;
     const dy = Math.sin(angle) * radiusPx;
-    const markerBtn = document.createElement('button');
-    markerBtn.type = 'button';
-    markerBtn.className = `gym-floor-map-marker photo-route-marker${selectedRouteId && String(selectedRouteId) === String(routeId) ? ' selected' : ''}`;
-    markerBtn.style.left = `${anchor.x * 100}%`;
-    markerBtn.style.top = `${anchor.y * 100}%`;
-    if (radiusPx > 0) markerBtn.style.transform = `translate(-50%, -50%) translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
-    markerBtn.dataset.routeId = routeId;
-    markerBtn.title = route?.grade || routeId;
-    markerBtn.setAttribute('aria-label', route?.grade || routeId);
-    if (!interactive) markerBtn.disabled = true;
-    markerBtn.addEventListener('click', (event) => {
+    const hotspotBtn = document.createElement('button');
+    hotspotBtn.type = 'button';
+    hotspotBtn.className = `gym-floor-map-marker photo-route-marker${selectedRouteId && String(selectedRouteId) === String(routeId) ? ' selected' : ''}`;
+    hotspotBtn.style.left = `${anchor.x * 100}%`;
+    hotspotBtn.style.top = `${anchor.y * 100}%`;
+    if (radiusPx > 0) hotspotBtn.style.transform = `translate(-50%, -50%) translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+    hotspotBtn.dataset.routeId = routeId;
+    hotspotBtn.title = route?.grade || routeId;
+    hotspotBtn.setAttribute('aria-label', `Route hotspot ${route?.grade || routeId}`);
+    if (!interactive) hotspotBtn.disabled = true;
+    hotspotBtn.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      if (typeof onMarkerClick === 'function') onMarkerClick({ routeId, route, anchor });
+      if (typeof onHotspotClick === 'function') onHotspotClick({ routeId, route, anchor });
     });
-    overlay.appendChild(markerBtn);
+    overlay.appendChild(hotspotBtn);
   });
 
-  if (isNormalizedMarker(draftMarker)) {
-    const draftEl = document.createElement('button');
-    draftEl.type = 'button';
-    draftEl.className = 'gym-floor-map-marker photo-route-marker photo-route-draft-marker';
-    draftEl.style.left = `${Number(draftMarker.x) * 100}%`;
-    draftEl.style.top = `${Number(draftMarker.y) * 100}%`;
-    draftEl.title = 'draft';
-    draftEl.setAttribute('aria-label', 'draft');
-    draftEl.disabled = true;
-    overlay.appendChild(draftEl);
+  if (isNormalizedMarker(draftHotspot)) {
+    const draftHotspotEl = document.createElement('button');
+    draftHotspotEl.type = 'button';
+    draftHotspotEl.className = 'gym-floor-map-marker photo-route-marker photo-route-draft-hotspot';
+    draftHotspotEl.style.left = `${Number(draftHotspot.x) * 100}%`;
+    draftHotspotEl.style.top = `${Number(draftHotspot.y) * 100}%`;
+    draftHotspotEl.title = 'Route hotspot draft';
+    draftHotspotEl.setAttribute('aria-label', 'Route hotspot draft');
+    draftHotspotEl.disabled = true;
+    overlay.appendChild(draftHotspotEl);
   }
 
   viewportEl.appendChild(overlay);
@@ -170,6 +170,14 @@ export function renderPhotoRouteMarkers({
   }
 
   return {
-    markerCount: validRoutes.filter((row) => isNormalizedMarker(row.anchor)).length
+    hotspotCount: validRoutes.filter((row) => isNormalizedMarker(row.anchor)).length
   };
+}
+
+export function renderPhotoRouteMarkers(options = {}) {
+  return renderPhotoRouteHotspots({
+    ...options,
+    draftHotspot: options?.draftHotspot ?? options?.draftMarker ?? null,
+    onHotspotClick: options?.onHotspotClick ?? options?.onMarkerClick
+  });
 }

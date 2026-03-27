@@ -332,23 +332,40 @@
         .photo-route-marker {
             pointer-events: auto;
             z-index: 3;
+            width: 26px;
+            height: 26px;
+            border-width: 3px;
+            background: color-mix(in srgb, var(--primary) 28%, rgba(255,255,255,0.14) 72%);
+            border-color: #fff;
+            box-shadow: 0 0 0 2px rgba(7,11,22,0.6), 0 6px 14px rgba(0,0,0,0.35);
+            transition: transform .12s ease, box-shadow .14s ease, background .14s ease;
+        }
+        .photo-route-marker:hover {
+            transform: translate(-50%, -50%) scale(1.07);
+            box-shadow: 0 0 0 2px rgba(7,11,22,0.65), 0 0 0 5px rgba(255,138,30,0.18), 0 8px 16px rgba(0,0,0,0.4);
         }
         .photo-route-marker.selected {
-            box-shadow: 0 0 0 3px rgba(255,255,255,0.32), 0 0 0 6px rgba(255,138,30,0.22), 0 4px 10px rgba(0,0,0,0.35);
+            background: color-mix(in srgb, var(--primary) 58%, rgba(255,255,255,0.25) 42%);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.42), 0 0 0 7px rgba(255,138,30,0.26), 0 8px 16px rgba(0,0,0,0.42);
         }
-        .photo-route-draft-marker {
+        .photo-route-marker:active {
+            transform: translate(-50%, -50%) scale(0.96);
+        }
+        .photo-route-draft-hotspot {
             border: 2px dashed var(--primary);
-            background: rgba(255,138,30,0.15);
+            background: rgba(255,138,30,0.1);
             box-shadow: 0 0 0 2px rgba(255,255,255,0.2), 0 4px 10px rgba(0,0,0,0.35);
             cursor: default;
         }
-        .photo-route-draft-marker:disabled { opacity: 1; }
+        .photo-route-draft-hotspot:disabled { opacity: 1; }
+        .photo-hotspot-placement-hint,
         .photo-marker-placement-hint {
             margin-top: 8px;
             color: var(--muted);
             font-size: 0.84rem;
             line-height: 1.35;
         }
+        .photo-hotspot-placement-hint.active,
         .photo-marker-placement-hint.active {
             color: var(--primary);
             font-weight: 600;
