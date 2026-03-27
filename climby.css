@@ -335,25 +335,26 @@
             width: 26px;
             height: 26px;
             border-width: 3px;
-            background: color-mix(in srgb, var(--primary) 28%, rgba(255,255,255,0.14) 72%);
-            border-color: #fff;
+            transform: translate(-50%, -50%) translate(var(--marker-offset-x, 0px), var(--marker-offset-y, 0px)) scale(1);
+            background: color-mix(in srgb, var(--route-color, #ffffff) 18%, rgba(255,255,255,0.08) 82%);
+            border-color: var(--route-color, #ffffff);
             box-shadow: 0 0 0 2px rgba(7,11,22,0.6), 0 6px 14px rgba(0,0,0,0.35);
             transition: transform .12s ease, box-shadow .14s ease, background .14s ease;
         }
         .photo-route-marker:hover {
-            transform: translate(-50%, -50%) scale(1.07);
-            box-shadow: 0 0 0 2px rgba(7,11,22,0.65), 0 0 0 5px rgba(255,138,30,0.18), 0 8px 16px rgba(0,0,0,0.4);
+            transform: translate(-50%, -50%) translate(var(--marker-offset-x, 0px), var(--marker-offset-y, 0px)) scale(1.07);
+            box-shadow: 0 0 0 2px rgba(7,11,22,0.65), 0 0 0 5px color-mix(in srgb, var(--route-color, #ffffff) 30%, transparent), 0 8px 16px rgba(0,0,0,0.4);
         }
         .photo-route-marker.selected {
-            background: color-mix(in srgb, var(--primary) 58%, rgba(255,255,255,0.25) 42%);
-            box-shadow: 0 0 0 3px rgba(255,255,255,0.42), 0 0 0 7px rgba(255,138,30,0.26), 0 8px 16px rgba(0,0,0,0.42);
+            background: color-mix(in srgb, var(--route-color, #ffffff) 50%, rgba(255,255,255,0.2) 50%);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.42), 0 0 0 7px color-mix(in srgb, var(--route-color, #ffffff) 34%, transparent), 0 8px 16px rgba(0,0,0,0.42);
         }
         .photo-route-marker:active {
-            transform: translate(-50%, -50%) scale(0.96);
+            transform: translate(-50%, -50%) translate(var(--marker-offset-x, 0px), var(--marker-offset-y, 0px)) scale(0.96);
         }
         .photo-route-draft-hotspot {
-            border: 2px dashed var(--primary);
-            background: rgba(255,138,30,0.1);
+            border: 2px dashed var(--route-color, var(--primary));
+            background: color-mix(in srgb, var(--route-color, var(--primary)) 16%, transparent);
             box-shadow: 0 0 0 2px rgba(255,255,255,0.2), 0 4px 10px rgba(0,0,0,0.35);
             cursor: default;
         }

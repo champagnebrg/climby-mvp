@@ -72,6 +72,7 @@ export function renderPhotoRouteHotspots({
   imageEl,
   routes = [],
   draftHotspot = null,
+  draftHotspotColor = '#ffffff',
   selectedRouteId = null,
   interactive = true,
   editable = false,
@@ -116,7 +117,11 @@ export function renderPhotoRouteHotspots({
     hotspotBtn.className = `gym-floor-map-marker photo-route-marker${selectedRouteId && String(selectedRouteId) === String(routeId) ? ' selected' : ''}`;
     hotspotBtn.style.left = `${anchor.x * 100}%`;
     hotspotBtn.style.top = `${anchor.y * 100}%`;
-    if (radiusPx > 0) hotspotBtn.style.transform = `translate(-50%, -50%) translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+    hotspotBtn.style.setProperty('--marker-offset-x', `${dx.toFixed(2)}px`);
+    hotspotBtn.style.setProperty('--marker-offset-y', `${dy.toFixed(2)}px`);
+    const markerColor = String(route?.color || '#ffffff').trim() || '#ffffff';
+    hotspotBtn.style.setProperty('--route-color', markerColor);
+    hotspotBtn.style.borderColor = markerColor;
     hotspotBtn.dataset.routeId = routeId;
     hotspotBtn.title = route?.grade || routeId;
     hotspotBtn.setAttribute('aria-label', `Route hotspot ${route?.grade || routeId}`);
@@ -135,6 +140,9 @@ export function renderPhotoRouteHotspots({
     draftHotspotEl.className = 'gym-floor-map-marker photo-route-marker photo-route-draft-hotspot';
     draftHotspotEl.style.left = `${Number(draftHotspot.x) * 100}%`;
     draftHotspotEl.style.top = `${Number(draftHotspot.y) * 100}%`;
+    const draftColor = String(draftHotspotColor || '#ffffff').trim() || '#ffffff';
+    draftHotspotEl.style.setProperty('--route-color', draftColor);
+    draftHotspotEl.style.borderColor = draftColor;
     draftHotspotEl.title = 'Route hotspot draft';
     draftHotspotEl.setAttribute('aria-label', 'Route hotspot draft');
     draftHotspotEl.disabled = true;
