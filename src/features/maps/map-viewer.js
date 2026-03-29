@@ -132,7 +132,7 @@ export function renderUserGymFloorMapMarkers({
     button.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      openSector3D(open3DFn, gymId, marker.sectorId);
+      openSector3D(open3DFn, gymId, marker.sectorId, { entryMode: 'map', initialVisibility: 'none' });
     });
     overlay.appendChild(button);
   });

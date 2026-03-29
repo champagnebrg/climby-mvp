@@ -536,14 +536,15 @@
         <button type="button" id="tab-btn-profile" class="bottom-nav-item"><span class="nav-ico">👤</span><span data-i18n="dash.tabProfileShort"></span></button>
     </nav>
 
-    <div id="viewer-container">
-        <button type="button" class="btn-sec viewer-close" onclick="window.closeViewer()" data-i18n="viewer.close"></button>
-        <div id="viewer-move-guide" class="viewer-move-guide" style="display:none;" aria-live="polite">
-            <h5 data-i18n="viewer.moveGuideHeader"></h5>
-            <p data-i18n="viewer.moveGuideText"></p>
-            <button type="button" class="btn-sec" id="viewer-move-guide-close" data-i18n="viewer.moveGuideClose"></button>
-        </div>
-        <model-viewer id="main-viewer" camera-controls shadow-intensity="1">
+        <div id="viewer-container">
+            <button type="button" class="btn-sec viewer-close" onclick="window.closeViewer()" data-i18n="viewer.close"></button>
+            <div id="viewer-move-guide" class="viewer-move-guide" style="display:none;" aria-live="polite">
+                <h5 data-i18n="viewer.moveGuideHeader"></h5>
+                <p data-i18n="viewer.moveGuideText"></p>
+                <button type="button" class="btn-sec" id="viewer-move-guide-close" data-i18n="viewer.moveGuideClose"></button>
+            </div>
+            <button type="button" id="viewer-route-visibility-toggle" class="btn-sec" style="position:absolute; top:16px; left:16px; z-index:7; display:none;"></button>
+            <model-viewer id="main-viewer" camera-controls shadow-intensity="1">
             <button id="ghost" class="hotspot" slot="hotspot-ghost" style="display:none; border:2px dashed var(--primary); background:transparent"></button>
 
             <div id="start-guide-overlay" class="start-guide-overlay" aria-live="polite">
@@ -686,6 +687,8 @@
 
         let activeUser, realUserGymId, activeGymId, activeSectorId, activeRouteId, currentUserName, currentUserProfileRef = null;
         let pendingRouteOpenId = null;
+        let viewerRouteVisibilityState = { entryMode: 'default', selectedRouteId: null, mode: 'all' };
+        let currentViewerRouteRecords = [];
         let isLogin = false, currentMode = 'user', userRole = 'user', tempPos, tempNorm, selectedStars = 0;
         let superadminKpiUnsub = null;
         let userFavouriteGyms = [];
@@ -4569,7 +4572,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         const routeId = String(rowEl.dataset.routeId || '').trim();
                         if (!routeId) return;
                         pendingRouteOpenId = routeId;
-                        await open3D(gId, sectorId);
+                        await open3D(gId, sectorId, { entryMode: 'route-list', selectedRouteId: routeId, initialVisibility: 'selected-only' });
                     };
                 });
                 sectorsList.appendChild(card);
@@ -6757,6 +6760,101 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             socialRouteContext = null;
             socialTrackerState = null;
             viewer.src = '';
+            currentViewerRouteRecords = [];
+        }
+
+        function normalizeViewerRouteVisibilityMode(mode) {
+            if (mode === 'none' || mode === 'selected-only' || mode === 'all') return mode;
+            return 'all';
+        }
+
+        function applyViewerRouteVisibilityOptions(options = {}) {
+            const entryModeRaw = String(options?.entryMode || 'default').trim().toLowerCase();
+            const entryMode = entryModeRaw || 'default';
+            const selectedRouteId = String(options?.selectedRouteId || '').trim() || null;
+            const defaultMode = entryMode === 'map'
+                ? 'none'
+                : (entryMode === 'route-list' && selectedRouteId ? 'selected-only' : 'all');
+            const mode = normalizeViewerRouteVisibilityMode(options?.initialVisibility || defaultMode);
+            viewerRouteVisibilityState = { entryMode, selectedRouteId, mode };
+        }
+
+        function shouldRenderRouteHotspot(routeId) {
+            const mode = viewerRouteVisibilityState?.mode || 'all';
+            if (mode === 'none') return false;
+            if (mode === 'selected-only') return !!routeId && !!viewerRouteVisibilityState?.selectedRouteId && routeId === viewerRouteVisibilityState.selectedRouteId;
+            return true;
+        }
+
+        function refreshViewerRouteVisibilityToggle() {
+            const toggleBtn = document.getElementById('viewer-route-visibility-toggle');
+            if (!toggleBtn) return;
+            const entryMode = viewerRouteVisibilityState?.entryMode || 'default';
+            const mode = viewerRouteVisibilityState?.mode || 'all';
+            const hasSelection = !!viewerRouteVisibilityState?.selectedRouteId;
+            if (entryMode === 'map') {
+                toggleBtn.style.display = 'inline-flex';
+                toggleBtn.textContent = mode === 'none'
+                    ? (currentLang === 'it' ? 'Mostra vie' : 'Show routes')
+                    : (currentLang === 'it' ? 'Nascondi vie' : 'Hide routes');
+                return;
+            }
+            if (entryMode === 'route-list' && hasSelection) {
+                toggleBtn.style.display = 'inline-flex';
+                toggleBtn.textContent = mode === 'selected-only'
+                    ? (currentLang === 'it' ? 'Mostra le altre vie' : 'Show other routes')
+                    : (currentLang === 'it' ? 'Mostra solo via selezionata' : 'Show only selected route');
+                return;
+            }
+            toggleBtn.style.display = 'none';
+        }
+
+        function renderViewerRouteHotspots(gId, sId) {
+            const viewer = document.getElementById('main-viewer');
+            if (!viewer) return;
+            document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
+            const competitionRoutes = [];
+            currentViewerRouteRecords.forEach(({ id, data: r }) => {
+                const routeId = String(id || '').trim();
+                competitionRoutes.push({ id: routeId, ...(r || {}) });
+                if (!r?.position || !r?.normal) return;
+                if (!shouldRenderRouteHotspot(routeId)) return;
+                const btn = document.createElement('button');
+                btn.className = 'hotspot'; btn.slot = `hotspot-${routeId}`;
+                btn.dataset.position = r.position; btn.dataset.normal = r.normal;
+                btn.style.background = 'transparent';
+                btn.style.borderColor = r.color || '#ffffff';
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    if(currentMode === 'admin' && activeGymId === realUserGymId) {
+                        activeRouteId = routeId;
+                        document.getElementById('route-grade').value = r.grade;
+                        ensureRouteColorOption(r.color);
+                        document.getElementById('route-color').value = r.color;
+                        updateAdminRouteColorPreview();
+                        document.getElementById('btn-delete-route').style.display = 'block';
+                        document.getElementById('admin-editor-panel').style.display = 'block';
+                        return;
+                    }
+                    if (isCompetitionLiveSectorAllowed(gId, sId)) {
+                        setSocialPanelVisible(false);
+                        await toggleCompetitionLiveRoute(routeId);
+                        return;
+                    }
+                    openSocial(routeId, r);
+                };
+                viewer.appendChild(btn);
+                if (pendingRouteOpenId && pendingRouteOpenId === routeId && !(currentMode === 'admin' && activeGymId === realUserGymId) && !isCompetitionLiveSectorAllowed(gId, sId)) {
+                    pendingRouteOpenId = null;
+                    openSocial(routeId, r);
+                }
+            });
+            if (isCompetitionLiveSectorAllowed(gId, sId)) {
+                competitionLiveViewerState.routes = competitionRoutes;
+                renderCompetitionLiveRoutesPanel();
+            } else {
+                setCompetitionLivePanelVisible(false);
+            }
         }
 
         function failModelLoad(message, token) {
@@ -6767,7 +6865,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 
         window.retryOpen3D = () => {
             if (!lastOpen3DRequest) return;
-            open3D(lastOpen3DRequest.gId, lastOpen3DRequest.sId);
+            open3D(lastOpen3DRequest.gId, lastOpen3DRequest.sId, lastOpen3DRequest.options || null);
         };
 
         function freshViewerSrc(url) {
@@ -6902,15 +7000,18 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             setSocialPanelVisible(false);
         };
 
-        window.open3D = async (gId, sId) => {
+        window.open3D = async (gId, sId, options = null) => {
             const viewer = document.getElementById('main-viewer');
             const token = ++currentModelLoadToken;
             const requestedPath = `meshes/${gId}/${sId}.glb`;
-            lastOpen3DRequest = { gId, sId };
+            const safeOptions = options && typeof options === 'object' ? { ...options } : null;
+            lastOpen3DRequest = { gId, sId, options: safeOptions };
             cleanupModelLoadGuards();
             resetViewerBeforeLoad();
             showLoading(t('loading.loading3d'));
             activeGymId = gId; activeSectorId = sId;
+            applyViewerRouteVisibilityOptions(safeOptions || {});
+            refreshViewerRouteVisibilityToggle();
             if (competitionLiveViewerState.active) {
                 if (!isCompetitionLiveSectorAllowed(gId, sId)) resetCompetitionLiveViewerState();
                 else competitionLiveViewerState.sectorId = sId;
@@ -6981,48 +7082,13 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 
             if (typeof currentViewerRoutesUnsubscriber === 'function') currentViewerRoutesUnsubscriber();
             currentViewerRoutesUnsubscriber = onSnapshot(collection(db, `gyms/${gId}/Sectors/${sId}/routes`), (s) => {
-                document.querySelectorAll('.hotspot:not(#ghost)').forEach(h => h.remove());
-                const competitionRoutes = [];
+                currentViewerRouteRecords = [];
                 s.forEach(rd => {
                     const r = rd.data();
-                    competitionRoutes.push({ id: rd.id, ...(r || {}) });
-                    if (!r?.position || !r?.normal) return;
-                    const btn = document.createElement('button');
-                    btn.className = 'hotspot'; btn.slot = `hotspot-${rd.id}`;
-                    btn.dataset.position = r.position; btn.dataset.normal = r.normal;
-                    btn.style.background = 'transparent';
-                    btn.style.borderColor = r.color || '#ffffff';
-                    btn.onclick = async (e) => {
-                        e.stopPropagation();
-                        if(currentMode === 'admin' && activeGymId === realUserGymId) {
-                            activeRouteId = rd.id;
-                            document.getElementById('route-grade').value = r.grade;
-                            ensureRouteColorOption(r.color);
-                            document.getElementById('route-color').value = r.color;
-                            updateAdminRouteColorPreview();
-                            document.getElementById('btn-delete-route').style.display = 'block';
-                            document.getElementById('admin-editor-panel').style.display = 'block';
-                            return;
-                        }
-                        if (isCompetitionLiveSectorAllowed(gId, sId)) {
-                            setSocialPanelVisible(false);
-                            await toggleCompetitionLiveRoute(rd.id);
-                            return;
-                        }
-                        openSocial(rd.id, r);
-                    };
-                    viewer.appendChild(btn);
-                    if (pendingRouteOpenId && pendingRouteOpenId === rd.id && !(currentMode === 'admin' && activeGymId === realUserGymId) && !isCompetitionLiveSectorAllowed(gId, sId)) {
-                        pendingRouteOpenId = null;
-                        openSocial(rd.id, r);
-                    }
+                    currentViewerRouteRecords.push({ id: rd.id, data: r || {} });
                 });
-                if (isCompetitionLiveSectorAllowed(gId, sId)) {
-                    competitionLiveViewerState.routes = competitionRoutes;
-                    renderCompetitionLiveRoutesPanel();
-                } else {
-                    setCompetitionLivePanelVisible(false);
-                }
+                renderViewerRouteHotspots(gId, sId);
+                refreshViewerRouteVisibilityToggle();
             });
         };
 
@@ -7415,6 +7481,22 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
         }
         const viewerMoveGuideClose = document.getElementById('viewer-move-guide-close');
         if (viewerMoveGuideClose) viewerMoveGuideClose.addEventListener('click', hideViewerMoveGuide);
+        const viewerRouteVisibilityToggle = document.getElementById('viewer-route-visibility-toggle');
+        if (viewerRouteVisibilityToggle) {
+            viewerRouteVisibilityToggle.addEventListener('click', () => {
+                if (viewerRouteVisibilityState.mode === 'none') {
+                    viewerRouteVisibilityState.mode = 'all';
+                } else if (viewerRouteVisibilityState.mode === 'selected-only') {
+                    viewerRouteVisibilityState.mode = 'all';
+                } else if (viewerRouteVisibilityState.entryMode === 'route-list' && viewerRouteVisibilityState.selectedRouteId) {
+                    viewerRouteVisibilityState.mode = 'selected-only';
+                } else {
+                    viewerRouteVisibilityState.mode = 'none';
+                }
+                renderViewerRouteHotspots(activeGymId, activeSectorId);
+                refreshViewerRouteVisibilityToggle();
+            });
+        }
 
         function isEventInsideSocialPanel(event) {
             const panel = document.getElementById('social-panel');
