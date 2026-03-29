@@ -6765,6 +6765,16 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             currentViewerRouteRecords = [];
         }
 
+        function applyDefaultViewerCamera(viewer) {
+            if (!viewer) return;
+            viewer.cameraTarget = 'auto auto auto';
+            viewer.fieldOfView = '35deg';
+            viewer.cameraOrbit = '0deg 75deg 120%';
+            if (typeof viewer.jumpCameraToGoal === 'function') {
+                viewer.jumpCameraToGoal();
+            }
+        }
+
         function normalizeViewerRouteVisibilityMode(mode) {
             if (mode === 'none' || mode === 'selected-only' || mode === 'all') return mode;
             return 'all';
@@ -7024,6 +7034,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
 
             const onLoad = () => {
                 if (token !== currentModelLoadToken) return;
+                applyDefaultViewerCamera(viewer);
                 cleanupModelLoadGuards();
                 hideLoading();
             };
