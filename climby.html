@@ -352,19 +352,30 @@
                                         <input type="text" id="admin-gym-phone" data-i18n-placeholder="gym.phone">
                                         <input type="email" id="admin-gym-email" data-i18n-placeholder="gym.emailLabel">
                                         <input type="text" id="admin-gym-website" data-i18n-placeholder="gym.website">
-                                        <div class="full admin-gym-theme-grid">
-                                            <label class="admin-gym-theme-field" for="admin-gym-theme-primary">
-                                                <span>Primary</span>
-                                                <input type="color" id="admin-gym-theme-primary" value="#ff8a1e">
-                                            </label>
-                                            <label class="admin-gym-theme-field" for="admin-gym-theme-secondary">
-                                                <span>Secondary</span>
-                                                <input type="color" id="admin-gym-theme-secondary" value="#1396c8">
-                                            </label>
-                                            <label class="admin-gym-theme-field" for="admin-gym-theme-accent">
-                                                <span>Accent</span>
-                                                <input type="color" id="admin-gym-theme-accent" value="#7c3aed">
-                                            </label>
+                                        <div class="full admin-gym-theme-panel">
+                                            <h5 class="admin-gym-theme-title">Gym Theme</h5>
+                                            <div class="admin-gym-theme-grid">
+                                                <label class="admin-gym-theme-field" for="admin-gym-theme-primary">
+                                                    <span>Primary color</span>
+                                                    <input type="color" id="admin-gym-theme-primary" value="#ff8a1e">
+                                                    <input type="text" id="admin-gym-theme-primary-hex" value="#ff8a1e" maxlength="7" placeholder="#ff8a1e">
+                                                </label>
+                                                <label class="admin-gym-theme-field" for="admin-gym-theme-secondary">
+                                                    <span>Secondary color</span>
+                                                    <input type="color" id="admin-gym-theme-secondary" value="#1396c8">
+                                                    <input type="text" id="admin-gym-theme-secondary-hex" value="#1396c8" maxlength="7" placeholder="#1396c8">
+                                                </label>
+                                                <label class="admin-gym-theme-field" for="admin-gym-theme-accent">
+                                                    <span>Accent color</span>
+                                                    <input type="color" id="admin-gym-theme-accent" value="#7c3aed">
+                                                    <input type="text" id="admin-gym-theme-accent-hex" value="#7c3aed" maxlength="7" placeholder="#7c3aed">
+                                                </label>
+                                            </div>
+                                            <div class="admin-gym-theme-preview" aria-hidden="true">
+                                                <span id="admin-gym-theme-preview-primary"></span>
+                                                <span id="admin-gym-theme-preview-secondary"></span>
+                                                <span id="admin-gym-theme-preview-accent"></span>
+                                            </div>
                                         </div>
                                         <div class="full gym-admin-media-row">
                                             <img id="admin-gym-logo-preview" class="gym-admin-media-preview" alt="logo" />
@@ -4828,6 +4839,57 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             });
         }
 
+        function normalizeAdminThemeHexInput(value, fallback) {
+            const normalized = normalizeHexColor(value, fallback);
+            return normalized || fallback;
+        }
+
+        function refreshAdminThemePreview(themeInput = {}) {
+            const theme = sanitizeGymTheme(themeInput);
+            const map = {
+                'admin-gym-theme-preview-primary': theme.primaryColor,
+                'admin-gym-theme-preview-secondary': theme.secondaryColor,
+                'admin-gym-theme-preview-accent': theme.accentColor
+            };
+            Object.entries(map).forEach(([id, color]) => {
+                const el = document.getElementById(id);
+                if (el) el.style.background = color;
+            });
+        }
+
+        function bindAdminThemeInputs() {
+            const fields = [
+                { colorId: 'admin-gym-theme-primary', hexId: 'admin-gym-theme-primary-hex', fallback: DEFAULT_GYM_THEME.primaryColor },
+                { colorId: 'admin-gym-theme-secondary', hexId: 'admin-gym-theme-secondary-hex', fallback: DEFAULT_GYM_THEME.secondaryColor },
+                { colorId: 'admin-gym-theme-accent', hexId: 'admin-gym-theme-accent-hex', fallback: DEFAULT_GYM_THEME.accentColor }
+            ];
+
+            const updatePreview = () => {
+                refreshAdminThemePreview({
+                    primaryColor: document.getElementById('admin-gym-theme-primary')?.value,
+                    secondaryColor: document.getElementById('admin-gym-theme-secondary')?.value,
+                    accentColor: document.getElementById('admin-gym-theme-accent')?.value
+                });
+            };
+
+            fields.forEach(({ colorId, hexId, fallback }) => {
+                const colorEl = document.getElementById(colorId);
+                const hexEl = document.getElementById(hexId);
+                if (!colorEl || !hexEl) return;
+                colorEl.oninput = () => {
+                    hexEl.value = colorEl.value;
+                    updatePreview();
+                };
+                hexEl.onblur = () => {
+                    const normalized = normalizeAdminThemeHexInput(hexEl.value, fallback);
+                    hexEl.value = normalized;
+                    colorEl.value = normalized;
+                    updatePreview();
+                };
+            });
+            updatePreview();
+        }
+
         function setAdminGymProfileForm(data = {}) {
             const setVal = (id, value) => { const el = document.getElementById(id); if (el) el.value = value ?? ''; };
             const theme = sanitizeGymTheme(data.theme || {});
@@ -4839,6 +4901,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             setVal('admin-gym-theme-primary', theme.primaryColor);
             setVal('admin-gym-theme-secondary', theme.secondaryColor);
             setVal('admin-gym-theme-accent', theme.accentColor);
+            setVal('admin-gym-theme-primary-hex', theme.primaryColor);
+            setVal('admin-gym-theme-secondary-hex', theme.secondaryColor);
+            setVal('admin-gym-theme-accent-hex', theme.accentColor);
+            refreshAdminThemePreview(theme);
             setVal('admin-bouldering-height', data.boulderingHeight);
             setVal('admin-bouldering-area', data.boulderingArea);
             setVal('admin-lead-height', data.leadHeight);
@@ -4896,9 +4962,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
         async function saveAdminGymProfile() {
             if (!realUserGymId) return;
             const theme = sanitizeGymTheme({
-                primaryColor: document.getElementById('admin-gym-theme-primary')?.value,
-                secondaryColor: document.getElementById('admin-gym-theme-secondary')?.value,
-                accentColor: document.getElementById('admin-gym-theme-accent')?.value,
+                primaryColor: document.getElementById('admin-gym-theme-primary-hex')?.value || document.getElementById('admin-gym-theme-primary')?.value,
+                secondaryColor: document.getElementById('admin-gym-theme-secondary-hex')?.value || document.getElementById('admin-gym-theme-secondary')?.value,
+                accentColor: document.getElementById('admin-gym-theme-accent-hex')?.value || document.getElementById('admin-gym-theme-accent')?.value,
             });
             const payload = {
                 description: normalizeNullableText(document.getElementById('admin-gym-description')?.value),
@@ -4931,6 +4997,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             const saveBtn = document.getElementById('admin-save-gym-profile');
             const saveGradesBtn = document.getElementById('admin-save-grade-system');
             if (saveBtn) saveBtn.onclick = () => saveAdminGymProfile().catch(e => alert(e.message));
+            bindAdminThemeInputs();
             const logoInput = document.getElementById('admin-gym-logo-file');
             if (logoInput) logoInput.onchange = async (ev) => {
                 const file = ev?.target?.files?.[0];

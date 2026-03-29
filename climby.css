@@ -139,9 +139,14 @@
         .admin-gym-form { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
         .admin-gym-form .full { grid-column: 1 / -1; }
         .admin-gym-form h5 { margin:8px 0 2px; color: var(--text); font-size:0.95rem; }
+        .admin-gym-theme-panel { grid-column:1 / -1; border:1px solid color-mix(in srgb, var(--primary) 30%, var(--border) 70%); border-radius:12px; padding:10px; background:color-mix(in srgb, var(--surface-elevated) 88%, #ffffff 12%); }
+        .admin-gym-theme-title { margin:0 0 8px; color:var(--text); font-size:0.95rem; }
         .admin-gym-theme-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px; }
         .admin-gym-theme-field { display:grid; gap:6px; font-size:0.8rem; color:var(--muted); font-weight:600; }
         .admin-gym-theme-field input[type="color"] { width:100%; min-height:44px; margin:0; padding:4px; border-radius:10px; border:1px solid var(--border); background:var(--surface-elevated); cursor:pointer; }
+        .admin-gym-theme-field input[type="text"] { min-height:38px; margin:0; border-radius:10px; border:1px solid var(--border); background:var(--card); font-family:monospace; }
+        .admin-gym-theme-preview { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+        .admin-gym-theme-preview span { display:block; height:20px; border-radius:8px; border:1px solid var(--border); }
         .admin-grade-setup-card textarea { min-height: 140px; }
         .admin-layout { display:grid; grid-template-columns:220px minmax(0,1fr); gap:18px; align-items:start; }
         .admin-sidebar { position:sticky; top:14px; border:1px solid var(--border); background:var(--card); border-radius:14px; padding:10px; display:grid; gap:8px; }
@@ -248,7 +253,11 @@
         .admin-sector-status.warn { color:#e0992d; }
         .admin-sector-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
         .btn-danger-soft { min-height:44px; border:1px solid rgba(255,93,133,0.4); background:rgba(255,93,133,0.12); color:#d6476f; border-radius:10px; font-weight:600; }
-        @media (max-width: 700px) { .admin-sector-actions { grid-template-columns:1fr; } }
+        @media (max-width: 700px) {
+            .admin-sector-actions { grid-template-columns:1fr; }
+            .admin-gym-theme-grid,
+            .admin-gym-theme-preview { grid-template-columns:1fr; }
+        }
 
         @media (max-width: 900px) {
             .admin-layout { grid-template-columns:1fr; }
