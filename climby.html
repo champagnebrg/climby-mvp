@@ -828,6 +828,7 @@
             auth.languageCode = lang;
             localStorage.setItem(LANG_KEY, lang);
             applyLang();
+            if (typeof renderCompetitionLivePanelRoutes === 'function') renderCompetitionLivePanelRoutes();
             populateAdminColorOptions();
             if (typeof renderProfileDashboard === 'function') renderProfileDashboard();
             if (typeof renderChallengesHub === 'function') renderChallengesHub();
@@ -4622,6 +4623,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             refreshActiveGymDetailI18n = () => {
                 renderGymDetailInfo(firstGymData);
                 renderUserEventsPanel();
+                renderCompetitionLivePanelRoutes();
                 document.getElementById('gym-tab-leaderboard').textContent = t('gym.leaderboardTitle');
                 document.getElementById('gym-tab-events').textContent = t('gym.tabEvents');
                 document.getElementById('gym-tab-details').textContent = t('gym.tabDetails');
