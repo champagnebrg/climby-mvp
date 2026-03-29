@@ -537,13 +537,15 @@
     </nav>
 
         <div id="viewer-container">
-            <button type="button" class="btn-sec viewer-close" onclick="window.closeViewer()" data-i18n="viewer.close"></button>
+            <div class="viewer-top-controls">
+                <button type="button" class="btn-sec viewer-close" onclick="window.closeViewer()" data-i18n="viewer.close"></button>
+                <button type="button" id="viewer-route-visibility-toggle" class="btn-sec viewer-route-visibility-toggle" style="display:none;"></button>
+            </div>
             <div id="viewer-move-guide" class="viewer-move-guide" style="display:none;" aria-live="polite">
                 <h5 data-i18n="viewer.moveGuideHeader"></h5>
                 <p data-i18n="viewer.moveGuideText"></p>
                 <button type="button" class="btn-sec" id="viewer-move-guide-close" data-i18n="viewer.moveGuideClose"></button>
             </div>
-            <button type="button" id="viewer-route-visibility-toggle" class="btn-sec" style="position:absolute; top:16px; left:16px; z-index:7; display:none;"></button>
             <model-viewer id="main-viewer" camera-controls shadow-intensity="1">
             <button id="ghost" class="hotspot" slot="hotspot-ghost" style="display:none; border:2px dashed var(--primary); background:transparent"></button>
 
