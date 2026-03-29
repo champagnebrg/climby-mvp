@@ -487,9 +487,9 @@
                     </div>
                     <div class="gym-info-block" id="user-gym-detail-floor-map-wrap" style="display:none;">
                         <h4 class="gym-info-heading" data-i18n="gym.floorMap"></h4>
-                        <a id="user-gym-detail-floor-map-link" class="gym-floor-map-link" href="#" target="_blank" rel="noopener noreferrer">
+                        <div id="user-gym-detail-floor-map-link" class="gym-floor-map-link">
                             <img id="user-gym-detail-floor-map" class="gym-floor-map" alt="gym floor map">
-                        </a>
+                        </div>
                     </div>
                     <div id="user-gym-detail-sectors-list"></div>
 
@@ -4074,7 +4074,6 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     floorEl.src = data.floorMapUrl || '';
                     floorEl.alt = data.floorMapUrl ? (name + ' floor map') : t('gym.noFloorMap');
                     floorWrapEl.style.display = data.floorMapUrl ? 'block' : 'none';
-                    floorLinkEl.href = data.floorMapUrl || '#';
                     renderGymFloorMapMarkersForUser({
                         gymId: gId,
                         gymData: data,
