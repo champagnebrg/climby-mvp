@@ -6775,6 +6775,68 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             }
         }
 
+        function formatViewerLength(value) {
+            const n = Number(value);
+            if (!Number.isFinite(n)) return null;
+            return `${Math.max(0, n).toFixed(3)}m`;
+        }
+
+        function computeSmartViewerCameraFromBounds(viewer, dimensions, center) {
+            if (!viewer || !dimensions || !center) return null;
+            const sizeX = Math.abs(Number(dimensions.x) || 0);
+            const sizeY = Math.abs(Number(dimensions.y) || 0);
+            const sizeZ = Math.abs(Number(dimensions.z) || 0);
+            if (!sizeX || !sizeY || !sizeZ) return null;
+
+            const widthOnXZ = Math.max(sizeX, sizeZ);
+            const depthOnXZ = Math.min(sizeX, sizeZ);
+            const lookAlongX = sizeX < sizeZ;
+            const orbitThetaDeg = lookAlongX ? 90 : 0;
+            const fovDeg = 35;
+            const fovRad = fovDeg * (Math.PI / 180);
+            const viewerW = Math.max(1, Number(viewer.clientWidth) || 1);
+            const viewerH = Math.max(1, Number(viewer.clientHeight) || 1);
+            const aspect = viewerW / viewerH;
+            const halfV = fovRad / 2;
+            const halfH = Math.atan(Math.tan(halfV) * Math.max(0.5, aspect));
+            const fitByHeight = (sizeY * 0.5) / Math.max(0.05, Math.tan(halfV));
+            const fitByWidth = (widthOnXZ * 0.5) / Math.max(0.05, Math.tan(halfH));
+            const radiusMeters = Math.max(fitByHeight, fitByWidth) + (depthOnXZ * 1.2);
+            const targetX = formatViewerLength(center.x);
+            const targetY = formatViewerLength(center.y);
+            const targetZ = formatViewerLength(center.z);
+            const orbitRadius = formatViewerLength(radiusMeters);
+            if (!targetX || !targetY || !targetZ || !orbitRadius) return null;
+            return {
+                cameraTarget: `${targetX} ${targetY} ${targetZ}`,
+                cameraOrbit: `${orbitThetaDeg}deg 75deg ${orbitRadius}`,
+                fieldOfView: `${fovDeg}deg`
+            };
+        }
+
+        async function applySmartInitialViewerCamera(viewer) {
+            if (!viewer) return false;
+            try {
+                if (viewer?.updateComplete && typeof viewer.updateComplete.then === 'function') {
+                    await viewer.updateComplete;
+                }
+                const hasBoundsApi = typeof viewer.getDimensions === 'function' && typeof viewer.getBoundingBoxCenter === 'function';
+                if (!hasBoundsApi) return false;
+                const dimensions = viewer.getDimensions();
+                const center = viewer.getBoundingBoxCenter();
+                const camera = computeSmartViewerCameraFromBounds(viewer, dimensions, center);
+                if (!camera) return false;
+                viewer.cameraTarget = camera.cameraTarget;
+                viewer.fieldOfView = camera.fieldOfView;
+                viewer.cameraOrbit = camera.cameraOrbit;
+                if (typeof viewer.jumpCameraToGoal === 'function') viewer.jumpCameraToGoal();
+                return true;
+            } catch (error) {
+                console.warn('[3d] smart camera init failed, fallback to default', error);
+                return false;
+            }
+        }
+
         function normalizeViewerRouteVisibilityMode(mode) {
             if (mode === 'none' || mode === 'selected-only' || mode === 'all') return mode;
             return 'all';
@@ -7032,9 +7094,10 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             showViewerMoveGuide();
             console.info('[3d] requested path', requestedPath);
 
-            const onLoad = () => {
+            const onLoad = async () => {
                 if (token !== currentModelLoadToken) return;
-                applyDefaultViewerCamera(viewer);
+                const applied = await applySmartInitialViewerCamera(viewer);
+                if (!applied) applyDefaultViewerCamera(viewer);
                 cleanupModelLoadGuards();
                 hideLoading();
             };
