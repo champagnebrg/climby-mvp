@@ -68,11 +68,11 @@ function getRenderableHotspotForSector(sector = {}, floorMapVersion) {
   };
 }
 
-function toNormalizedPoint(event, renderedRect) {
+function toNormalizedPoint(event, renderedRect, { allowOutOfBounds = false } = {}) {
   if (!renderedRect?.width || !renderedRect?.height) return null;
   const rawX = (event.clientX - renderedRect.left) / renderedRect.width;
   const rawY = (event.clientY - renderedRect.top) / renderedRect.height;
-  if (rawX < 0 || rawX > 1 || rawY < 0 || rawY > 1) return null;
+  if (!allowOutOfBounds && (rawX < 0 || rawX > 1 || rawY < 0 || rawY > 1)) return null;
   return { x: clamp01(rawX), y: clamp01(rawY) };
 }
 
@@ -165,7 +165,10 @@ export function renderAdminGymMapEditor({
   const hasFloorMap = !!floorMapUrl;
   const selectedSector = sectors.find((sector) => sector?.sectorId === selectedSectorId) || null;
   const selectedSectorHotspot = selectedSector ? getRenderableHotspotForSector(selectedSector, floorMapVersion) : null;
-  const hasSelectedRect = isNormalizedRect(draftRect) || (selectedSectorHotspot?.type === 'rect' && isNormalizedRect(selectedSectorHotspot.rect));
+  const activeRect = isNormalizedRect(draftRect)
+    ? draftRect
+    : (selectedSectorHotspot?.type === 'rect' ? selectedSectorHotspot.rect : null);
+  const hasSelectedRect = isNormalizedRect(activeRect);
 
   floorMapEl.src = floorMapUrl;
   floorMapEl.alt = labels.floorMapAlt || 'floor map';
@@ -176,7 +179,9 @@ export function renderAdminGymMapEditor({
     : !selectedSectorId
       ? (labels.selectSectorHint || '')
       : selectedHotspotType === 'rect'
-        ? (labels.rectClickToCreate || labels.dragToDraw || '')
+        ? (hasSelectedRect
+          ? (labels.rectEditHint || labels.rectClickToCreate || labels.dragToDraw || '')
+          : (labels.rectClickToCreate || labels.dragToDraw || ''))
         : (labels.clickToPlace || '');
 
   const overlay = document.createElement('div');
@@ -235,9 +240,7 @@ export function renderAdminGymMapEditor({
   });
 
   if (selectedSectorId && selectedHotspotType === 'rect') {
-    const rect = isNormalizedRect(draftRect)
-      ? draftRect
-      : (selectedSectorHotspot?.type === 'rect' ? selectedSectorHotspot.rect : null);
+    const rect = activeRect;
     if (rect) {
       const draftEl = document.createElement('div');
       draftEl.className = 'admin-floor-map-rect-draft selected';
@@ -382,6 +385,7 @@ export function renderAdminGymMapEditor({
   }
 
   const createRectFromClick = (event) => {
+    if (hasSelectedRect) return;
     const geometry = getRenderedImageContentRect({ containerEl: stageEl, imageEl: floorMapEl });
     const point = toNormalizedPoint(event, geometry?.renderedRect);
     if (!point) return;
@@ -395,6 +399,7 @@ export function renderAdminGymMapEditor({
   const draftEl = overlay.querySelector('.admin-floor-map-rect-draft');
   let activeInteraction = null;
   let suppressNextCreateClick = false;
+  const POINTER_MOVE_TOLERANCE = 0.002;
   const applyRectStyles = (rect) => {
     if (!draftEl || !isNormalizedRect(rect)) return;
     draftEl.style.left = `${Number(rect.x) * 100}%`;
@@ -404,9 +409,6 @@ export function renderAdminGymMapEditor({
   };
   const onDraftPointerDown = (event) => {
     if (!draftEl || event.button !== 0) return;
-    const activeRect = isNormalizedRect(draftRect)
-      ? draftRect
-      : (selectedSectorHotspot?.type === 'rect' ? selectedSectorHotspot.rect : null);
     if (!isNormalizedRect(activeRect)) return;
     const geometry = getRenderedImageContentRect({ containerEl: stageEl, imageEl: floorMapEl });
     const point = toNormalizedPoint(event, geometry?.renderedRect);
@@ -428,7 +430,7 @@ export function renderAdminGymMapEditor({
   const onDraftPointerMove = (event) => {
     if (!draftEl || !activeInteraction || event.pointerId !== activeInteraction.pointerId) return;
     const geometry = getRenderedImageContentRect({ containerEl: stageEl, imageEl: floorMapEl });
-    const point = toNormalizedPoint(event, geometry?.renderedRect);
+    const point = toNormalizedPoint(event, geometry?.renderedRect, { allowOutOfBounds: true });
     if (!point) return;
     const dx = point.x - activeInteraction.startPoint.x;
     const dy = point.y - activeInteraction.startPoint.y;
@@ -458,7 +460,9 @@ export function renderAdminGymMapEditor({
     }
     if (!isNormalizedRect(nextRect)) return;
     activeInteraction.lastRect = nextRect;
-    activeInteraction.hasMoved = true;
+    const movedX = Math.abs(point.x - activeInteraction.startPoint.x);
+    const movedY = Math.abs(point.y - activeInteraction.startPoint.y);
+    activeInteraction.hasMoved = activeInteraction.hasMoved || movedX > POINTER_MOVE_TOLERANCE || movedY > POINTER_MOVE_TOLERANCE;
     applyRectStyles(nextRect);
     event.preventDefault();
     event.stopPropagation();
@@ -482,10 +486,13 @@ export function renderAdminGymMapEditor({
   };
 
   if (draftEl) {
+    draftEl.style.touchAction = 'none';
     draftEl.addEventListener('pointerdown', onDraftPointerDown);
     draftEl.addEventListener('pointermove', onDraftPointerMove);
     draftEl.addEventListener('pointerup', onDraftPointerUp);
     draftEl.addEventListener('pointercancel', onDraftPointerUp);
+    stageEl.addEventListener('pointerup', onDraftPointerUp);
+    stageEl.addEventListener('pointercancel', onDraftPointerUp);
     stageEl.addEventListener('click', preventCreateAfterDrag, true);
   }
 
@@ -496,6 +503,8 @@ export function renderAdminGymMapEditor({
       draftEl.removeEventListener('pointermove', onDraftPointerMove);
       draftEl.removeEventListener('pointerup', onDraftPointerUp);
       draftEl.removeEventListener('pointercancel', onDraftPointerUp);
+      stageEl.removeEventListener('pointerup', onDraftPointerUp);
+      stageEl.removeEventListener('pointercancel', onDraftPointerUp);
       stageEl.removeEventListener('click', preventCreateAfterDrag, true);
     }
     stageEl[ADMIN_STAGE_POINTER_CLEANUP_KEY] = null;

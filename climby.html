@@ -4803,8 +4803,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     floorMapAlt: currentLang === 'it' ? 'Piantina palestra' : 'Gym floor map',
                     noFloorMap: currentLang === 'it' ? 'Carica prima una piantina per collegare i settori.' : 'Upload a floor map before linking sectors.',
                     clickToPlace: currentLang === 'it' ? 'Settore selezionato: clicca sulla piantina per salvare il marker.' : 'Sector selected: click the floor map to save the marker.',
-                    dragToDraw: currentLang === 'it' ? 'Modalità area: clicca e trascina sulla piantina per disegnare il rettangolo.' : 'Area mode: click and drag on the floor map to draw a rectangle.',
+                    dragToDraw: currentLang === 'it' ? 'Modalità area: clicca sulla piantina per creare il rettangolo.' : 'Area mode: click the floor map to create the rectangle.',
                     rectClickToCreate: currentLang === 'it' ? 'Clicca sulla piantina per creare l’area, poi trascinala o ridimensionala dagli angoli.' : 'Click the floor map to create the area, then drag it or resize it from the corners.',
+                    rectEditHint: currentLang === 'it' ? 'Area selezionata: trascina dentro per spostare o trascina un angolo per ridimensionare.' : 'Selected area: drag inside to move, or drag a corner to resize.',
                     selectSectorHint: currentLang === 'it' ? 'Seleziona un settore, poi clicca sulla piantina.' : 'Select a sector, then click the floor map.',
                     linked: currentLang === 'it' ? 'Collegato' : 'Linked',
                     notLinked: currentLang === 'it' ? 'Non collegato' : 'Not linked',
@@ -4819,17 +4820,24 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     rectResizeHandle: currentLang === 'it' ? 'Trascina l’angolo per ridimensionare' : 'Drag corner to resize'
                 },
                 onSelectSector: (sectorId) => {
+                    const prevSectorId = adminMapEditorState.selectedSectorId;
+                    const prevType = adminMapEditorState.selectedHotspotType;
                     adminMapEditorState.selectedSectorId = sectorId;
                     const selectedSector = (adminMapEditorState.sectors || []).find((sector) => sector?.sectorId === sectorId) || null;
                     adminMapEditorState.selectedHotspotType = inferAdminHotspotType(selectedSector);
-                    adminMapEditorState.draftRect = null;
+                    const shouldResetDraft = prevSectorId !== sectorId || prevType !== 'rect' || adminMapEditorState.selectedHotspotType !== 'rect';
+                    if (shouldResetDraft) adminMapEditorState.draftRect = null;
                     renderAdminMapEditor();
                 },
                 onChangeHotspotType: (sectorId, type) => {
                     if (!sectorId || !type) return;
+                    const prevSectorId = adminMapEditorState.selectedSectorId;
+                    const prevType = adminMapEditorState.selectedHotspotType;
                     adminMapEditorState.selectedSectorId = sectorId;
                     adminMapEditorState.selectedHotspotType = type === 'rect' ? 'rect' : 'marker';
-                    adminMapEditorState.draftRect = null;
+                    if (prevSectorId !== sectorId || prevType !== adminMapEditorState.selectedHotspotType) {
+                        adminMapEditorState.draftRect = null;
+                    }
                     renderAdminMapEditor();
                 },
                 onDraftRectChange: (rect) => {

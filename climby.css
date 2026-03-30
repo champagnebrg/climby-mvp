@@ -865,18 +865,18 @@
         .gym-floor-map-marker:active { transform:translate(-50%, -50%) scale(0.96); }
         .gym-floor-map-hotspot { position:absolute; pointer-events:auto; cursor:pointer; border:0; padding:0; margin:0; background:transparent; }
         .gym-floor-map-hotspot-rect {
-            border:1px solid rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.1);
             border-radius:8px;
-            background:rgba(255,255,255,0.02);
-            box-shadow:inset 0 0 0 1px rgba(7,11,22,0.18);
+            background:rgba(255,255,255,0.015);
+            box-shadow:inset 0 0 0 1px rgba(7,11,22,0.2);
             transition:border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
         }
         .gym-floor-map-hotspot-rect:hover,
         .gym-floor-map-hotspot-rect:focus-visible,
         .gym-floor-map-hotspot-rect:active {
-            border-color:color-mix(in srgb, var(--gym-primary, var(--primary)) 82%, white 18%);
-            background:color-mix(in srgb, var(--gym-primary, var(--primary)) 12%, transparent);
-            box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--gym-primary, var(--primary)) 56%, white 44%), 0 0 0 1px rgba(7,11,22,0.2);
+            border-color:color-mix(in srgb, var(--gym-primary, var(--primary)) 72%, white 28%);
+            background:color-mix(in srgb, var(--gym-primary, var(--primary)) 10%, transparent);
+            box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--gym-primary, var(--primary)) 52%, white 48%), 0 0 0 1px rgba(7,11,22,0.18);
         }
         .admin-map-editor-wrap { display:grid; gap:12px; margin-top:12px; }
         .admin-map-stage { border:1px dashed var(--border); border-radius:12px; overflow:hidden; background:rgba(255,255,255,0.03); }
@@ -884,13 +884,13 @@
         .admin-floor-map-marker.selected { box-shadow:0 0 0 3px rgba(255,255,255,0.32), 0 0 0 6px rgba(255,138,30,0.22), 0 4px 10px rgba(0,0,0,0.35); }
         .admin-floor-map-hotspot-rect { border-color:rgba(255,255,255,0.22); background:rgba(255,255,255,0.08); box-shadow:inset 0 0 0 1px rgba(7,11,22,0.22); }
         .admin-floor-map-hotspot-rect.selected { border-color:var(--gym-primary, var(--primary)); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--gym-primary, var(--primary)) 68%, white 32%), 0 0 0 1px rgba(7,11,22,0.2); background:color-mix(in srgb, var(--gym-primary, var(--primary)) 14%, transparent); }
-        .admin-floor-map-rect-draft { position:absolute; border:2px dashed color-mix(in srgb, var(--gym-primary, var(--primary)) 76%, white 24%); border-radius:8px; background:color-mix(in srgb, var(--gym-primary, var(--primary)) 18%, transparent); pointer-events:auto; cursor:move; box-shadow:inset 0 0 0 1px rgba(7,11,22,0.22), 0 0 0 1px rgba(7,11,22,0.14); }
-        .admin-floor-map-rect-draft.selected { border-style:solid; box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--gym-primary, var(--primary)) 72%, white 28%), 0 0 0 1px rgba(7,11,22,0.25); }
-        .admin-floor-map-rect-handle { position:absolute; width:12px; height:12px; border-radius:999px; border:2px solid white; background:var(--gym-primary, var(--primary)); box-shadow:0 0 0 1px rgba(7,11,22,0.3); padding:0; pointer-events:auto; z-index:2; }
-        .admin-floor-map-rect-handle.handle-nw { top:-6px; left:-6px; cursor:nwse-resize; }
-        .admin-floor-map-rect-handle.handle-ne { top:-6px; right:-6px; cursor:nesw-resize; }
-        .admin-floor-map-rect-handle.handle-se { bottom:-6px; right:-6px; cursor:nwse-resize; }
-        .admin-floor-map-rect-handle.handle-sw { bottom:-6px; left:-6px; cursor:nesw-resize; }
+        .admin-floor-map-rect-draft { position:absolute; border:2px dashed color-mix(in srgb, var(--gym-primary, var(--primary)) 76%, white 24%); border-radius:8px; background:color-mix(in srgb, var(--gym-primary, var(--primary)) 18%, transparent); pointer-events:auto; cursor:move; box-shadow:inset 0 0 0 1px rgba(7,11,22,0.22), 0 0 0 1px rgba(7,11,22,0.14); touch-action:none; }
+        .admin-floor-map-rect-draft.selected { border-style:solid; box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--gym-primary, var(--primary)) 72%, white 28%), 0 0 0 2px color-mix(in srgb, var(--gym-primary, var(--primary)) 28%, transparent), 0 8px 20px color-mix(in srgb, var(--gym-primary, var(--primary)) 22%, transparent); }
+        .admin-floor-map-rect-handle { position:absolute; width:16px; height:16px; border-radius:999px; border:2px solid white; background:var(--gym-primary, var(--primary)); box-shadow:0 0 0 1px rgba(7,11,22,0.35), 0 2px 6px rgba(7,11,22,0.25); padding:0; pointer-events:auto; z-index:2; touch-action:none; }
+        .admin-floor-map-rect-handle.handle-nw { top:-8px; left:-8px; cursor:nwse-resize; }
+        .admin-floor-map-rect-handle.handle-ne { top:-8px; right:-8px; cursor:nesw-resize; }
+        .admin-floor-map-rect-handle.handle-se { bottom:-8px; right:-8px; cursor:nwse-resize; }
+        .admin-floor-map-rect-handle.handle-sw { bottom:-8px; left:-8px; cursor:nesw-resize; }
         .admin-map-hint { color:var(--muted); font-size:0.86rem; margin:0; }
         .admin-map-sector-list { display:grid; gap:8px; }
         .admin-map-sector-row { border:1px solid var(--border); border-radius:12px; padding:10px; background:var(--surface-elevated); display:grid; gap:8px; }
