@@ -863,10 +863,28 @@
         .gym-floor-map-overlay { position:absolute; inset:0; pointer-events:none; }
         .gym-floor-map-marker { position:absolute; width:18px; height:18px; border-radius:999px; border:2px solid #fff; background:var(--gym-primary, var(--primary)); box-shadow:0 0 0 2px rgba(7,11,22,0.6), 0 4px 10px rgba(0,0,0,0.35); transform:translate(-50%, -50%); pointer-events:auto; cursor:pointer; }
         .gym-floor-map-marker:active { transform:translate(-50%, -50%) scale(0.96); }
+        .gym-floor-map-hotspot { position:absolute; pointer-events:auto; cursor:pointer; border:0; padding:0; margin:0; background:transparent; }
+        .gym-floor-map-hotspot-rect {
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:8px;
+            background:rgba(255,255,255,0.02);
+            box-shadow:inset 0 0 0 1px rgba(7,11,22,0.18);
+            transition:border-color 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
+        }
+        .gym-floor-map-hotspot-rect:hover,
+        .gym-floor-map-hotspot-rect:focus-visible,
+        .gym-floor-map-hotspot-rect:active {
+            border-color:color-mix(in srgb, var(--gym-primary, var(--primary)) 82%, white 18%);
+            background:color-mix(in srgb, var(--gym-primary, var(--primary)) 12%, transparent);
+            box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--gym-primary, var(--primary)) 56%, white 44%), 0 0 0 1px rgba(7,11,22,0.2);
+        }
         .admin-map-editor-wrap { display:grid; gap:12px; margin-top:12px; }
         .admin-map-stage { border:1px dashed var(--border); border-radius:12px; overflow:hidden; background:rgba(255,255,255,0.03); }
         .admin-floor-map-overlay { pointer-events:none; }
         .admin-floor-map-marker.selected { box-shadow:0 0 0 3px rgba(255,255,255,0.32), 0 0 0 6px rgba(255,138,30,0.22), 0 4px 10px rgba(0,0,0,0.35); }
+        .admin-floor-map-hotspot-rect { border-color:rgba(255,255,255,0.22); background:rgba(255,255,255,0.08); box-shadow:inset 0 0 0 1px rgba(7,11,22,0.22); }
+        .admin-floor-map-hotspot-rect.selected { border-color:var(--gym-primary, var(--primary)); box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--gym-primary, var(--primary)) 68%, white 32%), 0 0 0 1px rgba(7,11,22,0.2); background:color-mix(in srgb, var(--gym-primary, var(--primary)) 14%, transparent); }
+        .admin-floor-map-rect-draft { position:absolute; border:2px dashed var(--gym-primary, var(--primary)); border-radius:8px; background:color-mix(in srgb, var(--gym-primary, var(--primary)) 18%, transparent); pointer-events:none; }
         .admin-map-hint { color:var(--muted); font-size:0.86rem; margin:0; }
         .admin-map-sector-list { display:grid; gap:8px; }
         .admin-map-sector-row { border:1px solid var(--border); border-radius:12px; padding:10px; background:var(--surface-elevated); display:grid; gap:8px; }
@@ -875,6 +893,9 @@
         .admin-map-sector-status { font-size:0.8rem; }
         .admin-map-sector-actions { display:flex; gap:8px; flex-wrap:wrap; }
         .admin-map-sector-actions .btn-sec[disabled] { opacity:0.55; cursor:not-allowed; }
+        .admin-map-hotspot-tools { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+        .admin-map-hotspot-tools-label { font-size:0.8rem; color:var(--muted); margin-right:4px; }
+        .admin-map-hotspot-type-btn.active { border-color:var(--primary); box-shadow:inset 0 0 0 1px rgba(255,138,30,0.24); }
         .gym-admin-media-row { display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; }
         .gym-admin-media-preview { width:96px; height:96px; border-radius:10px; object-fit:contain; object-position:center; border:1px solid var(--border); background:rgba(255,255,255,0.06); padding:6px; box-sizing:border-box; }
         .gym-detail-eyebrow { margin: 10px 0 8px; display:inline-flex; align-items:center; gap:8px; border:1px solid color-mix(in srgb, var(--gym-accent, var(--accent)) 40%, var(--border) 60%); background:color-mix(in srgb, var(--gym-accent, var(--accent)) 16%, transparent); color:var(--gym-accent, var(--accent)); border-radius:999px; padding:6px 12px; font-size:0.76rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
