@@ -5,6 +5,8 @@ import { getRenderedImageContentRect, toRectLog } from './map-render-geometry.js
 const ADMIN_OVERLAY_SELECTOR = '[data-admin-map-overlay="1"]';
 const ADMIN_STAGE_POINTER_CLEANUP_KEY = '__climbyAdminMapPointerCleanup';
 const ADMIN_OVERLAY_CLEANUP_KEY = '__climbyAdminMapOverlayCleanup';
+const DEFAULT_RECT_SIZE = 0.18;
+const MIN_RECT_SIZE = 0.03;
 
 function clamp01(value) {
   const numeric = Number(value);
@@ -23,6 +25,25 @@ function normalizeRectFromCorners(start = {}, end = {}) {
     w: Math.max(0, right - left),
     h: Math.max(0, bottom - top),
   };
+}
+
+function clampRectToBounds(rect = {}, minSize = MIN_RECT_SIZE) {
+  const width = Math.max(minSize, Math.min(1, Number(rect.w) || 0));
+  const height = Math.max(minSize, Math.min(1, Number(rect.h) || 0));
+  const x = clamp01(Math.min(1 - width, Math.max(0, Number(rect.x) || 0)));
+  const y = clamp01(Math.min(1 - height, Math.max(0, Number(rect.y) || 0)));
+  return { x, y, w: width, h: height };
+}
+
+function createDefaultRectFromPoint(point = {}, defaultSize = DEFAULT_RECT_SIZE) {
+  const size = Math.max(MIN_RECT_SIZE, Math.min(1, Number(defaultSize) || DEFAULT_RECT_SIZE));
+  const half = size / 2;
+  return clampRectToBounds({
+    x: clamp01(Number(point.x) - half),
+    y: clamp01(Number(point.y) - half),
+    w: size,
+    h: size,
+  });
 }
 
 function getRenderableHotspotForSector(sector = {}, floorMapVersion) {
@@ -155,7 +176,7 @@ export function renderAdminGymMapEditor({
     : !selectedSectorId
       ? (labels.selectSectorHint || '')
       : selectedHotspotType === 'rect'
-        ? (labels.dragToDraw || '')
+        ? (labels.rectClickToCreate || labels.dragToDraw || '')
         : (labels.clickToPlace || '');
 
   const overlay = document.createElement('div');
@@ -219,11 +240,22 @@ export function renderAdminGymMapEditor({
       : (selectedSectorHotspot?.type === 'rect' ? selectedSectorHotspot.rect : null);
     if (rect) {
       const draftEl = document.createElement('div');
-      draftEl.className = 'admin-floor-map-rect-draft';
+      draftEl.className = 'admin-floor-map-rect-draft selected';
       draftEl.style.left = `${Number(rect.x) * 100}%`;
       draftEl.style.top = `${Number(rect.y) * 100}%`;
       draftEl.style.width = `${Number(rect.w) * 100}%`;
       draftEl.style.height = `${Number(rect.h) * 100}%`;
+      draftEl.dataset.rectDrag = 'move';
+      draftEl.title = labels.rectDragArea || 'Drag to move';
+      ['nw', 'ne', 'se', 'sw'].forEach((corner) => {
+        const handleEl = document.createElement('button');
+        handleEl.type = 'button';
+        handleEl.className = `admin-floor-map-rect-handle handle-${corner}`;
+        handleEl.dataset.rectHandle = corner;
+        handleEl.title = labels.rectResizeHandle || 'Drag corner to resize';
+        handleEl.setAttribute('aria-label', `${labels.rectResizeHandle || 'Resize corner'} (${corner.toUpperCase()})`);
+        draftEl.appendChild(handleEl);
+      });
       overlay.appendChild(draftEl);
     }
   }
@@ -349,49 +381,123 @@ export function renderAdminGymMapEditor({
     return;
   }
 
-  let dragStart = null;
-  let activePointerId = null;
-  const pointerDown = (event) => {
-    if (event.button !== 0) return;
+  const createRectFromClick = (event) => {
     const geometry = getRenderedImageContentRect({ containerEl: stageEl, imageEl: floorMapEl });
-    const startPoint = toNormalizedPoint(event, geometry?.renderedRect);
-    if (!startPoint) return;
-    dragStart = startPoint;
-    activePointerId = event.pointerId;
-    stageEl.setPointerCapture?.(event.pointerId);
+    const point = toNormalizedPoint(event, geometry?.renderedRect);
+    if (!point) return;
+    const rect = createDefaultRectFromPoint(point);
+    if (typeof onDraftRectChange === 'function') onDraftRectChange(rect);
     event.preventDefault();
   };
-  const pointerMove = (event) => {
-    if (!dragStart || activePointerId == null || event.pointerId !== activePointerId) return;
-    const geometry = getRenderedImageContentRect({ containerEl: stageEl, imageEl: floorMapEl });
-    const endPoint = toNormalizedPoint(event, geometry?.renderedRect);
-    if (!endPoint) return;
-    const rect = normalizeRectFromCorners(dragStart, endPoint);
-    if (!rect.w || !rect.h) return;
-    if (typeof onDraftRectChange === 'function') onDraftRectChange(rect);
+
+  stageEl.addEventListener('click', createRectFromClick);
+
+  const draftEl = overlay.querySelector('.admin-floor-map-rect-draft');
+  let activeInteraction = null;
+  let suppressNextCreateClick = false;
+  const applyRectStyles = (rect) => {
+    if (!draftEl || !isNormalizedRect(rect)) return;
+    draftEl.style.left = `${Number(rect.x) * 100}%`;
+    draftEl.style.top = `${Number(rect.y) * 100}%`;
+    draftEl.style.width = `${Number(rect.w) * 100}%`;
+    draftEl.style.height = `${Number(rect.h) * 100}%`;
   };
-  const pointerUp = (event) => {
-    if (activePointerId == null || event.pointerId !== activePointerId) return;
+  const onDraftPointerDown = (event) => {
+    if (!draftEl || event.button !== 0) return;
+    const activeRect = isNormalizedRect(draftRect)
+      ? draftRect
+      : (selectedSectorHotspot?.type === 'rect' ? selectedSectorHotspot.rect : null);
+    if (!isNormalizedRect(activeRect)) return;
     const geometry = getRenderedImageContentRect({ containerEl: stageEl, imageEl: floorMapEl });
-    const endPoint = toNormalizedPoint(event, geometry?.renderedRect);
-    if (dragStart && endPoint) {
-      const rect = normalizeRectFromCorners(dragStart, endPoint);
-      if (rect.w && rect.h && typeof onDraftRectChange === 'function') onDraftRectChange(rect);
+    const point = toNormalizedPoint(event, geometry?.renderedRect);
+    if (!point) return;
+    const handle = event.target?.dataset?.rectHandle || null;
+    activeInteraction = {
+      pointerId: event.pointerId,
+      mode: handle ? 'resize' : 'move',
+      handle,
+      startPoint: point,
+      startRect: { ...activeRect },
+      lastRect: { ...activeRect },
+      hasMoved: false,
+    };
+    draftEl.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const onDraftPointerMove = (event) => {
+    if (!draftEl || !activeInteraction || event.pointerId !== activeInteraction.pointerId) return;
+    const geometry = getRenderedImageContentRect({ containerEl: stageEl, imageEl: floorMapEl });
+    const point = toNormalizedPoint(event, geometry?.renderedRect);
+    if (!point) return;
+    const dx = point.x - activeInteraction.startPoint.x;
+    const dy = point.y - activeInteraction.startPoint.y;
+    let nextRect = null;
+    if (activeInteraction.mode === 'move') {
+      nextRect = clampRectToBounds({
+        x: Number(activeInteraction.startRect.x) + dx,
+        y: Number(activeInteraction.startRect.y) + dy,
+        w: activeInteraction.startRect.w,
+        h: activeInteraction.startRect.h,
+      });
+    } else {
+      const { startRect, handle } = activeInteraction;
+      const startLeft = Number(startRect.x);
+      const startTop = Number(startRect.y);
+      const startRight = startLeft + Number(startRect.w);
+      const startBottom = startTop + Number(startRect.h);
+      const cornerMap = {
+        nw: { anchorX: startRight, anchorY: startBottom },
+        ne: { anchorX: startLeft, anchorY: startBottom },
+        se: { anchorX: startLeft, anchorY: startTop },
+        sw: { anchorX: startRight, anchorY: startTop },
+      };
+      const anchor = cornerMap[handle] || cornerMap.se;
+      nextRect = normalizeRectFromCorners({ x: anchor.anchorX, y: anchor.anchorY }, point);
+      nextRect = clampRectToBounds(nextRect, MIN_RECT_SIZE);
     }
-    stageEl.releasePointerCapture?.(event.pointerId);
-    dragStart = null;
-    activePointerId = null;
+    if (!isNormalizedRect(nextRect)) return;
+    activeInteraction.lastRect = nextRect;
+    activeInteraction.hasMoved = true;
+    applyRectStyles(nextRect);
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const onDraftPointerUp = (event) => {
+    if (!draftEl || !activeInteraction || event.pointerId !== activeInteraction.pointerId) return;
+    draftEl.releasePointerCapture?.(event.pointerId);
+    if (activeInteraction.hasMoved && isNormalizedRect(activeInteraction.lastRect) && typeof onDraftRectChange === 'function') {
+      onDraftRectChange(activeInteraction.lastRect);
+    }
+    suppressNextCreateClick = !!activeInteraction.hasMoved;
+    activeInteraction = null;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const preventCreateAfterDrag = (event) => {
+    if (!suppressNextCreateClick) return;
+    suppressNextCreateClick = false;
+    event.preventDefault();
+    event.stopPropagation();
   };
 
-  stageEl.addEventListener('pointerdown', pointerDown);
-  stageEl.addEventListener('pointermove', pointerMove);
-  stageEl.addEventListener('pointerup', pointerUp);
-  stageEl.addEventListener('pointercancel', pointerUp);
+  if (draftEl) {
+    draftEl.addEventListener('pointerdown', onDraftPointerDown);
+    draftEl.addEventListener('pointermove', onDraftPointerMove);
+    draftEl.addEventListener('pointerup', onDraftPointerUp);
+    draftEl.addEventListener('pointercancel', onDraftPointerUp);
+    stageEl.addEventListener('click', preventCreateAfterDrag, true);
+  }
+
   stageEl[ADMIN_STAGE_POINTER_CLEANUP_KEY] = () => {
-    stageEl.removeEventListener('pointerdown', pointerDown);
-    stageEl.removeEventListener('pointermove', pointerMove);
-    stageEl.removeEventListener('pointerup', pointerUp);
-    stageEl.removeEventListener('pointercancel', pointerUp);
+    stageEl.removeEventListener('click', createRectFromClick);
+    if (draftEl) {
+      draftEl.removeEventListener('pointerdown', onDraftPointerDown);
+      draftEl.removeEventListener('pointermove', onDraftPointerMove);
+      draftEl.removeEventListener('pointerup', onDraftPointerUp);
+      draftEl.removeEventListener('pointercancel', onDraftPointerUp);
+      stageEl.removeEventListener('click', preventCreateAfterDrag, true);
+    }
     stageEl[ADMIN_STAGE_POINTER_CLEANUP_KEY] = null;
   };
 }
