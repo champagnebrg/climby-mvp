@@ -6823,7 +6823,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             for (let i = 0; i < docs.length; i += chunkSize) {
                 const batch = writeBatch(db);
                 docs.slice(i, i + chunkSize).forEach((routeDoc) => {
-                    batch.set(routeDoc.ref, payload, { merge: true });
+                    batch.update(routeDoc.ref, payload);
                 });
                 await batch.commit();
             }
