@@ -7111,23 +7111,49 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             return { type: resolvedType, url: resolvedUrl };
         }
 
+        function isValidRouteAnchor3D(position, normal) {
+            const pos = String(position || '').trim();
+            const norm = String(normal || '').trim();
+            return !!(pos && norm);
+        }
+
+        function isValidRouteAnchor2D(p2d) {
+            const point = p2d && typeof p2d === 'object' ? p2d : null;
+            const x = Number(point?.x);
+            const y = Number(point?.y);
+            return Number.isFinite(x) && Number.isFinite(y);
+        }
+
+        function hasRenderableAnchor(routeData = {}, sectorContentType = '3d') {
+            const data = routeData || {};
+            const contentType = normalizeSectorContentType(sectorContentType) || '3d';
+            const anchor = data?.anchor && typeof data.anchor === 'object' ? data.anchor : null;
+            if (contentType === 'photo') {
+                return anchor?.type === '2d' && isValidRouteAnchor2D(anchor?.p2d);
+            }
+            const hasTyped3DAnchor = anchor?.type === '3d' && isValidRouteAnchor3D(anchor?.p3d?.position, anchor?.p3d?.normal);
+            if (hasTyped3DAnchor) return true;
+            return isValidRouteAnchor3D(data?.position, data?.normal);
+        }
+
         function resolveRouteAnchorForViewer(routeData = {}, viewerType = '3d') {
             const data = routeData || {};
             const anchor = data?.anchor && typeof data.anchor === 'object' ? data.anchor : null;
             if (viewerType === 'photo') {
-                const p2d = anchor?.p2d && typeof anchor.p2d === 'object' ? anchor.p2d : null;
-                const x = Number(p2d?.x);
-                const y = Number(p2d?.y);
-                if (Number.isFinite(x) && Number.isFinite(y)) {
-                    return { type: '2d', x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) };
-                }
-                return null;
+                if (anchor?.type !== '2d' || !isValidRouteAnchor2D(anchor?.p2d)) return null;
+                const x = Number(anchor.p2d.x);
+                const y = Number(anchor.p2d.y);
+                return { type: '2d', x: Math.max(0, Math.min(1, x)), y: Math.max(0, Math.min(1, y)) };
             }
-            const p3d = anchor?.p3d && typeof anchor.p3d === 'object' ? anchor.p3d : null;
-            const position = String(p3d?.position || data.position || '').trim();
-            const normal = String(p3d?.normal || data.normal || '').trim();
-            if (!position || !normal) return null;
-            return { type: '3d', position, normal };
+            if (anchor?.type === '3d' && isValidRouteAnchor3D(anchor?.p3d?.position, anchor?.p3d?.normal)) {
+                return {
+                    type: '3d',
+                    position: String(anchor.p3d.position).trim(),
+                    normal: String(anchor.p3d.normal).trim()
+                };
+            }
+            if (!isValidRouteAnchor3D(data?.position, data?.normal)) return null;
+            return { type: '3d', position: String(data.position).trim(), normal: String(data.normal).trim() };
         }
 
         function applyDefaultViewerCamera(viewer) {
@@ -7256,10 +7282,12 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
             if (photoLayer) photoLayer.innerHTML = '';
             const competitionRoutes = [];
             const isPhotoViewer = activeViewerContentType === 'photo';
+            const sectorContentType = isPhotoViewer ? 'photo' : '3d';
             currentViewerRouteRecords.forEach(({ id, data: r }) => {
                 const routeId = String(id || '').trim();
                 competitionRoutes.push({ id: routeId, ...(r || {}) });
-                const anchor = resolveRouteAnchorForViewer(r || {}, isPhotoViewer ? 'photo' : '3d');
+                if (!hasRenderableAnchor(r || {}, sectorContentType)) return;
+                const anchor = resolveRouteAnchorForViewer(r || {}, sectorContentType);
                 if (!anchor) return;
                 if (!shouldRenderRouteHotspot(routeId)) return;
                 const btn = document.createElement('button');
