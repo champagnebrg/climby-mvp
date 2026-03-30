@@ -1,5 +1,5 @@
 import { renderAdminGymMapEditor } from './admin-map-editor.js';
-import { saveSectorMapMarker, removeSectorMapMarker } from './map-repository.js';
+import { saveSectorMapMarker, saveSectorMapRectHotspot, removeSectorMapMarker } from './map-repository.js';
 import { renderUserGymFloorMapMarkers } from './map-viewer.js';
 
 export function renderGymFloorMapMarkersForUser(options = {}) {
@@ -12,6 +12,10 @@ export function renderGymFloorMapEditorForAdmin(options = {}) {
 
 export async function saveGymSectorMarker(options = {}) {
   return saveSectorMapMarker(options);
+}
+
+export async function saveGymSectorRectHotspot(options = {}) {
+  return saveSectorMapRectHotspot(options);
 }
 
 export async function removeGymSectorMarker(options = {}) {
