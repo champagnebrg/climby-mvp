@@ -683,7 +683,7 @@
         import { isValidPersonName, normalizeGymIdSeed, normalizeUserRole, isPermissionDeniedError, normalizeLevelValue, normalizeProgressValue, areConsecutiveDays } from "./src/utils/core-normalizers.js";
         import { LANG_KEY } from "./src/i18n/translations.js";
         import { t, getCurrentLang, setCurrentLang } from "./src/i18n/index.js";
-        import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, removeGymSectorMarker } from "./src/features/maps/index.js";
+        import { renderGymFloorMapMarkersForUser, renderGymFloorMapEditorForAdmin, saveGymSectorMarker, saveGymSectorRectHotspot, removeGymSectorMarker } from "./src/features/maps/index.js";
         import { createDraftEvent, createEvent, updateEvent, listGymEvents, publishEvent, cancelEvent, endEvent, getCurrentUserRegistration, registerUserToEvent, cancelRegistration, updateRegistrationStatus, listRegistrationsForEvent, listCompetitionLiveEntries, countActiveRegistrationsForEvent, hasAdminConfirmedEventCheckIn, getCompetitionLiveEntry, getOrCreateCompetitionLiveEntry, saveCompetitionLiveCategorySelection, saveCompetitionLiveCompletedBlocks, normalizeCompetitionLive } from "./src/features/events/index.js";
         import { renderAdminEventList } from "./src/features/events/admin-event-list.js";
         import { renderAdminEventEditor } from "./src/features/events/admin-event-editor.js";
@@ -778,7 +778,7 @@
         const adminUserNameCache = new Map();
         let adminSectorSortState = 'avg';
         let adminFiltersOpen = false;
-        let adminMapEditorState = { gymData: {}, sectors: [], selectedSectorId: null };
+        let adminMapEditorState = { gymData: {}, sectors: [], selectedSectorId: null, selectedHotspotType: 'marker', draftRect: null };
         let gymDetailUnsubscriber = null;
         let gymLeaderboardUnsubscriber = null;
         let notificationsUnsubscriber = null;
@@ -1873,7 +1873,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 if (typeof stopRouteProgressSubscription === 'function') stopRouteProgressSubscription();
                 destroyProfileListeners();
                 profileEntriesMap = new Map();
-                adminMapEditorState = { gymData: adminMapEditorState.gymData || {}, sectors: [], selectedSectorId: null };
+                adminMapEditorState = { gymData: adminMapEditorState.gymData || {}, sectors: [], selectedSectorId: null, selectedHotspotType: 'marker', draftRect: null };
                 onSnapshot(collection(db, "gyms", realUserGymId, "Sectors"), (snap) => {
                     adminList.innerHTML = "";
                     adminMapEditorState.sectors = snap.docs.map((d) => ({
@@ -4762,13 +4762,20 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 if (typeof unsub === 'function') unsub();
             }
             adminCoverageSnapshot = { gymId: null, sectorNames: new Map(), sectorResetAt: new Map(), routeMeta: new Map(), reviewsByRoute: new Map(), routeUsers: new Map() };
-            adminMapEditorState = { gymData: {}, sectors: [], selectedSectorId: null };
+            adminMapEditorState = { gymData: {}, sectors: [], selectedSectorId: null, selectedHotspotType: 'marker', draftRect: null };
+        }
+
+        function inferAdminHotspotType(sector = {}) {
+            const type = String(sector?.mapHotspot?.type || '').trim().toLowerCase();
+            return type === 'rect' ? 'rect' : 'marker';
         }
 
         function syncAdminMapSelectedSector() {
             const sectorIds = new Set((adminMapEditorState.sectors || []).map((sector) => sector?.sectorId).filter(Boolean));
             if (adminMapEditorState.selectedSectorId && sectorIds.has(adminMapEditorState.selectedSectorId)) return;
             adminMapEditorState.selectedSectorId = null;
+            adminMapEditorState.selectedHotspotType = 'marker';
+            adminMapEditorState.draftRect = null;
         }
 
         function renderAdminMapEditor() {
@@ -4785,6 +4792,8 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 gymData: adminMapEditorState.gymData || {},
                 sectors: adminMapEditorState.sectors || [],
                 selectedSectorId: adminMapEditorState.selectedSectorId,
+                selectedHotspotType: adminMapEditorState.selectedHotspotType || 'marker',
+                draftRect: adminMapEditorState.draftRect || null,
                 wrapEl,
                 stageEl,
                 floorMapEl,
@@ -4794,15 +4803,37 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     floorMapAlt: currentLang === 'it' ? 'Piantina palestra' : 'Gym floor map',
                     noFloorMap: currentLang === 'it' ? 'Carica prima una piantina per collegare i settori.' : 'Upload a floor map before linking sectors.',
                     clickToPlace: currentLang === 'it' ? 'Settore selezionato: clicca sulla piantina per salvare il marker.' : 'Sector selected: click the floor map to save the marker.',
+                    dragToDraw: currentLang === 'it' ? 'Modalità area: clicca e trascina sulla piantina per disegnare il rettangolo.' : 'Area mode: click and drag on the floor map to draw a rectangle.',
+                    rectClickToCreate: currentLang === 'it' ? 'Clicca sulla piantina per creare l’area, poi trascinala o ridimensionala dagli angoli.' : 'Click the floor map to create the area, then drag it or resize it from the corners.',
                     selectSectorHint: currentLang === 'it' ? 'Seleziona un settore, poi clicca sulla piantina.' : 'Select a sector, then click the floor map.',
                     linked: currentLang === 'it' ? 'Collegato' : 'Linked',
                     notLinked: currentLang === 'it' ? 'Non collegato' : 'Not linked',
                     select: currentLang === 'it' ? 'Seleziona' : 'Select',
                     selected: currentLang === 'it' ? 'Selezionato' : 'Selected',
-                    remove: currentLang === 'it' ? 'Rimuovi marker' : 'Remove marker'
+                    remove: currentLang === 'it' ? 'Rimuovi hotspot' : 'Remove hotspot',
+                    typeLabel: currentLang === 'it' ? 'Tipo hotspot' : 'Hotspot type',
+                    typeMarker: currentLang === 'it' ? 'Marker' : 'Marker',
+                    typeRect: currentLang === 'it' ? 'Area rettangolare' : 'Rect area',
+                    saveRect: currentLang === 'it' ? 'Salva area' : 'Save area',
+                    rectDragArea: currentLang === 'it' ? 'Trascina l’area per spostarla' : 'Drag area to move',
+                    rectResizeHandle: currentLang === 'it' ? 'Trascina l’angolo per ridimensionare' : 'Drag corner to resize'
                 },
                 onSelectSector: (sectorId) => {
                     adminMapEditorState.selectedSectorId = sectorId;
+                    const selectedSector = (adminMapEditorState.sectors || []).find((sector) => sector?.sectorId === sectorId) || null;
+                    adminMapEditorState.selectedHotspotType = inferAdminHotspotType(selectedSector);
+                    adminMapEditorState.draftRect = null;
+                    renderAdminMapEditor();
+                },
+                onChangeHotspotType: (sectorId, type) => {
+                    if (!sectorId || !type) return;
+                    adminMapEditorState.selectedSectorId = sectorId;
+                    adminMapEditorState.selectedHotspotType = type === 'rect' ? 'rect' : 'marker';
+                    adminMapEditorState.draftRect = null;
+                    renderAdminMapEditor();
+                },
+                onDraftRectChange: (rect) => {
+                    adminMapEditorState.draftRect = rect || null;
                     renderAdminMapEditor();
                 },
                 onSaveMarker: async (sectorId, payload) => {
@@ -4817,11 +4848,33 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             y: payload?.y,
                             floorMapVersion: payload?.floorMapVersion
                         });
+                        adminMapEditorState.selectedHotspotType = 'marker';
+                        adminMapEditorState.draftRect = null;
                     } catch (e) {
                         alert(e.message || String(e));
                     }
                 },
-                onRemoveMarker: async (sectorId) => {
+                onSaveRect: async (sectorId, payload) => {
+                    try {
+                        await saveGymSectorRectHotspot({
+                            db,
+                            doc,
+                            setDoc,
+                            gymId: realUserGymId,
+                            sectorId,
+                            x: payload?.x,
+                            y: payload?.y,
+                            w: payload?.w,
+                            h: payload?.h,
+                            floorMapVersion: payload?.floorMapVersion
+                        });
+                        adminMapEditorState.selectedHotspotType = 'rect';
+                        adminMapEditorState.draftRect = null;
+                    } catch (e) {
+                        alert(e.message || String(e));
+                    }
+                },
+                onRemoveHotspot: async (sectorId) => {
                     try {
                         await removeGymSectorMarker({
                             db,
@@ -4830,6 +4883,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                             gymId: realUserGymId,
                             sectorId
                         });
+                        adminMapEditorState.draftRect = null;
                     } catch (e) {
                         alert(e.message || String(e));
                     }

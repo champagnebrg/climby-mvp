@@ -1,10 +1,31 @@
-import { getFloorMapVersion, getSectorMarkerPayload } from './map-model.js';
-import { isNormalizedMarker } from './map-validation.js';
+import { getFloorMapVersion, getSectorHotspotPayload, getSectorMarkerPayload } from './map-model.js';
+import { isNormalizedMarker, isNormalizedRect } from './map-validation.js';
 import { openSector3D } from './map-routing.js';
 import { getRenderedImageContentRect, toRectLog } from './map-render-geometry.js';
 
 const OVERLAY_SELECTOR = '[data-floor-map-overlay="1"]';
 const OVERLAY_CLEANUP_KEY = '__climbyUserMapOverlayCleanup';
+
+function clamp01(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.min(1, Math.max(0, numeric));
+}
+
+function normalizeRect(rect = {}) {
+  const x = clamp01(rect.x);
+  const y = clamp01(rect.y);
+  const right = clamp01(Number(rect.x) + Number(rect.w));
+  const bottom = clamp01(Number(rect.y) + Number(rect.h));
+  const left = Math.min(x, right);
+  const top = Math.min(y, bottom);
+  return {
+    x: left,
+    y: top,
+    w: Math.max(0, right - left),
+    h: Math.max(0, bottom - top),
+  };
+}
 
 function alignOverlayToImage({ overlayEl, containerEl, imageEl, debugLabel = 'user', extra = {} } = {}) {
   if (!overlayEl || !containerEl || !imageEl) return null;
@@ -75,27 +96,49 @@ export function renderUserGymFloorMapMarkers({
   if (!floorMapUrl) return;
 
   const floorMapVersion = getFloorMapVersion(gymData);
-  const validMarkers = sectors
+  const validHotspots = sectors
     .map((sector) => {
+      const hotspot = getSectorHotspotPayload(sector);
       const { marker, markerVersion } = getSectorMarkerPayload(sector);
-      console.info('[map-marker][user] marker data from DB', {
+      console.info('[map-marker][user] hotspot data from DB', {
         sectorId: sector?.sectorId,
+        hotspot,
         marker,
         markerVersion,
         floorMapVersion,
       });
+      const base = {
+        sectorId: sector?.sectorId,
+        sectorName: sector?.sectorName || sector?.name || sector?.sectorId || '',
+      };
+      if (!base.sectorId) return null;
+
+      if (hotspot?.type === 'rect') {
+        if (!isNormalizedRect(hotspot.rect)) return null;
+        if (!Number.isFinite(hotspot.version) || hotspot.version !== floorMapVersion) return null;
+        const rect = normalizeRect(hotspot.rect);
+        if (!rect.w || !rect.h) return null;
+        return {
+          ...base,
+          type: 'rect',
+          rect,
+        };
+      }
+
       if (!isNormalizedMarker(marker)) return null;
       if (!Number.isFinite(markerVersion) || markerVersion !== floorMapVersion) return null;
       return {
-        sectorId: sector?.sectorId,
-        sectorName: sector?.sectorName || sector?.name || sector?.sectorId || '',
-        x: Number(marker.x),
-        y: Number(marker.y),
+        ...base,
+        type: 'marker',
+        marker: {
+          x: Number(marker.x),
+          y: Number(marker.y),
+        }
       };
     })
     .filter((row) => !!row?.sectorId);
 
-  if (!validMarkers.length) return;
+  if (!validHotspots.length) return;
 
   const overlay = document.createElement('div');
   overlay.className = 'gym-floor-map-overlay';
@@ -105,34 +148,50 @@ export function renderUserGymFloorMapMarkers({
     containerEl: floorMapLinkEl,
     imageEl: floorMapEl,
     debugLabel: 'user',
-    getExtra: () => ({ gymId, floorMapVersion, markerCount: validMarkers.length })
+    getExtra: () => ({ gymId, floorMapVersion, hotspotCount: validHotspots.length })
   });
 
-  validMarkers.forEach((marker) => {
+  validHotspots.forEach((hotspot) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'gym-floor-map-marker';
-    button.style.left = `${marker.x * 100}%`;
-    button.style.top = `${marker.y * 100}%`;
-    console.info('[map-marker][user] render marker', {
-      sectorId: marker.sectorId,
-      normalized: { x: marker.x, y: marker.y },
-      rendered: {
-        leftPercent: `${marker.x * 100}%`,
-        topPercent: `${marker.y * 100}%`,
-      }
-    });
     const markerLabel = typeof markerLabelBuilder === 'function'
-      ? markerLabelBuilder(marker)
-      : marker.sectorName || marker.sectorId;
-    const safeLabel = String(markerLabel || marker.sectorId || '').trim() || marker.sectorId;
+      ? markerLabelBuilder(hotspot)
+      : hotspot.sectorName || hotspot.sectorId;
+    const safeLabel = String(markerLabel || hotspot.sectorId || '').trim() || hotspot.sectorId;
     button.title = safeLabel;
     button.setAttribute('aria-label', safeLabel);
-    button.dataset.sectorId = marker.sectorId;
+    button.dataset.sectorId = hotspot.sectorId;
+    button.dataset.hotspotType = hotspot.type;
+
+    if (hotspot.type === 'rect') {
+      button.className = 'gym-floor-map-hotspot gym-floor-map-hotspot-rect';
+      button.style.left = `${hotspot.rect.x * 100}%`;
+      button.style.top = `${hotspot.rect.y * 100}%`;
+      button.style.width = `${hotspot.rect.w * 100}%`;
+      button.style.height = `${hotspot.rect.h * 100}%`;
+      console.info('[map-marker][user] render rect hotspot', {
+        sectorId: hotspot.sectorId,
+        normalized: hotspot.rect,
+      });
+    } else {
+      const marker = hotspot.marker || {};
+      button.className = 'gym-floor-map-marker';
+      button.style.left = `${Number(marker.x) * 100}%`;
+      button.style.top = `${Number(marker.y) * 100}%`;
+      console.info('[map-marker][user] render marker', {
+        sectorId: hotspot.sectorId,
+        normalized: { x: Number(marker.x), y: Number(marker.y) },
+        rendered: {
+          leftPercent: `${Number(marker.x) * 100}%`,
+          topPercent: `${Number(marker.y) * 100}%`,
+        }
+      });
+    }
+
     button.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      openSector3D(open3DFn, gymId, marker.sectorId, { entryMode: 'map', initialVisibility: 'none' });
+      openSector3D(open3DFn, gymId, hotspot.sectorId, { entryMode: 'map', initialVisibility: 'none' });
     });
     overlay.appendChild(button);
   });
@@ -140,14 +199,17 @@ export function renderUserGymFloorMapMarkers({
   floorMapLinkEl.appendChild(overlay);
   window.requestAnimationFrame(() => {
     const overlayRect = overlay.getBoundingClientRect();
-    overlay.querySelectorAll('.gym-floor-map-marker').forEach((markerEl) => {
-      const left = Number.parseFloat(markerEl.style.left || '0');
-      const top = Number.parseFloat(markerEl.style.top || '0');
-      console.info('[map-marker][user] rendered marker final position', {
-        sectorId: markerEl.dataset.sectorId,
+    overlay.querySelectorAll('.gym-floor-map-marker, .gym-floor-map-hotspot-rect').forEach((hotspotEl) => {
+      const left = Number.parseFloat(hotspotEl.style.left || '0');
+      const top = Number.parseFloat(hotspotEl.style.top || '0');
+      console.info('[map-marker][user] rendered hotspot final position', {
+        sectorId: hotspotEl.dataset.sectorId,
+        hotspotType: hotspotEl.dataset.hotspotType || 'marker',
         rendered: {
-          leftPercent: markerEl.style.left,
-          topPercent: markerEl.style.top,
+          leftPercent: hotspotEl.style.left,
+          topPercent: hotspotEl.style.top,
+          widthPercent: hotspotEl.style.width || null,
+          heightPercent: hotspotEl.style.height || null,
           leftPx: Number(((left / 100) * overlayRect.width).toFixed(2)),
           topPx: Number(((top / 100) * overlayRect.height).toFixed(2)),
         },
