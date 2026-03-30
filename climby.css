@@ -299,6 +299,39 @@
             display: none;
         }
         model-viewer { width: 100%; height: 100%; }
+        .photo-viewer-stage {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+            background: #000;
+        }
+        .photo-viewer-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+        .photo-hotspots-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .photo-hotspot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            z-index: 5;
+        }
+        .photo-hotspot.photo-ghost {
+            border-style: dashed;
+        }
         .hotspot {
             width: 28px;
             height: 28px;

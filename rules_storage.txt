@@ -1,5 +1,4 @@
 rules_version = '2';
-rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
@@ -60,6 +59,19 @@ service firebase.storage {
       // scrittura: solo admin del gym + solo file .glb
       allow write: if fileName.matches('.*\\.glb$')
         && canManageGym(gymId);
+    }
+
+    // 🟣 FOTO SETTORE
+    match /sector-media/{gymId}/{sectorId}/{fileName} {
+
+      // lettura: utenti autenticati e verificati
+      allow read: if verifiedEmail() || isSuperadmin();
+
+      // scrittura: solo admin del gym + solo file immagine
+      allow write: if canManageGym(gymId)
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*')
+        && fileName.matches('photo\\.[A-Za-z0-9]+$');
     }
 
     // 🟢 MEDIA PALESTRA (logo + piantina)
