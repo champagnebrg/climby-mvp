@@ -4804,6 +4804,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     noFloorMap: currentLang === 'it' ? 'Carica prima una piantina per collegare i settori.' : 'Upload a floor map before linking sectors.',
                     clickToPlace: currentLang === 'it' ? 'Settore selezionato: clicca sulla piantina per salvare il marker.' : 'Sector selected: click the floor map to save the marker.',
                     dragToDraw: currentLang === 'it' ? 'Modalità area: clicca e trascina sulla piantina per disegnare il rettangolo.' : 'Area mode: click and drag on the floor map to draw a rectangle.',
+                    rectClickToCreate: currentLang === 'it' ? 'Clicca sulla piantina per creare l’area, poi trascinala o ridimensionala dagli angoli.' : 'Click the floor map to create the area, then drag it or resize it from the corners.',
                     selectSectorHint: currentLang === 'it' ? 'Seleziona un settore, poi clicca sulla piantina.' : 'Select a sector, then click the floor map.',
                     linked: currentLang === 'it' ? 'Collegato' : 'Linked',
                     notLinked: currentLang === 'it' ? 'Non collegato' : 'Not linked',
@@ -4813,7 +4814,9 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     typeLabel: currentLang === 'it' ? 'Tipo hotspot' : 'Hotspot type',
                     typeMarker: currentLang === 'it' ? 'Marker' : 'Marker',
                     typeRect: currentLang === 'it' ? 'Area rettangolare' : 'Rect area',
-                    saveRect: currentLang === 'it' ? 'Salva area' : 'Save area'
+                    saveRect: currentLang === 'it' ? 'Salva area' : 'Save area',
+                    rectDragArea: currentLang === 'it' ? 'Trascina l’area per spostarla' : 'Drag area to move',
+                    rectResizeHandle: currentLang === 'it' ? 'Trascina l’angolo per ridimensionare' : 'Drag corner to resize'
                 },
                 onSelectSector: (sectorId) => {
                     adminMapEditorState.selectedSectorId = sectorId;
