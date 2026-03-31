@@ -303,6 +303,78 @@ service cloud.firestore {
       allow delete: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
     }
 
+    match /challengeTemplates/{templateId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create, update, delete: if isSuperadmin();
+    }
+
+    match /challengeScreenConfig/{configId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create, update, delete: if isSuperadmin();
+    }
+
+    match /challenges/{challengeId} {
+      function isPublishedChallenge(docData) {
+        return docData.status == "published" && docData.isActive == true;
+      }
+
+      function requestPointsTierAllowed() {
+        return request.resource.data.pointsTier in ["small", "medium", "large"];
+      }
+
+      function isGymAdminChallengeWrite() {
+        return isGymAdminRole()
+          && request.resource.data.scope == "gym"
+          && request.resource.data.ownerType == "gym_admin"
+          && request.resource.data.gymId is string
+          && managesGym(request.resource.data.gymId)
+          && requestPointsTierAllowed()
+          && request.resource.data.pointsValue == null
+          && request.resource.data.sponsorId == null;
+      }
+
+      allow read: if isSuperadmin()
+        || canManageGym(resource.data.gymId)
+        || (verifiedEmail() && isPublishedChallenge(resource.data) && (
+          resource.data.scope != "gym"
+          || resource.data.gymId == null
+          || exists(/databases/$(database)/documents/gyms/$(resource.data.gymId)/members/$(request.auth.uid))
+          || managesGym(resource.data.gymId)
+        ));
+      allow create: if isSuperadmin() || isGymAdminChallengeWrite();
+      allow update, delete: if isSuperadmin() || (
+        isGymAdminChallengeWrite()
+        && resource.data.scope == "gym"
+        && resource.data.ownerType == "gym_admin"
+        && resource.data.gymId == request.resource.data.gymId
+      );
+    }
+
+    match /challengeAssignments/{assignmentId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create, update, delete: if isSuperadmin();
+    }
+
+    match /rewards/{rewardId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create, update, delete: if isSuperadmin();
+    }
+
+    match /sponsors/{sponsorId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create, update, delete: if isSuperadmin();
+    }
+
+    match /userChallengeProgress/{docId} {
+      allow read: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
+      allow write: if isSuperadmin();
+    }
+
+    match /pointsLedger/{entryId} {
+      allow read: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
+      allow write: if isSuperadmin();
+    }
+
     match /analytics/superadmin_kpis {
       allow read: if isSuperadmin();
       allow write: if false;
