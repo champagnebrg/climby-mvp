@@ -239,6 +239,9 @@ export function buildChallengePayload(input = {}, context = {}) {
 
 export function normalizeChallengeScreenConfig(input = {}) {
   const sections = Array.isArray(input.sections) ? input.sections : [];
+  const season = input.season || {};
+  const featured = input.featured || {};
+  const rewards = input.rewards || {};
   return {
     title: normalizeText(input.title) || 'Sfide',
     subtitle: normalizeNullableText(input.subtitle),
@@ -257,6 +260,24 @@ export function normalizeChallengeScreenConfig(input = {}) {
     featuredChallengeIds: Array.isArray(input.featuredChallengeIds)
       ? input.featuredChallengeIds.map((v) => normalizeText(v)).filter(Boolean)
       : [],
+    season: {
+      seasonId: normalizeText(season.seasonId) || normalizeText(input.seasonId) || 'current',
+      label: normalizeText(season.label) || 'Stagione attiva',
+      startsAt: toIsoOrNull(season.startsAt || input.seasonStartsAt),
+      endsAt: toIsoOrNull(season.endsAt || input.seasonEndsAt),
+      isActive: season.isActive !== false,
+    },
+    featured: {
+      mode: normalizeText(featured.mode) || 'manual',
+      maxItems: Math.max(1, Number(featured.maxItems) || 6),
+      durationDays: Math.max(1, Number(featured.durationDays) || 14),
+    },
+    rewards: {
+      badgeLabel: normalizeText(rewards.badgeLabel) || 'Badge Challenger',
+      badgeType: normalizeText(rewards.badgeType) || 'standard',
+      profileVisibility: rewards.profileVisibility !== false,
+      socialVisibility: rewards.socialVisibility !== false,
+    },
     showEmptySections: input.showEmptySections !== false,
     updatedAt: toIsoOrNull(input.updatedAt),
     updatedBy: normalizeNullableText(input.updatedBy),

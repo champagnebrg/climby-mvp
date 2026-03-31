@@ -65,4 +65,6 @@ test('screen config keeps guided flags', async () => {
 
   assert.equal(row.showEmptySections, false);
   assert.equal(row.sections[0].id, 'weekly');
+  assert.equal(row.season.isActive, true);
+  assert.equal(row.rewards.badgeLabel, 'Badge Challenger');
 });
