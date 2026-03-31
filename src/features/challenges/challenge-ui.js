@@ -9,7 +9,6 @@ const TEMPLATE_GUIDE = Object.freeze({
 });
 
 const FRIENDLY_SECTIONS = Object.freeze([
-  { id: 'featured', label: 'In evidenza' },
   { id: 'weekly', label: 'Settimanali' },
   { id: 'monthly', label: 'Mensili' },
   { id: 'local_gym', label: 'Dalle tue palestre' },
@@ -139,23 +138,17 @@ export function computeChallengeProgress(challenge = {}, metricMap = {}) {
 
 function sectionChallenges(section = {}, challenges = [], screenConfig = {}) {
   const showEmpty = screenConfig.showEmptySections !== false;
-  let rows = challenges;
-  if (section.featuredOnly) {
-    const featured = new Set((screenConfig.featuredChallengeIds || []).concat(challenges.filter((c) => c.isFeatured).map((c) => c.id)));
-    rows = challenges.filter((row) => featured.has(row.id));
-  } else {
-    rows = challenges.filter((row) => {
-      const displaySectionIds = Array.isArray(row.displaySectionIds) ? row.displaySectionIds : [];
-      if (section.id === 'local_gym') {
-        const gyms = Array.isArray(screenConfig.userFavouriteGymIds) ? screenConfig.userFavouriteGymIds : [];
-        if (!gyms.length) return false;
-        const rowGymIds = Array.isArray(row.gymIds) ? row.gymIds : [];
-        const linkedGymIds = row.gymId ? rowGymIds.concat([row.gymId]) : rowGymIds;
-        if (!linkedGymIds.some((gymId) => gyms.includes(gymId))) return false;
-      }
-      return displaySectionIds.includes(section.id);
-    });
-  }
+  const rows = challenges.filter((row) => {
+    const displaySectionIds = Array.isArray(row.displaySectionIds) ? row.displaySectionIds : [];
+    if (section.id === 'local_gym') {
+      const gyms = Array.isArray(screenConfig.userFavouriteGymIds) ? screenConfig.userFavouriteGymIds : [];
+      if (!gyms.length) return false;
+      const rowGymIds = Array.isArray(row.gymIds) ? row.gymIds : [];
+      const linkedGymIds = row.gymId ? rowGymIds.concat([row.gymId]) : rowGymIds;
+      if (!linkedGymIds.some((gymId) => gyms.includes(gymId))) return false;
+    }
+    return displaySectionIds.includes(section.id);
+  });
   return showEmpty ? rows : rows.filter(Boolean);
 }
 
@@ -201,6 +194,31 @@ function computeSeasonSummary({ seasonalStats = {}, levelConfig = {} } = {}) {
   const ceil = Number(next?.pointsRequired || floor);
   const progressPct = next && ceil > floor ? Math.round(((totalPoints - floor) / (ceil - floor)) * 100) : 100;
   return { totalPoints, current, next, neededToNext, progressPct };
+}
+
+function computeSeasonStatus(season = {}) {
+  const label = season?.label?.trim() || 'Stagione attiva';
+  const endsAt = season?.endsAt || null;
+  if (!endsAt) return { label, endLabel: null };
+  const endDate = new Date(endsAt);
+  if (Number.isNaN(endDate.getTime())) return { label, endLabel: null };
+  const now = new Date();
+  const ms = endDate.getTime() - now.getTime();
+  const days = Math.ceil(ms / (1000 * 60 * 60 * 24));
+  const absolute = endDate.toLocaleDateString('it-IT');
+  if (days > 0) return { label, endLabel: `Termina tra ${days} giorni · ${absolute}` };
+  if (days === 0) return { label, endLabel: `Termina oggi · ${absolute}` };
+  return { label, endLabel: `Terminata il ${absolute}` };
+}
+
+function setFieldValue(mountEl, selector, value) {
+  const el = mountEl.querySelector(selector);
+  if (!el) return;
+  if (el.type === 'checkbox') {
+    el.checked = Boolean(value);
+    return;
+  }
+  el.value = value ?? '';
 }
 
 function buildGuidedPayload({ mountEl, role, gymContextId }) {
@@ -328,10 +346,11 @@ export function renderChallengesHubDynamic(options = {}) {
   const { mountEl, challenges = [], screenConfig = {}, metricMap = {}, seasonalStats = {}, levelConfig = {}, favouriteGymIds = [] } = options;
   if (!mountEl) return;
 
-  const activeSections = (screenConfig.sections || []).filter((section) => section.isActive !== false);
-  const featuredIds = new Set(screenConfig.featuredChallengeIds || []);
+  const allowedSections = new Set(FRIENDLY_SECTIONS.map((row) => row.id));
+  const activeSections = (screenConfig.sections || []).filter((section) => section.isActive !== false && allowedSections.has(section.id));
   const showEmptySections = screenConfig.showEmptySections !== false;
   const seasonSummary = computeSeasonSummary({ seasonalStats, levelConfig });
+  const seasonStatus = computeSeasonStatus(screenConfig.season || {});
 
   const sectionsHtml = activeSections
     .map((section) => {
@@ -341,14 +360,12 @@ export function renderChallengesHubDynamic(options = {}) {
         const progress = computeChallengeProgress(challenge, metricMap);
         const reward = rewardText(challenge, progress);
         const badge = challenge?.categoryLabel || scopeLabel(challenge.scope);
-        const isFeatured = featuredIds.has(challenge.id) || challenge.isFeatured;
         return `
           <article class="challenge-hub-card ${progress.completed ? 'highlight' : ''}">
             <div class="challenge-hub-head">
               <div>
                 <div class="challenge-chip-row">
                   <span class="challenge-hub-badge">${escapeHtml(badge)}</span>
-                  ${isFeatured ? '<span class="challenge-hub-badge">⭐ In evidenza</span>' : ''}
                 </div>
                 <b>${escapeHtml(challenge.title || 'Challenge')}</b>
                 <div class="challenge-hub-desc">${escapeHtml(challenge.description || TEMPLATE_GUIDE[challenge.templateType]?.description || 'Raggiungi il traguardo e sblocca il premio.')}</div>
@@ -388,6 +405,10 @@ export function renderChallengesHubDynamic(options = {}) {
         <div><b>Livello ${seasonSummary.current?.level || 1}</b><small>Stato attuale</small></div>
         <div><b>${seasonSummary.next ? `${seasonSummary.neededToNext} CP` : 'Max livello'}</b><small>${seasonSummary.next ? `Al livello ${seasonSummary.next.level}` : 'Progressione completata'}</small></div>
       </div>
+      <div class="challenge-hub-meta" style="margin-top:8px;">
+        <span><b>Stagione:</b> ${escapeHtml(seasonStatus.label)}</span>
+        <span>${escapeHtml(seasonStatus.endLabel || 'Durata non impostata')}</span>
+      </div>
       <div class="challenge-progress"><span style="width:${seasonSummary.progressPct}%"></span></div>
     </div>
     ${sectionsHtml || '<p class="profile-empty">Nessuna challenge attiva.</p>'}
@@ -399,15 +420,20 @@ export function renderSuperadminChallengeManager(options = {}) {
   if (!mountEl) return;
 
   const gymOptions = gyms.map((gym) => `<option value="${escapeHtml(gym.id)}">${escapeHtml(gym.name || gym.id)}</option>`).join('');
-  const sections = Array.isArray(screenConfig.sections) ? screenConfig.sections : FRIENDLY_SECTIONS.map((row, idx) => ({ ...row, order: idx, isActive: true }));
+  const allowedSections = new Set(FRIENDLY_SECTIONS.map((row) => row.id));
+  const sections = Array.isArray(screenConfig.sections)
+    ? screenConfig.sections.filter((row) => allowedSections.has(row.id))
+    : FRIENDLY_SECTIONS.map((row, idx) => ({ ...row, order: idx, isActive: true }));
+  const normalizedSections = sections.length ? sections : FRIENDLY_SECTIONS.map((row, idx) => ({ ...row, order: idx, isActive: true }));
   const season = screenConfig.season || {};
-  const featured = screenConfig.featured || {};
   const rewards = screenConfig.rewards || {};
 
   mountEl.innerHTML = `
     ${renderManagerCard({
-      title: 'Sfide · Nuova challenge (guidata)',
+      title: 'Sfide · Crea / modifica challenge (guidata)',
       bodyHtml: `
+        <p class="profile-subtitle">Usa il pulsante “Modifica” dalla lista per precompilare tutti i campi. Il salvataggio aggiorna la stessa challenge.</p>
+        <input data-field="editingChallengeId" type="hidden" value="">
         <div class="challenge-admin-form-grid">
           <label>Titolo prodotto<input data-field="title" placeholder="Es. Sprint di primavera"></label>
           <label>Descrizione breve<textarea data-field="description" placeholder="Cosa deve fare l’utente e perché è interessante"></textarea></label>
@@ -463,7 +489,10 @@ export function renderSuperadminChallengeManager(options = {}) {
             `).join('')}
           </div>
         </div>
-        <button id="sa-challenge-save" class="btn-main" style="margin-top:8px;">Salva challenge</button>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="sa-challenge-save" class="btn-main">Crea challenge</button>
+          <button id="sa-challenge-cancel-edit" class="btn-main" type="button" style="display:none;">Annulla modifica</button>
+        </div>
       `,
     })}
     ${renderManagerCard({
@@ -471,39 +500,54 @@ export function renderSuperadminChallengeManager(options = {}) {
       bodyHtml: `<div class="challenge-admin-list">${challenges.map((c) => challengeRow(c, 'superadmin')).join('') || '<p class="profile-empty">Nessuna challenge.</p>'}</div>`,
     })}
     ${renderManagerCard({
-      title: 'Configurazione centrale · Stagione, sezioni, featured, reward',
+      title: 'Configurazione centrale · guidata',
       bodyHtml: `
         <div class="challenge-admin-form-grid">
           <label>Titolo pagina<input id="sa-screen-title" value="${escapeHtml(screenConfig.title || 'Le tue sfide')}"></label>
           <label>Sottotitolo (opzionale)<input id="sa-screen-subtitle" value="${escapeHtml(screenConfig.subtitle || '')}"></label>
           <label><input id="sa-screen-show-empty" type="checkbox" ${screenConfig.showEmptySections === false ? 'checked' : ''}> Nascondi le sezioni vuote</label>
-          <label>Stagione (nome)<input id="sa-season-label" value="${escapeHtml(season.label || 'Stagione attiva')}"></label>
-          <label>Inizio stagione<input id="sa-season-start" type="date" value="${escapeHtml((season.startsAt || '').slice(0,10))}"></label>
-          <label>Fine stagione<input id="sa-season-end" type="date" value="${escapeHtml((season.endsAt || '').slice(0,10))}"></label>
-          <label><input id="sa-season-active" type="checkbox" ${season.isActive !== false ? 'checked' : ''}> Stagione attiva</label>
-          <label>Featured: durata (giorni)<input id="sa-featured-days" type="number" min="1" value="${Number(featured.durationDays || 14)}"></label>
-          <label>Featured: max card<input id="sa-featured-max" type="number" min="1" value="${Number(featured.maxItems || 6)}"></label>
-          <label>Badge reward globale<input id="sa-reward-badge-label" value="${escapeHtml(rewards.badgeLabel || 'Badge Challenger')}"></label>
-          <label>Tipo badge<input id="sa-reward-badge-type" value="${escapeHtml(rewards.badgeType || 'standard')}"></label>
-          <label><input id="sa-reward-profile" type="checkbox" ${rewards.profileVisibility !== false ? 'checked' : ''}> Visibile nel profilo</label>
-          <label><input id="sa-reward-social" type="checkbox" ${rewards.socialVisibility !== false ? 'checked' : ''}> Visibile nei post social</label>
         </div>
-        <div class="challenge-screen-sections-editor">
-          ${sections.map((section, idx) => `
-            <div class="challenge-screen-section-row" data-section-row data-default-id="${escapeHtml(section.id)}">
-              <input data-section-title value="${escapeHtml(section.title || section.label || section.id)}" placeholder="Titolo sezione">
-              <select data-section-id>
-                ${FRIENDLY_SECTIONS.map((opt) => `<option value="${opt.id}" ${opt.id === section.id ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`).join('')}
+        <div class="profile-section-card" style="margin-top:8px;">
+          <b>A) Stagione</b>
+          <p class="profile-subtitle">Definisce il ciclo CP visibile agli utenti e i riferimenti temporali della stagione corrente.</p>
+          <div class="challenge-admin-form-grid">
+            <label>Nome stagione<input id="sa-season-label" value="${escapeHtml(season.label || 'Stagione attiva')}"></label>
+            <label>Data inizio<input id="sa-season-start" type="date" value="${escapeHtml((season.startsAt || '').slice(0,10))}"></label>
+            <label>Data fine<input id="sa-season-end" type="date" value="${escapeHtml((season.endsAt || '').slice(0,10))}"></label>
+            <label><input id="sa-season-active" type="checkbox" ${season.isActive !== false ? 'checked' : ''}> Stagione attiva</label>
+          </div>
+        </div>
+        <div class="profile-section-card" style="margin-top:8px;">
+          <b>B) Premio standard</b>
+          <p class="profile-subtitle">Badge base usato quando una challenge non definisce un premio specifico.</p>
+          <div class="challenge-admin-form-grid">
+            <label>Nome badge<input id="sa-reward-badge-label" value="${escapeHtml(rewards.badgeLabel || 'Badge Challenger')}"></label>
+            <label>Stile badge
+              <select id="sa-reward-badge-type">
+                ${['standard', 'rare', 'elite'].map((type) => `<option value="${type}" ${String(rewards.badgeType || 'standard') === type ? 'selected' : ''}>${type}</option>`).join('')}
               </select>
-              <label><input type="checkbox" data-section-active ${section.isActive !== false ? 'checked' : ''}> Attiva</label>
-              <label><input type="checkbox" data-section-featured ${section.featuredOnly ? 'checked' : ''}> Mostra solo sfide in evidenza</label>
-              <input data-section-order type="number" value="${Number.isFinite(Number(section.order)) ? Number(section.order) : idx}" min="0" style="max-width:100px;">
-            </div>
-          `).join('')}
+            </label>
+            <label><input id="sa-reward-profile" type="checkbox" ${rewards.profileVisibility !== false ? 'checked' : ''}> Visibile nel profilo</label>
+            <label><input id="sa-reward-social" type="checkbox" ${rewards.socialVisibility !== false ? 'checked' : ''}> Visibile nei post social</label>
+          </div>
+          <div class="challenge-hub-meta"><span>Preview badge</span><span>🏅 ${escapeHtml(rewards.badgeLabel || 'Badge Challenger')} · ${escapeHtml(rewards.badgeType || 'standard')}</span></div>
         </div>
-        <label style="display:block; margin-top:8px;">Challenge in evidenza (ID separati da virgola)
-          <input id="sa-screen-featured" value="${escapeHtml((screenConfig.featuredChallengeIds || []).join(', '))}">
-        </label>
+        <div class="profile-section-card" style="margin-top:8px;">
+          <b>C) Sezioni challenge</b>
+          <p class="profile-subtitle">Gestisci solo le sezioni prodotto standard visibili lato utente.</p>
+          <div class="challenge-screen-sections-editor">
+            ${normalizedSections.map((section, idx) => `
+              <div class="challenge-screen-section-row" data-section-row data-default-id="${escapeHtml(section.id)}">
+                <input data-section-title value="${escapeHtml(section.title || section.label || section.id)}" placeholder="Titolo sezione">
+                <select data-section-id>
+                  ${FRIENDLY_SECTIONS.map((opt) => `<option value="${opt.id}" ${opt.id === section.id ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`).join('')}
+                </select>
+                <label><input type="checkbox" data-section-active ${section.isActive !== false ? 'checked' : ''}> Attiva</label>
+                <input data-section-order type="number" value="${Number.isFinite(Number(section.order)) ? Number(section.order) : idx}" min="0" style="max-width:100px;">
+              </div>
+            `).join('')}
+          </div>
+        </div>
         <button id="sa-screen-save" class="btn-main" style="margin-top:8px;">Salva configurazione centrale</button>
       `,
     })}
@@ -520,16 +564,70 @@ export function renderSuperadminChallengeManager(options = {}) {
 
   bindGuidedFormVisibility(mountEl);
 
+  const resetEditState = () => {
+    setFieldValue(mountEl, '[data-field="editingChallengeId"]', '');
+    const cancelBtn = mountEl.querySelector('#sa-challenge-cancel-edit');
+    const save = mountEl.querySelector('#sa-challenge-save');
+    if (save) save.textContent = 'Crea challenge';
+    if (cancelBtn) cancelBtn.style.display = 'none';
+  };
+
+  const startEditChallenge = (challengeId) => {
+    const source = challenges.find((row) => row.id === challengeId);
+    if (!source) return;
+    setFieldValue(mountEl, '[data-field="editingChallengeId"]', source.id || '');
+    setFieldValue(mountEl, '[data-field="title"]', source.title || '');
+    setFieldValue(mountEl, '[data-field="description"]', source.description || '');
+    setFieldValue(mountEl, '[data-field="scope"]', source.scope || 'global');
+    setFieldValue(mountEl, '[data-field="templateType"]', source.templateType || 'weekly_routes');
+    setFieldValue(mountEl, '[data-field="lifecycleStatus"]', source.lifecycleStatus || source.status || 'draft');
+    setFieldValue(mountEl, '[data-field="visibility"]', source.visibility || 'all_authenticated');
+    setFieldValue(mountEl, '[data-field="challengeKind"]', source.challengeKind || 'standard');
+    setFieldValue(mountEl, '[data-field="rewardLabel"]', source.reward?.label || '');
+    setFieldValue(mountEl, '[data-field="progressMode"]', source.progressMode || 'single_target');
+    setFieldValue(mountEl, '[data-field="target"]', source?.rules?.target || '');
+    setFieldValue(mountEl, '[data-field="displaySectionId"]', source?.displaySectionIds?.[0] || 'weekly');
+    setFieldValue(mountEl, '[data-field="pointsTier"]', source.pointsTier || 'small');
+    setFieldValue(mountEl, '[data-field="gymId"]', source.gymId || source?.gymIds?.[0] || '');
+    setFieldValue(mountEl, '[data-field="sponsorId"]', source.sponsorId || '');
+    const sourceTiers = Array.isArray(source?.progression?.tiers) ? source.progression.tiers : [];
+    DEFAULT_TIER_ROWS.forEach((tier) => {
+      const row = sourceTiers.find((entry) => entry.id === tier.id) || {};
+      setFieldValue(mountEl, `[data-tier-threshold="${tier.id}"]`, row.threshold || tier.threshold);
+      setFieldValue(mountEl, `[data-tier-points="${tier.id}"]`, row.pointsValue ?? tier.pointsValue);
+      setFieldValue(mountEl, `[data-tier-reward="${tier.id}"]`, row.rewardLabel || '');
+    });
+    const cancelBtn = mountEl.querySelector('#sa-challenge-cancel-edit');
+    const save = mountEl.querySelector('#sa-challenge-save');
+    if (save) save.textContent = 'Aggiorna challenge';
+    if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+    bindGuidedFormVisibility(mountEl);
+  };
+
   const saveBtn = mountEl.querySelector('#sa-challenge-save');
   if (saveBtn) {
     saveBtn.onclick = async () => {
       if (typeof onSaveChallenge !== 'function') return;
       const payload = buildGuidedPayload({ mountEl, role: 'superadmin' });
+      const editingId = mountEl.querySelector('[data-field="editingChallengeId"]')?.value || null;
+      if (editingId) payload.id = editingId;
       await onSaveChallenge(payload);
+      resetEditState();
     };
   }
 
-  attachChallengeActions({ mountEl, onEditChallenge, onLifecycleAction, onDuplicateChallenge });
+  const cancelEditBtn = mountEl.querySelector('#sa-challenge-cancel-edit');
+  if (cancelEditBtn) cancelEditBtn.onclick = resetEditState;
+
+  attachChallengeActions({
+    mountEl,
+    onEditChallenge: async (challengeId) => {
+      startEditChallenge(challengeId);
+      if (typeof onEditChallenge === 'function') await onEditChallenge(challengeId);
+    },
+    onLifecycleAction,
+    onDuplicateChallenge,
+  });
 
   const gymViewSelect = mountEl.querySelector('#sa-gym-view-id');
   const gymViewMount = mountEl.querySelector('#sa-gym-view-mount');
@@ -560,22 +658,16 @@ export function renderSuperadminChallengeManager(options = {}) {
       if (typeof onSaveScreenConfig !== 'function') return;
       const title = mountEl.querySelector('#sa-screen-title')?.value || 'Le tue sfide';
       const subtitle = mountEl.querySelector('#sa-screen-subtitle')?.value?.trim() || null;
-      const featuredChallengeIds = (mountEl.querySelector('#sa-screen-featured')?.value || '')
-        .split(',')
-        .map((v) => v.trim())
-        .filter(Boolean);
       const showEmptySections = !Boolean(mountEl.querySelector('#sa-screen-show-empty')?.checked);
       const sectionsPayload = Array.from(mountEl.querySelectorAll('[data-section-row]')).map((row, idx) => ({
         id: row.querySelector('[data-section-id]')?.value || row.getAttribute('data-default-id') || `section_${idx + 1}`,
         title: row.querySelector('[data-section-title]')?.value || `Sezione ${idx + 1}`,
         order: Number(row.querySelector('[data-section-order]')?.value || idx),
         isActive: Boolean(row.querySelector('[data-section-active]')?.checked),
-        featuredOnly: Boolean(row.querySelector('[data-section-featured]')?.checked),
       }));
       await onSaveScreenConfig({
         title,
         subtitle,
-        featuredChallengeIds,
         showEmptySections,
         sections: sectionsPayload,
         season: {
@@ -583,10 +675,6 @@ export function renderSuperadminChallengeManager(options = {}) {
           startsAt: mountEl.querySelector('#sa-season-start')?.value || null,
           endsAt: mountEl.querySelector('#sa-season-end')?.value || null,
           isActive: Boolean(mountEl.querySelector('#sa-season-active')?.checked),
-        },
-        featured: {
-          durationDays: Number(mountEl.querySelector('#sa-featured-days')?.value || 14),
-          maxItems: Number(mountEl.querySelector('#sa-featured-max')?.value || 6),
         },
         rewards: {
           badgeLabel: mountEl.querySelector('#sa-reward-badge-label')?.value?.trim() || 'Badge Challenger',
@@ -605,9 +693,12 @@ export function renderGymAdminChallengeManager(options = {}) {
 
   mountEl.innerHTML = `
     ${renderManagerCard({
-      title: 'Sfide palestra · Nuova challenge',
+      title: 'Sfide palestra · gestione operativa',
       bodyHtml: `
-        <p class="profile-subtitle">Crea una challenge locale con linguaggio prodotto e obiettivi chiari.</p>
+        <p class="profile-subtitle">Crea o modifica challenge locali della tua palestra con un form guidato.</p>
+        <input data-field="editingChallengeId" type="hidden" value="">
+        <button id="gym-challenge-open-create" class="btn-main" type="button">Crea sfida</button>
+        <div id="gym-challenge-form-wrap" style="display:none; margin-top:8px;">
         <div class="challenge-admin-form-grid">
           <label>Titolo challenge<input data-field="title" placeholder="Es. Weekend Crusher"></label>
           <label>Descrizione breve<textarea data-field="description" placeholder="Descrivi obiettivo e vantaggio"></textarea></label>
@@ -626,10 +717,18 @@ export function renderGymAdminChallengeManager(options = {}) {
             <select data-field="lifecycleStatus"><option value="draft">Bozza</option><option value="published">Pubblica</option></select>
           </label>
           <div data-wrap="tiers" class="challenge-tiers-editor" style="display:none;">
-            ${DEFAULT_TIER_ROWS.map((tier) => `<label>${tier.label} soglia<input data-tier-threshold="${tier.id}" type="number" min="1" value="${tier.threshold}"></label>`).join('')}
+            ${DEFAULT_TIER_ROWS.map((tier) => `
+              <label>${tier.label} soglia<input data-tier-threshold="${tier.id}" type="number" min="1" value="${tier.threshold}"></label>
+              <label>${tier.label} punti<input data-tier-points="${tier.id}" type="number" min="0" value="${tier.pointsValue || 0}"></label>
+              <label>${tier.label} reward<input data-tier-reward="${tier.id}" placeholder="Reward opzionale"></label>
+            `).join('')}
           </div>
         </div>
-        <button id="gym-challenge-save" class="btn-main" style="margin-top:8px;">Salva sfida palestra</button>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button id="gym-challenge-save" class="btn-main">Salva sfida palestra</button>
+          <button id="gym-challenge-cancel-edit" class="btn-main" type="button">Chiudi</button>
+        </div>
+        </div>
       `,
     })}
     ${renderManagerCard({
@@ -640,14 +739,64 @@ export function renderGymAdminChallengeManager(options = {}) {
 
   bindGuidedFormVisibility(mountEl);
 
+  const formWrap = mountEl.querySelector('#gym-challenge-form-wrap');
+  const createBtn = mountEl.querySelector('#gym-challenge-open-create');
+  const cancelBtn = mountEl.querySelector('#gym-challenge-cancel-edit');
   const saveBtn = mountEl.querySelector('#gym-challenge-save');
+
+  const openForm = () => {
+    if (formWrap) formWrap.style.display = 'block';
+  };
+  const closeForm = () => {
+    if (formWrap) formWrap.style.display = 'none';
+    setFieldValue(mountEl, '[data-field="editingChallengeId"]', '');
+    if (saveBtn) saveBtn.textContent = 'Salva sfida palestra';
+  };
+  const startEditChallenge = (challengeId) => {
+    const source = challenges.find((row) => row.id === challengeId);
+    if (!source) return;
+    openForm();
+    setFieldValue(mountEl, '[data-field="editingChallengeId"]', source.id || '');
+    setFieldValue(mountEl, '[data-field="title"]', source.title || '');
+    setFieldValue(mountEl, '[data-field="description"]', source.description || '');
+    setFieldValue(mountEl, '[data-field="templateType"]', source.templateType || 'gym_local');
+    setFieldValue(mountEl, '[data-field="progressMode"]', source.progressMode || 'single_target');
+    setFieldValue(mountEl, '[data-field="target"]', source?.rules?.target || '');
+    setFieldValue(mountEl, '[data-field="displaySectionId"]', source?.displaySectionIds?.[0] || 'local_gym');
+    setFieldValue(mountEl, '[data-field="rewardLabel"]', source.reward?.label || '');
+    setFieldValue(mountEl, '[data-field="lifecycleStatus"]', source.lifecycleStatus || source.status || 'draft');
+    const sourceTiers = Array.isArray(source?.progression?.tiers) ? source.progression.tiers : [];
+    DEFAULT_TIER_ROWS.forEach((tier) => {
+      const row = sourceTiers.find((entry) => entry.id === tier.id) || {};
+      setFieldValue(mountEl, `[data-tier-threshold="${tier.id}"]`, row.threshold || tier.threshold);
+      setFieldValue(mountEl, `[data-tier-points="${tier.id}"]`, row.pointsValue ?? tier.pointsValue);
+      setFieldValue(mountEl, `[data-tier-reward="${tier.id}"]`, row.rewardLabel || '');
+    });
+    if (saveBtn) saveBtn.textContent = 'Aggiorna sfida palestra';
+    bindGuidedFormVisibility(mountEl);
+  };
+
+  if (createBtn) createBtn.onclick = openForm;
+  if (cancelBtn) cancelBtn.onclick = closeForm;
+
   if (saveBtn) {
     saveBtn.onclick = async () => {
       if (typeof onSave !== 'function') return;
       const payload = buildGuidedPayload({ mountEl, role: 'gym_admin', gymContextId: gymId });
+      const editingId = mountEl.querySelector('[data-field="editingChallengeId"]')?.value || null;
+      if (editingId) payload.id = editingId;
       await onSave(payload);
+      closeForm();
     };
   }
 
-  attachChallengeActions({ mountEl, onEditChallenge, onLifecycleAction, onDuplicateChallenge });
+  attachChallengeActions({
+    mountEl,
+    onEditChallenge: async (challengeId) => {
+      startEditChallenge(challengeId);
+      if (typeof onEditChallenge === 'function') await onEditChallenge(challengeId);
+    },
+    onLifecycleAction,
+    onDuplicateChallenge,
+  });
 }

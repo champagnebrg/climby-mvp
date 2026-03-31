@@ -58,7 +58,6 @@ export const TEMPLATE_TYPES = Object.freeze([
 ]);
 
 export const DISPLAY_SECTIONS = Object.freeze([
-  'featured',
   'weekly',
   'monthly',
   'exploration',
@@ -188,8 +187,6 @@ export function normalizeChallengeRecord(input = {}) {
     sponsorId: normalizeNullableText(input.sponsorId),
     visibility: normalizeText(input.visibility) || 'all_authenticated',
     isActive: lifecycleStatus === CHALLENGE_STATUS_PUBLISHED,
-    isFeatured: Boolean(input.isFeatured),
-    featuredOrder: Number.isFinite(Number(input.featuredOrder)) ? Number(input.featuredOrder) : 999,
     displaySectionIds: normalizeDisplaySectionIds(input.displaySectionIds, validTemplate),
     durationPreset: DURATION_PRESETS.includes(normalizeText(input.durationPreset)) ? normalizeText(input.durationPreset) : (preset?.durationPreset || '7d'),
     startsAt: toIsoOrNull(input.startsAt),
@@ -238,9 +235,10 @@ export function buildChallengePayload(input = {}, context = {}) {
 }
 
 export function normalizeChallengeScreenConfig(input = {}) {
-  const sections = Array.isArray(input.sections) ? input.sections : [];
+  const sections = Array.isArray(input.sections)
+    ? input.sections.filter((item) => DISPLAY_SECTIONS.includes(normalizeText(item?.id)))
+    : [];
   const season = input.season || {};
-  const featured = input.featured || {};
   const rewards = input.rewards || {};
   return {
     title: normalizeText(input.title) || 'Sfide',
@@ -252,25 +250,16 @@ export function normalizeChallengeScreenConfig(input = {}) {
         id: normalizeText(item?.id) || `section_${index + 1}`,
         title: normalizeText(item?.title) || `Section ${index + 1}`,
         subtitle: normalizeNullableText(item?.subtitle),
-        featuredOnly: Boolean(item?.featuredOnly),
         order: Number.isFinite(Number(item?.order)) ? Number(item?.order) : index,
         isActive: item?.isActive !== false,
       }))
       .sort((a, b) => a.order - b.order),
-    featuredChallengeIds: Array.isArray(input.featuredChallengeIds)
-      ? input.featuredChallengeIds.map((v) => normalizeText(v)).filter(Boolean)
-      : [],
     season: {
       seasonId: normalizeText(season.seasonId) || normalizeText(input.seasonId) || 'current',
       label: normalizeText(season.label) || 'Stagione attiva',
       startsAt: toIsoOrNull(season.startsAt || input.seasonStartsAt),
       endsAt: toIsoOrNull(season.endsAt || input.seasonEndsAt),
       isActive: season.isActive !== false,
-    },
-    featured: {
-      mode: normalizeText(featured.mode) || 'manual',
-      maxItems: Math.max(1, Number(featured.maxItems) || 6),
-      durationDays: Math.max(1, Number(featured.durationDays) || 14),
     },
     rewards: {
       badgeLabel: normalizeText(rewards.badgeLabel) || 'Badge Challenger',

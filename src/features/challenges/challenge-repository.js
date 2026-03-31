@@ -74,7 +74,7 @@ export async function listChallenges(options = {}, context = {}) {
       if (context.includeDrafts) return true;
       return canUserSeeChallenge(challenge, context);
     })
-    .sort((a, b) => (a.featuredOrder - b.featuredOrder) || a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
+    .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
 }
 
 export async function saveChallenge(options = {}) {
@@ -147,12 +147,11 @@ export async function getChallengeScreenConfig(options = {}, configId = 'default
     return normalizeChallengeScreenConfig({
       title: 'Sfide',
       sections: [
-        { id: 'featured', title: 'Sfide in evidenza', featuredOnly: true, order: 0, isActive: true },
-        { id: 'weekly', title: 'Sfide settimanali', order: 1, isActive: true },
-        { id: 'monthly', title: 'Sfide mensili', order: 2, isActive: true },
-        { id: 'local_gym', title: 'Dalle tue palestre', order: 3, isActive: true },
-        { id: 'sponsor', title: 'Sponsor', order: 4, isActive: true },
-        { id: 'exploration', title: 'Esplorazione', order: 5, isActive: true },
+        { id: 'weekly', title: 'Sfide settimanali', order: 0, isActive: true },
+        { id: 'monthly', title: 'Sfide mensili', order: 1, isActive: true },
+        { id: 'local_gym', title: 'Dalle tue palestre', order: 2, isActive: true },
+        { id: 'sponsor', title: 'Sponsor', order: 3, isActive: true },
+        { id: 'exploration', title: 'Esplorazione', order: 4, isActive: true },
       ],
     });
   }
