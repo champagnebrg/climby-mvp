@@ -25,6 +25,14 @@ export const CHALLENGE_KINDS = Object.freeze([
   CHALLENGE_KIND_DISCOVERY,
 ]);
 
+export const CHALLENGE_PROGRESS_MODE_SINGLE_TARGET = 'single_target';
+export const CHALLENGE_PROGRESS_MODE_TIERED = 'tiered';
+
+export const CHALLENGE_PROGRESS_MODES = Object.freeze([
+  CHALLENGE_PROGRESS_MODE_SINGLE_TARGET,
+  CHALLENGE_PROGRESS_MODE_TIERED,
+]);
+
 export const CHALLENGE_STATUS_DRAFT = 'draft';
 export const CHALLENGE_STATUS_PUBLISHED = 'published';
 export const CHALLENGE_STATUS_INACTIVE = 'inactive';
@@ -107,6 +115,33 @@ function normalizeGymIds(input = {}, scope = CHALLENGE_SCOPE_GLOBAL) {
   return [...new Set(gymIds)];
 }
 
+
+const DEFAULT_PROGRESS_TIERS = Object.freeze([
+  { id: 'bronze', label: 'Bronzo', threshold: 10, badge: '🥉' },
+  { id: 'silver', label: 'Argento', threshold: 20, badge: '🥈' },
+  { id: 'gold', label: 'Oro', threshold: 50, badge: '🥇' },
+  { id: 'platinum', label: 'Platino', threshold: 100, badge: '🏆' },
+]);
+
+function normalizeProgressMode(value) {
+  const mode = normalizeText(value).toLowerCase();
+  return CHALLENGE_PROGRESS_MODES.includes(mode) ? mode : CHALLENGE_PROGRESS_MODE_SINGLE_TARGET;
+}
+
+function normalizeProgressTiers(value = []) {
+  const rows = Array.isArray(value) && value.length ? value : DEFAULT_PROGRESS_TIERS;
+  return rows
+    .map((item, index) => ({
+      id: normalizeText(item?.id) || `tier_${index + 1}`,
+      label: normalizeText(item?.label) || `Livello ${index + 1}`,
+      threshold: Math.max(1, Number(item?.threshold) || (index + 1) * 10),
+      badge: normalizeNullableText(item?.badge),
+      rewardLabel: normalizeNullableText(item?.rewardLabel),
+      pointsValue: Number.isFinite(Number(item?.pointsValue)) ? Number(item?.pointsValue) : null,
+    }))
+    .sort((a, b) => a.threshold - b.threshold);
+}
+
 function normalizeLifecycleStatus(value, fallbackStatus = CHALLENGE_STATUS_DRAFT, activeFlag = false) {
   const normalized = normalizeText(value).toLowerCase();
   if (CHALLENGE_STATUSES.includes(normalized)) return normalized;
@@ -124,6 +159,9 @@ export function normalizeChallengeRecord(input = {}) {
   const normalizedScope = CHALLENGE_SCOPES.includes(scope) ? scope : CHALLENGE_SCOPE_GLOBAL;
   const gymIds = normalizeGymIds(input, normalizedScope);
   const lifecycleStatus = normalizeLifecycleStatus(input.lifecycleStatus, status, Boolean(input.isActive));
+
+  const progressMode = normalizeProgressMode(input.progressMode);
+  const progressionTiers = normalizeProgressTiers(input?.progression?.tiers);
 
   return {
     title: normalizeText(input.title),
@@ -147,9 +185,13 @@ export function normalizeChallengeRecord(input = {}) {
     endsAt: toIsoOrNull(input.endsAt),
     pointsTier: normalizeText(input.pointsTier) || preset?.pointsTier || 'small',
     pointsValue: Number.isFinite(Number(input.pointsValue)) ? Number(input.pointsValue) : null,
+    progressMode,
     rules: {
       metric: normalizeMetric(input.rules?.metric || preset?.metric),
-      target: Math.max(1, Number(input.rules?.target) || Number(preset?.target) || 1),
+      target: Math.max(1, Number(input.rules?.target) || Number(preset?.target) || (progressionTiers[progressionTiers.length - 1]?.threshold || 1)),
+    },
+    progression: {
+      tiers: progressMode === CHALLENGE_PROGRESS_MODE_TIERED ? progressionTiers : [],
     },
     reward: {
       rewardId: normalizeNullableText(input.reward?.rewardId),
@@ -202,6 +244,7 @@ export function normalizeChallengeScreenConfig(input = {}) {
     featuredChallengeIds: Array.isArray(input.featuredChallengeIds)
       ? input.featuredChallengeIds.map((v) => normalizeText(v)).filter(Boolean)
       : [],
+    showEmptySections: input.showEmptySections !== false,
     updatedAt: toIsoOrNull(input.updatedAt),
     updatedBy: normalizeNullableText(input.updatedBy),
   };
