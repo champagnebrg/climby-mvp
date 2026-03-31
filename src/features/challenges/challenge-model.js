@@ -15,25 +15,67 @@ export const CHALLENGE_SCOPES = Object.freeze([
   CHALLENGE_SCOPE_EVENT,
 ]);
 
+export const CHALLENGE_KIND_STANDARD = 'standard';
+export const CHALLENGE_KIND_COMPETITION = 'competition';
+export const CHALLENGE_KIND_DISCOVERY = 'discovery';
+
+export const CHALLENGE_KINDS = Object.freeze([
+  CHALLENGE_KIND_STANDARD,
+  CHALLENGE_KIND_COMPETITION,
+  CHALLENGE_KIND_DISCOVERY,
+]);
+
 export const CHALLENGE_STATUS_DRAFT = 'draft';
 export const CHALLENGE_STATUS_PUBLISHED = 'published';
+export const CHALLENGE_STATUS_INACTIVE = 'inactive';
 export const CHALLENGE_STATUS_ARCHIVED = 'archived';
+export const CHALLENGE_STATUS_DELETED = 'deleted';
 
 export const CHALLENGE_STATUSES = Object.freeze([
   CHALLENGE_STATUS_DRAFT,
   CHALLENGE_STATUS_PUBLISHED,
+  CHALLENGE_STATUS_INACTIVE,
   CHALLENGE_STATUS_ARCHIVED,
+  CHALLENGE_STATUS_DELETED,
 ]);
 
 export const TEMPLATE_TYPES = Object.freeze([
+  'weekly_routes',
+  'weekly_streak',
+  'monthly_routes',
+  'monthly_exploration',
+  'sponsor_campaign',
+  'gym_local',
+  'event_competition',
+]);
+
+export const DISPLAY_SECTIONS = Object.freeze([
+  'featured',
   'weekly',
   'monthly',
-  'yearly',
   'exploration',
-  'sponsor',
-  'gym_event',
   'local_gym',
+  'sponsor',
+  'events',
 ]);
+
+export const DURATION_PRESETS = Object.freeze([
+  '7d',
+  '14d',
+  '30d',
+  'seasonal',
+  'custom',
+]);
+
+const TEMPLATE_PRESETS = Object.freeze({
+  weekly_routes: { metric: 'routes', target: 8, pointsTier: 'small', durationPreset: '7d', displaySectionIds: ['weekly'] },
+  weekly_streak: { metric: 'streak', target: 4, pointsTier: 'medium', durationPreset: '7d', displaySectionIds: ['weekly'] },
+  monthly_routes: { metric: 'routes', target: 30, pointsTier: 'medium', durationPreset: '30d', displaySectionIds: ['monthly'] },
+  monthly_exploration: { metric: 'gyms', target: 3, pointsTier: 'large', durationPreset: '30d', displaySectionIds: ['exploration'] },
+  sponsor_campaign: { metric: 'routes', target: 20, pointsTier: 'medium', durationPreset: '30d', displaySectionIds: ['sponsor'] },
+  gym_local: { metric: 'routes', target: 10, pointsTier: 'small', durationPreset: '14d', displaySectionIds: ['local_gym'] },
+  event_competition: { metric: 'routes', target: 12, pointsTier: 'large', durationPreset: 'custom', displaySectionIds: ['events'] },
+});
 
 function toIsoOrNull(value) {
   const safe = toSafeDate(value);
@@ -45,30 +87,69 @@ function normalizeMetric(value) {
   return ['routes', 'days', 'streak', 'sectors', 'gyms'].includes(metric) ? metric : 'routes';
 }
 
+function normalizeDisplaySectionIds(value = [], templateType = null) {
+  const rows = Array.isArray(value) ? value : [];
+  const explicit = rows.map((item) => normalizeText(item)).filter((item) => DISPLAY_SECTIONS.includes(item));
+  if (explicit.length) return [...new Set(explicit)];
+
+  const preset = templateType ? TEMPLATE_PRESETS[templateType] : null;
+  if (preset?.displaySectionIds?.length) return preset.displaySectionIds;
+  return ['weekly'];
+}
+
+function normalizeGymIds(input = {}, scope = CHALLENGE_SCOPE_GLOBAL) {
+  const gymIds = Array.isArray(input.gymIds)
+    ? input.gymIds.map((v) => normalizeText(v)).filter(Boolean)
+    : [];
+  const gymId = normalizeNullableText(input.gymId);
+  if (gymId && !gymIds.includes(gymId)) gymIds.unshift(gymId);
+  if (scope !== CHALLENGE_SCOPE_GYM) return [];
+  return [...new Set(gymIds)];
+}
+
+function normalizeLifecycleStatus(value, fallbackStatus = CHALLENGE_STATUS_DRAFT, activeFlag = false) {
+  const normalized = normalizeText(value).toLowerCase();
+  if (CHALLENGE_STATUSES.includes(normalized)) return normalized;
+  if (CHALLENGE_STATUSES.includes(fallbackStatus)) return fallbackStatus;
+  return activeFlag ? CHALLENGE_STATUS_PUBLISHED : CHALLENGE_STATUS_DRAFT;
+}
+
 export function normalizeChallengeRecord(input = {}) {
   const status = normalizeText(input.status).toLowerCase();
   const scope = normalizeText(input.scope).toLowerCase();
+  const templateType = normalizeNullableText(input.templateType);
+  const validTemplate = TEMPLATE_TYPES.includes(templateType) ? templateType : null;
+  const preset = validTemplate ? TEMPLATE_PRESETS[validTemplate] : null;
+
+  const normalizedScope = CHALLENGE_SCOPES.includes(scope) ? scope : CHALLENGE_SCOPE_GLOBAL;
+  const gymIds = normalizeGymIds(input, normalizedScope);
+  const lifecycleStatus = normalizeLifecycleStatus(input.lifecycleStatus, status, Boolean(input.isActive));
 
   return {
     title: normalizeText(input.title),
     description: normalizeText(input.description),
     status: CHALLENGE_STATUSES.includes(status) ? status : CHALLENGE_STATUS_DRAFT,
-    scope: CHALLENGE_SCOPES.includes(scope) ? scope : CHALLENGE_SCOPE_GLOBAL,
-    templateType: normalizeNullableText(input.templateType),
+    lifecycleStatus,
+    scope: normalizedScope,
+    challengeKind: CHALLENGE_KINDS.includes(normalizeText(input.challengeKind)) ? normalizeText(input.challengeKind) : CHALLENGE_KIND_STANDARD,
+    templateType: validTemplate,
     type: normalizeText(input.type) || 'standard',
-    gymId: normalizeNullableText(input.gymId),
+    gymId: gymIds[0] || null,
+    gymIds,
     sponsorId: normalizeNullableText(input.sponsorId),
     visibility: normalizeText(input.visibility) || 'all_authenticated',
-    isActive: Boolean(input.isActive),
+    isActive: lifecycleStatus === CHALLENGE_STATUS_PUBLISHED,
     isFeatured: Boolean(input.isFeatured),
     featuredOrder: Number.isFinite(Number(input.featuredOrder)) ? Number(input.featuredOrder) : 999,
+    displaySectionIds: normalizeDisplaySectionIds(input.displaySectionIds, validTemplate),
+    durationPreset: DURATION_PRESETS.includes(normalizeText(input.durationPreset)) ? normalizeText(input.durationPreset) : (preset?.durationPreset || '7d'),
     startsAt: toIsoOrNull(input.startsAt),
     endsAt: toIsoOrNull(input.endsAt),
-    pointsTier: normalizeText(input.pointsTier) || 'small',
+    pointsTier: normalizeText(input.pointsTier) || preset?.pointsTier || 'small',
     pointsValue: Number.isFinite(Number(input.pointsValue)) ? Number(input.pointsValue) : null,
     rules: {
-      metric: normalizeMetric(input.rules?.metric),
-      target: Math.max(1, Number(input.rules?.target) || 1),
+      metric: normalizeMetric(input.rules?.metric || preset?.metric),
+      target: Math.max(1, Number(input.rules?.target) || Number(preset?.target) || 1),
     },
     reward: {
       rewardId: normalizeNullableText(input.reward?.rewardId),
@@ -80,14 +161,20 @@ export function normalizeChallengeRecord(input = {}) {
     updatedBy: normalizeNullableText(input.updatedBy),
     createdAt: toIsoOrNull(input.createdAt),
     updatedAt: toIsoOrNull(input.updatedAt),
+    progressCount: Math.max(0, Number(input.progressCount) || 0),
+    dependencyCount: Math.max(0, Number(input.dependencyCount) || 0),
   };
 }
 
 export function buildChallengePayload(input = {}, context = {}) {
   const nowIso = toIsoOrNull(context.now || new Date());
   const normalized = normalizeChallengeRecord(input);
+  const lifecycleStatus = normalizeLifecycleStatus(normalized.lifecycleStatus, normalized.status, normalized.isActive);
   return {
     ...normalized,
+    status: lifecycleStatus,
+    lifecycleStatus,
+    isActive: lifecycleStatus === CHALLENGE_STATUS_PUBLISHED,
     createdAt: normalized.createdAt || nowIso,
     updatedAt: nowIso,
     createdBy: normalized.createdBy || normalizeNullableText(context.userId),
@@ -107,7 +194,6 @@ export function normalizeChallengeScreenConfig(input = {}) {
         id: normalizeText(item?.id) || `section_${index + 1}`,
         title: normalizeText(item?.title) || `Section ${index + 1}`,
         subtitle: normalizeNullableText(item?.subtitle),
-        filterScope: normalizeNullableText(item?.filterScope),
         featuredOnly: Boolean(item?.featuredOnly),
         order: Number.isFinite(Number(item?.order)) ? Number(item?.order) : index,
         isActive: item?.isActive !== false,
