@@ -2731,6 +2731,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         getDocs,
                         setDoc,
                         addDoc,
+                        challengeId: payload.id || null,
                         userId: activeUser?.uid || null,
                         data: payload,
                     });
@@ -2747,6 +2748,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         getDocs,
                         setDoc,
                         addDoc,
+                        challengeId: payload.id || null,
                         userId: activeUser?.uid || null,
                         data: {
                             ...payload,
@@ -2817,7 +2819,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
         function renderGymAdminChallengesPanel() {
             const mountEl = document.getElementById('gym-admin-challenges-admin');
             if (!mountEl || userRole !== 'admin') return;
-            const local = challengeCatalog.filter((row) => row.scope === 'gym' && row.gymId === realUserGymId);
+            const local = challengeCatalog.filter((row) => row.scope === 'gym' && (row.gymId === realUserGymId || (row.gymIds || []).includes(realUserGymId)));
             renderGymAdminChallengeManager({
                 mountEl,
                 challenges: local,
@@ -2831,6 +2833,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                         getDocs,
                         setDoc,
                         addDoc,
+                        challengeId: payload.id || null,
                         userId: activeUser?.uid || null,
                         data: {
                             ...payload,
