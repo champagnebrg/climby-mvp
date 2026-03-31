@@ -323,13 +323,18 @@ service cloud.firestore {
       }
 
       function isGymAdminChallengeWrite() {
+        let tier = request.resource.data.pointsTier;
         return isGymAdminRole()
           && request.resource.data.scope == "gym"
           && request.resource.data.ownerType == "gym_admin"
           && request.resource.data.gymId is string
           && managesGym(request.resource.data.gymId)
           && requestPointsTierAllowed()
-          && request.resource.data.pointsValue == null
+          && request.resource.data.pointsValue == (
+            tier == "small" ? 50 : (
+              tier == "medium" ? 120 : 250
+            )
+          )
           && request.resource.data.sponsorId == null;
       }
 
@@ -373,6 +378,26 @@ service cloud.firestore {
     match /pointsLedger/{entryId} {
       allow read: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
       allow write: if isSuperadmin();
+    }
+
+    match /seasons/{seasonId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create, update, delete: if isSuperadmin();
+    }
+
+    match /userSeasonStats/{docId} {
+      allow read: if isSuperadmin() || (verifiedEmail() && resource.data.userId == request.auth.uid);
+      allow write: if isSuperadmin();
+    }
+
+    match /levelConfig/{configId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create, update, delete: if isSuperadmin();
+    }
+
+    match /rewardTiers/{tierId} {
+      allow read: if verifiedEmail() || isSuperadmin();
+      allow create, update, delete: if isSuperadmin();
     }
 
     match /analytics/superadmin_kpis {

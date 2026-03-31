@@ -61,7 +61,7 @@ test('gym admin can create only local challenge without arbitrary points', async
     isActive: true,
     rules: { metric: 'routes', target: 5 },
     pointsTier: 'small',
-    pointsValue: null,
+    pointsValue: 50,
     sponsorId: null,
   }));
 
@@ -100,10 +100,19 @@ test('member can read published gym challenge', async () => {
       isActive: true,
       rules: { metric: 'routes', target: 5 },
       pointsTier: 'small',
-      pointsValue: null,
+      pointsValue: 50,
       sponsorId: null,
     });
   });
 
   await assertSucceeds(getDoc(doc(authedDb('u1'), 'challenges', 'local1')));
+});
+
+test('standard user cannot write seasonal stats', async () => {
+  await seedUsers();
+  await assertFails(setDoc(doc(authedDb('u1'), 'userSeasonStats', 'u1_default'), {
+    userId: 'u1',
+    seasonId: 'default',
+    totalPoints: 9000,
+  }));
 });
