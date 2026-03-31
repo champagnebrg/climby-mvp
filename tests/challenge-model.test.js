@@ -43,6 +43,16 @@ test('tiered challenge mode normalizes milestones and target coherently', async 
   assert.equal(row.progressMode, 'tiered');
   assert.deepEqual(row.progression.tiers.map((t) => t.id), ['bronze', 'silver', 'gold']);
   assert.equal(row.rules.target, 50);
+  assert.equal(row.progression.tiers[0].pointsValue, 75);
+});
+
+test('single target challenge resolves CP from policy tier', async () => {
+  const { normalizeChallengeRecord } = await import('../src/features/challenges/challenge-model.js');
+  const row = normalizeChallengeRecord({
+    title: 'Single',
+    pointsTier: 'medium',
+  });
+  assert.equal(row.pointsValue, 120);
 });
 
 test('screen config keeps guided flags', async () => {

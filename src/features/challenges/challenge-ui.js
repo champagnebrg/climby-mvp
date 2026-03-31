@@ -19,11 +19,17 @@ const FRIENDLY_SECTIONS = Object.freeze([
 ]);
 
 const DEFAULT_TIER_ROWS = [
-  { id: 'bronze', label: 'Bronzo', threshold: 10 },
-  { id: 'silver', label: 'Argento', threshold: 20 },
-  { id: 'gold', label: 'Oro', threshold: 50 },
-  { id: 'platinum', label: 'Platino', threshold: 100 },
+  { id: 'bronze', label: 'Bronzo', threshold: 10, pointsValue: 50 },
+  { id: 'silver', label: 'Argento', threshold: 20, pointsValue: 75 },
+  { id: 'gold', label: 'Oro', threshold: 50, pointsValue: 125 },
+  { id: 'platinum', label: 'Platino', threshold: 100, pointsValue: 250 },
 ];
+
+const SINGLE_TARGET_POINTS_BY_TIER = Object.freeze({
+  small: 50,
+  medium: 120,
+  large: 250,
+});
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -77,7 +83,7 @@ function resolveTierRows(challenge = {}) {
       threshold: Math.max(1, Number(row?.threshold) || idx + 1),
       badge: row?.badge || '',
       rewardLabel: row?.rewardLabel || null,
-      pointsValue: Number.isFinite(Number(row?.pointsValue)) ? Number(row.pointsValue) : null,
+      pointsValue: Number.isFinite(Number(row?.pointsValue)) ? Number(row.pointsValue) : 0,
     }))
     .sort((a, b) => a.threshold - b.threshold);
 }
@@ -143,8 +149,8 @@ function sectionChallenges(section = {}, challenges = [], screenConfig = {}) {
 function rewardText(challenge = {}, progress = {}) {
   if (progress.progressMode === 'tiered' && progress.currentTier?.rewardLabel) return `🎁 ${progress.currentTier.rewardLabel}`;
   if (challenge.reward?.label) return `🎁 ${challenge.reward.label}`;
-  if (progress.progressMode === 'tiered' && progress.currentTier?.pointsValue) return `⭐ ${progress.currentTier.pointsValue} pt`;
-  if (Number.isFinite(Number(challenge.pointsValue))) return `⭐ ${challenge.pointsValue} pt`;
+  if (progress.progressMode === 'tiered' && progress.currentTier?.pointsValue) return `⭐ ${progress.currentTier.pointsValue} CP`;
+  if (Number.isFinite(Number(challenge.pointsValue))) return `⭐ ${challenge.pointsValue} CP`;
   return '';
 }
 
@@ -154,10 +160,34 @@ function renderTierProgress(progress = {}) {
     <div class="challenge-tier-track">
       ${progress.tiers.map((tier, idx) => {
         const reached = idx <= progress.reachedIndex;
-        return `<div class="challenge-tier-step ${reached ? 'done' : ''}"><span>${escapeHtml(tier.badge || tier.label)}</span><small>${tier.threshold}</small></div>`;
+        return `<div class="challenge-tier-step ${reached ? 'done' : ''}"><span>${escapeHtml(tier.badge || tier.label)}</span><small>${tier.threshold} · +${tier.pointsValue || 0} CP</small></div>`;
       }).join('')}
     </div>
   `;
+}
+
+function computeSeasonSummary({ seasonalStats = {}, levelConfig = {} } = {}) {
+  const totalPoints = Math.max(0, Number(seasonalStats.totalPoints || 0));
+  const levels = Array.isArray(levelConfig.levels) && levelConfig.levels.length
+    ? [...levelConfig.levels]
+    : [
+      { level: 1, pointsRequired: 0 },
+      { level: 2, pointsRequired: 200 },
+      { level: 3, pointsRequired: 500 },
+      { level: 4, pointsRequired: 900 },
+      { level: 5, pointsRequired: 1400 },
+    ];
+  levels.sort((a, b) => (a.pointsRequired || 0) - (b.pointsRequired || 0));
+  let current = levels[0];
+  for (const level of levels) {
+    if (totalPoints >= Number(level.pointsRequired || 0)) current = level;
+  }
+  const next = levels.find((level) => Number(level.pointsRequired || 0) > totalPoints) || null;
+  const neededToNext = next ? Math.max(0, Number(next.pointsRequired || 0) - totalPoints) : 0;
+  const floor = Number(current?.pointsRequired || 0);
+  const ceil = Number(next?.pointsRequired || floor);
+  const progressPct = next && ceil > floor ? Math.round(((totalPoints - floor) / (ceil - floor)) * 100) : 100;
+  return { totalPoints, current, next, neededToNext, progressPct };
 }
 
 function buildGuidedPayload({ mountEl, role, gymContextId }) {
@@ -173,7 +203,7 @@ function buildGuidedPayload({ mountEl, role, gymContextId }) {
   const progressMode = mountEl.querySelector('[data-field="progressMode"]')?.value === 'tiered' ? 'tiered' : 'single_target';
   const target = Number(mountEl.querySelector('[data-field="target"]')?.value || preset.target);
   const sectionId = mountEl.querySelector('[data-field="displaySectionId"]')?.value || preset.displaySectionIds[0] || 'weekly';
-  const pointsValue = Number(mountEl.querySelector('[data-field="pointsValue"]')?.value || 0) || null;
+  const pointsTier = mountEl.querySelector('[data-field="pointsTier"]')?.value || preset.pointsTier || 'small';
 
   const gymSelect = mountEl.querySelector('[data-field="gymId"]');
   const sponsorId = mountEl.querySelector('[data-field="sponsorId"]')?.value?.trim() || null;
@@ -193,8 +223,8 @@ function buildGuidedPayload({ mountEl, role, gymContextId }) {
     durationPreset: preset.durationPreset,
     visibility,
     lifecycleStatus,
-    pointsTier: preset.pointsTier,
-    pointsValue,
+    pointsTier: role === 'gym_admin' ? preset.pointsTier : pointsTier,
+    pointsValue: SINGLE_TARGET_POINTS_BY_TIER[role === 'gym_admin' ? preset.pointsTier : pointsTier] || 50,
     progressMode,
     rules: { metric: preset.metric, target: Math.max(1, target) },
     reward: { label: rewardLabel, rewardId: null },
@@ -209,7 +239,8 @@ function buildGuidedPayload({ mountEl, role, gymContextId }) {
       tiers: DEFAULT_TIER_ROWS.map((tier) => {
         const thr = Number(mountEl.querySelector(`[data-tier-threshold="${tier.id}"]`)?.value || tier.threshold);
         const rw = mountEl.querySelector(`[data-tier-reward="${tier.id}"]`)?.value?.trim() || null;
-        return { ...tier, threshold: Math.max(1, thr), rewardLabel: rw };
+        const pointsValue = Number(mountEl.querySelector(`[data-tier-points="${tier.id}"]`)?.value || tier.pointsValue || 0);
+        return { ...tier, threshold: Math.max(1, thr), rewardLabel: rw, pointsValue: Math.max(0, pointsValue) };
       }),
     };
     payload.rules.target = Math.max(...payload.progression.tiers.map((r) => r.threshold));
@@ -281,12 +312,13 @@ function bindGuidedFormVisibility(mountEl) {
 }
 
 export function renderChallengesHubDynamic(options = {}) {
-  const { mountEl, challenges = [], screenConfig = {}, metricMap = {} } = options;
+  const { mountEl, challenges = [], screenConfig = {}, metricMap = {}, seasonalStats = {}, levelConfig = {} } = options;
   if (!mountEl) return;
 
   const activeSections = (screenConfig.sections || []).filter((section) => section.isActive !== false);
   const featuredIds = new Set(screenConfig.featuredChallengeIds || []);
   const showEmptySections = screenConfig.showEmptySections !== false;
+  const seasonSummary = computeSeasonSummary({ seasonalStats, levelConfig });
 
   const sectionsHtml = activeSections
     .map((section) => {
@@ -338,6 +370,12 @@ export function renderChallengesHubDynamic(options = {}) {
     <div class="profile-section-card">
       <h4 style="margin-top:0;">${escapeHtml(screenConfig.title || 'Le tue sfide')}</h4>
       ${screenConfig.subtitle ? `<p class="profile-subtitle">${escapeHtml(screenConfig.subtitle)}</p>` : ''}
+      <div class="challenge-points-summary">
+        <div><b>${seasonSummary.totalPoints} CP</b><small>Punti stagione</small></div>
+        <div><b>Livello ${seasonSummary.current?.level || 1}</b><small>Stato attuale</small></div>
+        <div><b>${seasonSummary.next ? `${seasonSummary.neededToNext} CP` : 'Max livello'}</b><small>${seasonSummary.next ? `Al livello ${seasonSummary.next.level}` : 'Progressione completata'}</small></div>
+      </div>
+      <div class="challenge-progress"><span style="width:${seasonSummary.progressPct}%"></span></div>
     </div>
     ${sectionsHtml || '<p class="profile-empty">Nessuna challenge attiva.</p>'}
   `;
@@ -374,12 +412,18 @@ export function renderSuperadminChallengeManager(options = {}) {
           <label>Template consigliato
             <select data-field="templateType">${Object.entries(TEMPLATE_GUIDE).map(([key, row]) => `<option value="${key}">${escapeHtml(row.label)}</option>`).join('')}</select>
           </label>
+          <label>Policy punti (CP)
+            <select data-field="pointsTier">
+              <option value="small">Small · 50 CP</option>
+              <option value="medium">Medium · 120 CP</option>
+              <option value="large">Large · 250 CP</option>
+            </select>
+          </label>
           <label>Target iniziale<input data-field="target" type="number" min="1" placeholder="Es. 20"></label>
           <label>Sezione in app
             <select data-field="displaySectionId">${FRIENDLY_SECTIONS.map((row) => `<option value="${row.id}">${escapeHtml(row.label)}</option>`).join('')}</select>
           </label>
           <label>Reward testuale<input data-field="rewardLabel" placeholder="Es. Badge Challenger"></label>
-          <label>Punti assegnati (opzionale)<input data-field="pointsValue" type="number" min="0" placeholder="Es. 120"></label>
           <label>Pubblicazione
             <select data-field="lifecycleStatus"><option value="draft">Bozza</option><option value="published">Pubblica subito</option><option value="inactive">Disattiva</option></select>
           </label>
@@ -398,6 +442,7 @@ export function renderSuperadminChallengeManager(options = {}) {
           <div data-wrap="tiers" class="challenge-tiers-editor" style="display:none;">
             ${DEFAULT_TIER_ROWS.map((tier) => `
               <label>${tier.label} soglia<input data-tier-threshold="${tier.id}" type="number" min="1" value="${tier.threshold}"></label>
+              <label>${tier.label} punti CP<input data-tier-points="${tier.id}" type="number" min="0" value="${tier.pointsValue || 0}"></label>
               <label>${tier.label} reward<input data-tier-reward="${tier.id}" placeholder="Reward opzionale"></label>
             `).join('')}
           </div>

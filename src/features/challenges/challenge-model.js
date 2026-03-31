@@ -75,6 +75,14 @@ export const DURATION_PRESETS = Object.freeze([
   'custom',
 ]);
 
+export const CLIMBY_POINTS_LABEL = 'CP';
+
+export const POINTS_POLICY_PRESETS = Object.freeze({
+  small: 50,
+  medium: 120,
+  large: 250,
+});
+
 const TEMPLATE_PRESETS = Object.freeze({
   weekly_routes: { metric: 'routes', target: 8, pointsTier: 'small', durationPreset: '7d', displaySectionIds: ['weekly'] },
   weekly_streak: { metric: 'streak', target: 4, pointsTier: 'medium', durationPreset: '7d', displaySectionIds: ['weekly'] },
@@ -117,10 +125,10 @@ function normalizeGymIds(input = {}, scope = CHALLENGE_SCOPE_GLOBAL) {
 
 
 const DEFAULT_PROGRESS_TIERS = Object.freeze([
-  { id: 'bronze', label: 'Bronzo', threshold: 10, badge: '🥉' },
-  { id: 'silver', label: 'Argento', threshold: 20, badge: '🥈' },
-  { id: 'gold', label: 'Oro', threshold: 50, badge: '🥇' },
-  { id: 'platinum', label: 'Platino', threshold: 100, badge: '🏆' },
+  { id: 'bronze', label: 'Bronzo', threshold: 10, badge: '🥉', pointsValue: 50 },
+  { id: 'silver', label: 'Argento', threshold: 20, badge: '🥈', pointsValue: 75 },
+  { id: 'gold', label: 'Oro', threshold: 50, badge: '🥇', pointsValue: 125 },
+  { id: 'platinum', label: 'Platino', threshold: 100, badge: '🏆', pointsValue: 250 },
 ]);
 
 function normalizeProgressMode(value) {
@@ -137,7 +145,9 @@ function normalizeProgressTiers(value = []) {
       threshold: Math.max(1, Number(item?.threshold) || (index + 1) * 10),
       badge: normalizeNullableText(item?.badge),
       rewardLabel: normalizeNullableText(item?.rewardLabel),
-      pointsValue: Number.isFinite(Number(item?.pointsValue)) ? Number(item?.pointsValue) : null,
+      pointsValue: Number.isFinite(Number(item?.pointsValue))
+        ? Math.max(0, Number(item?.pointsValue))
+        : Math.max(0, Number(DEFAULT_PROGRESS_TIERS[index]?.pointsValue || 0)),
     }))
     .sort((a, b) => a.threshold - b.threshold);
 }
@@ -162,6 +172,7 @@ export function normalizeChallengeRecord(input = {}) {
 
   const progressMode = normalizeProgressMode(input.progressMode);
   const progressionTiers = normalizeProgressTiers(input?.progression?.tiers);
+  const pointsTier = normalizeText(input.pointsTier) || preset?.pointsTier || 'small';
 
   return {
     title: normalizeText(input.title),
@@ -183,8 +194,10 @@ export function normalizeChallengeRecord(input = {}) {
     durationPreset: DURATION_PRESETS.includes(normalizeText(input.durationPreset)) ? normalizeText(input.durationPreset) : (preset?.durationPreset || '7d'),
     startsAt: toIsoOrNull(input.startsAt),
     endsAt: toIsoOrNull(input.endsAt),
-    pointsTier: normalizeText(input.pointsTier) || preset?.pointsTier || 'small',
-    pointsValue: Number.isFinite(Number(input.pointsValue)) ? Number(input.pointsValue) : null,
+    pointsTier,
+    pointsValue: Number.isFinite(Number(input.pointsValue))
+      ? Math.max(0, Number(input.pointsValue))
+      : POINTS_POLICY_PRESETS[pointsTier] || POINTS_POLICY_PRESETS.small,
     progressMode,
     rules: {
       metric: normalizeMetric(input.rules?.metric || preset?.metric),

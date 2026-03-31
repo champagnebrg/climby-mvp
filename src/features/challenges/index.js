@@ -21,6 +21,8 @@ export {
   TEMPLATE_TYPES,
   DISPLAY_SECTIONS,
   DURATION_PRESETS,
+  CLIMBY_POINTS_LABEL,
+  POINTS_POLICY_PRESETS,
   normalizeChallengeRecord,
   buildChallengePayload,
   normalizeChallengeScreenConfig,
