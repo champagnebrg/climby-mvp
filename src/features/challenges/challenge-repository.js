@@ -43,8 +43,10 @@ function isChallengeActive(challenge = {}, now = new Date()) {
 function canUserSeeChallenge(challenge = {}, context = {}) {
   if (!isChallengeActive(challenge, context.now || new Date())) return false;
   if (challenge.scope === CHALLENGE_SCOPE_GYM) {
-    if (!context.gymId) return false;
-    return (challenge.gymIds || []).includes(context.gymId) || challenge.gymId === context.gymId;
+    const gymIds = Array.isArray(context.gymIds) ? context.gymIds.filter(Boolean) : [];
+    if (context.gymId) gymIds.push(context.gymId);
+    if (!gymIds.length) return false;
+    return gymIds.some((gymId) => (challenge.gymIds || []).includes(gymId) || challenge.gymId === gymId);
   }
   return true;
 }
@@ -148,8 +150,9 @@ export async function getChallengeScreenConfig(options = {}, configId = 'default
         { id: 'featured', title: 'Sfide in evidenza', featuredOnly: true, order: 0, isActive: true },
         { id: 'weekly', title: 'Sfide settimanali', order: 1, isActive: true },
         { id: 'monthly', title: 'Sfide mensili', order: 2, isActive: true },
-        { id: 'local_gym', title: 'Sfide della tua palestra', order: 3, isActive: true },
-        { id: 'sponsor', title: 'Sfide sponsor', order: 4, isActive: true },
+        { id: 'local_gym', title: 'Dalle tue palestre', order: 3, isActive: true },
+        { id: 'sponsor', title: 'Sponsor', order: 4, isActive: true },
+        { id: 'exploration', title: 'Esplorazione', order: 5, isActive: true },
       ],
     });
   }

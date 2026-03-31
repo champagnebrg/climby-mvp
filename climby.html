@@ -256,6 +256,7 @@
                         <button type="button" data-admin-tab="events" data-i18n="admin.navEvents"></button>
                         <button type="button" data-admin-tab="users" data-i18n="admin.navUsers"></button>
                         <button type="button" data-admin-tab="settings" data-i18n="admin.navSettings"></button>
+                        <button type="button" data-admin-tab="challenges">Sfide palestra</button>
                     </aside>
 
                     <section class="admin-content">
@@ -420,6 +421,15 @@
                                     <button class="btn-main" id="admin-save-grade-system" data-i18n="admin.saveGradeSystem"></button>
                                 </div>
                             </div>
+                        </div>
+
+                        <div id="admin-tab-challenges" class="admin-tab-panel">
+                            <header class="admin-tab-header">
+                                <div>
+                                    <h3 class="headline-brand">Sfide palestra</h3>
+                                    <p class="profile-subtitle">Gestisci solo le sfide locali della tua palestra, reward inclusi.</p>
+                                </div>
+                            </header>
                             <div id="gym-admin-challenges-admin"></div>
                         </div>
                     </section>
@@ -429,6 +439,11 @@
 
             <div id="superadmin-panel" style="display:none;">
                 <h3 class="headline-brand" data-i18n="superadmin.title"></h3>
+                <div class="social-top-tabs" style="margin-bottom:10px;">
+                    <button type="button" class="social-top-tab active" id="superadmin-tab-dashboard-btn">Dashboard</button>
+                    <button type="button" class="social-top-tab" id="superadmin-tab-challenges-btn">Sfide</button>
+                </div>
+                <div id="superadmin-dashboard-block">
                 <div class="card" style="display:block;">
                     <p class="profile-subtitle" style="margin-top:0;" data-i18n="superadmin.subtitle"></p>
                     <div class="admin-kpi-grid" id="superadmin-kpi-general"></div>
@@ -445,6 +460,7 @@
                 <div class="card" style="display:block;">
                     <h4 class="admin-section-title" data-i18n="superadmin.cityTitle"></h4>
                     <div id="superadmin-city-distribution" class="admin-sector-table-wrap"></div>
+                </div>
                 </div>
                 <div id="superadmin-challenges-admin"></div>
             </div>
@@ -1897,6 +1913,11 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 stopGym3DSubscriptions();
                 destroyProfileListeners();
                 subscribeSuperadminDashboard();
+                const saDashBtn = document.getElementById('superadmin-tab-dashboard-btn');
+                const saChallengesBtn = document.getElementById('superadmin-tab-challenges-btn');
+                if (saDashBtn) saDashBtn.onclick = () => setSuperadminTab('dashboard');
+                if (saChallengesBtn) saChallengesBtn.onclick = () => setSuperadminTab('challenges');
+                setSuperadminTab('dashboard');
                 renderSuperadminChallengesPanel();
             } else if(currentMode === 'admin') {
                 const gradeSetupReady = await ensureAdminGradeSystemSetup();
@@ -1995,6 +2016,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     const profile = await getUserProfileByAuthUid(activeUser.uid);
                     userFavouriteGyms = profile.data?.favouriteGyms || [];
                     monthlyChallengesState.history = profile.data?.challengesMonthlyHistory || {};
+                    await refreshChallengesData();
                     renderUserGymList();
                     renderChallengesHub();
                 })();
@@ -2656,6 +2678,7 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     addDoc,
                 }, {
                     gymId: realUserGymId || null,
+                    gymIds: userRole === 'user' ? userFavouriteGyms : [],
                     includeDrafts: userRole === 'superadmin' || userRole === 'admin',
                 });
                 challengeScreenConfig = await getChallengeScreenConfig({
@@ -2686,15 +2709,18 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 challenges: challengeCatalog,
                 screenConfig: challengeScreenConfig || { title: t('ui.yourChallenges'), sections: [] },
                 metricMap,
+                favouriteGymIds: userFavouriteGyms,
             });
         }
 
         function renderSuperadminChallengesPanel() {
             const mountEl = document.getElementById('superadmin-challenges-admin');
             if (!mountEl || userRole !== 'superadmin') return;
+            const gyms = (lastUserGymsSnap?.docs || []).map((row) => ({ id: row.id, ...(row.data() || {}) }));
             renderSuperadminChallengeManager({
                 mountEl,
                 challenges: challengeCatalog,
+                gyms,
                 screenConfig: challengeScreenConfig || {},
                 onSaveChallenge: async (payload) => {
                     await saveChallenge({
@@ -2710,6 +2736,25 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                     });
                     await refreshChallengesData();
                     renderChallengesHub();
+                    renderSuperadminChallengesPanel();
+                },
+                onSaveGymChallenge: async (payload) => {
+                    await saveChallenge({
+                        db,
+                        collection,
+                        doc,
+                        getDoc,
+                        getDocs,
+                        setDoc,
+                        addDoc,
+                        userId: activeUser?.uid || null,
+                        data: {
+                            ...payload,
+                            scope: 'gym',
+                            gymId: payload.gymId || payload.gymIds?.[0] || null,
+                        },
+                    });
+                    await refreshChallengesData();
                     renderSuperadminChallengesPanel();
                 },
                 onLifecycleAction: async (challengeId, action) => {
@@ -5775,6 +5820,19 @@ Climby aggiornerà automaticamente le tue statistiche.`, target: '.profile-log, 
                 btn.onclick = () => setAdminTab(btn.dataset.adminTab);
             });
             setAdminTab('dashboard');
+        }
+
+        function setSuperadminTab(tab = 'dashboard') {
+            const dash = document.getElementById('superadmin-dashboard-block');
+            const challenges = document.getElementById('superadmin-challenges-admin');
+            const btnDash = document.getElementById('superadmin-tab-dashboard-btn');
+            const btnChallenges = document.getElementById('superadmin-tab-challenges-btn');
+            if (!dash || !challenges || !btnDash || !btnChallenges) return;
+            const isDashboard = tab === 'dashboard';
+            dash.style.display = isDashboard ? 'block' : 'none';
+            challenges.style.display = isDashboard ? 'none' : 'block';
+            btnDash.classList.toggle('active', isDashboard);
+            btnChallenges.classList.toggle('active', !isDashboard);
         }
 
 

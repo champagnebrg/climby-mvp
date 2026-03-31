@@ -10,9 +10,9 @@ const TEMPLATE_GUIDE = Object.freeze({
 
 const FRIENDLY_SECTIONS = Object.freeze([
   { id: 'featured', label: 'In evidenza' },
-  { id: 'weekly', label: 'Sfide settimanali' },
-  { id: 'monthly', label: 'Sfide mensili' },
-  { id: 'local_gym', label: 'Nella tua palestra' },
+  { id: 'weekly', label: 'Settimanali' },
+  { id: 'monthly', label: 'Mensili' },
+  { id: 'local_gym', label: 'Dalle tue palestre' },
   { id: 'exploration', label: 'Esplorazione' },
   { id: 'sponsor', label: 'Sponsor' },
   { id: 'events', label: 'Eventi' },
@@ -53,9 +53,15 @@ function lifecycleBadge(challenge = {}) {
 }
 
 function formatDuration(challenge = {}) {
+  const presetMap = {
+    '7d': 'Settimanale',
+    '30d': 'Mensile',
+    seasonal: 'Stagionale',
+  };
+  if (presetMap[challenge.durationPreset]) return presetMap[challenge.durationPreset];
   const start = challenge.startsAt ? new Date(challenge.startsAt) : null;
   const end = challenge.endsAt ? new Date(challenge.endsAt) : null;
-  if (!start && !end) return 'Durata flessibile';
+  if (!start && !end) return challenge.durationPreset === 'custom' ? 'Durata personalizzata' : 'Sempre attiva';
   if (!end && start) return `Dal ${start.toLocaleDateString('it-IT')}`;
   if (!start && end) return `Scade il ${end.toLocaleDateString('it-IT')}`;
   return `${start.toLocaleDateString('it-IT')} → ${end.toLocaleDateString('it-IT')}`;
@@ -140,6 +146,13 @@ function sectionChallenges(section = {}, challenges = [], screenConfig = {}) {
   } else {
     rows = challenges.filter((row) => {
       const displaySectionIds = Array.isArray(row.displaySectionIds) ? row.displaySectionIds : [];
+      if (section.id === 'local_gym') {
+        const gyms = Array.isArray(screenConfig.userFavouriteGymIds) ? screenConfig.userFavouriteGymIds : [];
+        if (!gyms.length) return false;
+        const rowGymIds = Array.isArray(row.gymIds) ? row.gymIds : [];
+        const linkedGymIds = row.gymId ? rowGymIds.concat([row.gymId]) : rowGymIds;
+        if (!linkedGymIds.some((gymId) => gyms.includes(gymId))) return false;
+      }
       return displaySectionIds.includes(section.id);
     });
   }
@@ -312,7 +325,7 @@ function bindGuidedFormVisibility(mountEl) {
 }
 
 export function renderChallengesHubDynamic(options = {}) {
-  const { mountEl, challenges = [], screenConfig = {}, metricMap = {}, seasonalStats = {}, levelConfig = {} } = options;
+  const { mountEl, challenges = [], screenConfig = {}, metricMap = {}, seasonalStats = {}, levelConfig = {}, favouriteGymIds = [] } = options;
   if (!mountEl) return;
 
   const activeSections = (screenConfig.sections || []).filter((section) => section.isActive !== false);
@@ -322,7 +335,7 @@ export function renderChallengesHubDynamic(options = {}) {
 
   const sectionsHtml = activeSections
     .map((section) => {
-      const rows = sectionChallenges(section, challenges, screenConfig);
+      const rows = sectionChallenges(section, challenges, { ...screenConfig, userFavouriteGymIds: favouriteGymIds });
       if (!rows.length && !showEmptySections) return '';
       const cards = rows.map((challenge) => {
         const progress = computeChallengeProgress(challenge, metricMap);
@@ -382,15 +395,18 @@ export function renderChallengesHubDynamic(options = {}) {
 }
 
 export function renderSuperadminChallengeManager(options = {}) {
-  const { mountEl, challenges = [], gyms = [], screenConfig = {}, onSaveChallenge, onSaveScreenConfig, onLifecycleAction, onEditChallenge, onDuplicateChallenge } = options;
+  const { mountEl, challenges = [], gyms = [], screenConfig = {}, onSaveChallenge, onSaveScreenConfig, onLifecycleAction, onEditChallenge, onDuplicateChallenge, onSaveGymChallenge } = options;
   if (!mountEl) return;
 
   const gymOptions = gyms.map((gym) => `<option value="${escapeHtml(gym.id)}">${escapeHtml(gym.name || gym.id)}</option>`).join('');
   const sections = Array.isArray(screenConfig.sections) ? screenConfig.sections : FRIENDLY_SECTIONS.map((row, idx) => ({ ...row, order: idx, isActive: true }));
+  const season = screenConfig.season || {};
+  const featured = screenConfig.featured || {};
+  const rewards = screenConfig.rewards || {};
 
   mountEl.innerHTML = `
     ${renderManagerCard({
-      title: 'Nuova challenge (guidata)',
+      title: 'Sfide · Nuova challenge (guidata)',
       bodyHtml: `
         <div class="challenge-admin-form-grid">
           <label>Titolo prodotto<input data-field="title" placeholder="Es. Sprint di primavera"></label>
@@ -398,8 +414,8 @@ export function renderSuperadminChallengeManager(options = {}) {
           <label>Ambito challenge
             <select data-field="scope">
               <option value="global">Tutti gli utenti</option>
-              <option value="gym">Solo una palestra</option>
-              <option value="sponsor">Campagna sponsor</option>
+              <option value="gym">Palestra</option>
+              <option value="sponsor">Sponsor</option>
               <option value="event">Evento</option>
             </select>
           </label>
@@ -423,7 +439,7 @@ export function renderSuperadminChallengeManager(options = {}) {
           <label>Sezione in app
             <select data-field="displaySectionId">${FRIENDLY_SECTIONS.map((row) => `<option value="${row.id}">${escapeHtml(row.label)}</option>`).join('')}</select>
           </label>
-          <label>Reward testuale<input data-field="rewardLabel" placeholder="Es. Badge Challenger"></label>
+          <label>Reward badge<input data-field="rewardLabel" placeholder="Es. Badge Challenger"></label>
           <label>Pubblicazione
             <select data-field="lifecycleStatus"><option value="draft">Bozza</option><option value="published">Pubblica subito</option><option value="inactive">Disattiva</option></select>
           </label>
@@ -455,12 +471,22 @@ export function renderSuperadminChallengeManager(options = {}) {
       bodyHtml: `<div class="challenge-admin-list">${challenges.map((c) => challengeRow(c, 'superadmin')).join('') || '<p class="profile-empty">Nessuna challenge.</p>'}</div>`,
     })}
     ${renderManagerCard({
-      title: 'Configurazione schermata sfide',
+      title: 'Configurazione centrale · Stagione, sezioni, featured, reward',
       bodyHtml: `
         <div class="challenge-admin-form-grid">
           <label>Titolo pagina<input id="sa-screen-title" value="${escapeHtml(screenConfig.title || 'Le tue sfide')}"></label>
           <label>Sottotitolo (opzionale)<input id="sa-screen-subtitle" value="${escapeHtml(screenConfig.subtitle || '')}"></label>
-          <label><input id="sa-screen-show-empty" type="checkbox" ${screenConfig.showEmptySections !== false ? 'checked' : ''}> Mostra sezioni vuote</label>
+          <label><input id="sa-screen-show-empty" type="checkbox" ${screenConfig.showEmptySections === false ? 'checked' : ''}> Nascondi le sezioni vuote</label>
+          <label>Stagione (nome)<input id="sa-season-label" value="${escapeHtml(season.label || 'Stagione attiva')}"></label>
+          <label>Inizio stagione<input id="sa-season-start" type="date" value="${escapeHtml((season.startsAt || '').slice(0,10))}"></label>
+          <label>Fine stagione<input id="sa-season-end" type="date" value="${escapeHtml((season.endsAt || '').slice(0,10))}"></label>
+          <label><input id="sa-season-active" type="checkbox" ${season.isActive !== false ? 'checked' : ''}> Stagione attiva</label>
+          <label>Featured: durata (giorni)<input id="sa-featured-days" type="number" min="1" value="${Number(featured.durationDays || 14)}"></label>
+          <label>Featured: max card<input id="sa-featured-max" type="number" min="1" value="${Number(featured.maxItems || 6)}"></label>
+          <label>Badge reward globale<input id="sa-reward-badge-label" value="${escapeHtml(rewards.badgeLabel || 'Badge Challenger')}"></label>
+          <label>Tipo badge<input id="sa-reward-badge-type" value="${escapeHtml(rewards.badgeType || 'standard')}"></label>
+          <label><input id="sa-reward-profile" type="checkbox" ${rewards.profileVisibility !== false ? 'checked' : ''}> Visibile nel profilo</label>
+          <label><input id="sa-reward-social" type="checkbox" ${rewards.socialVisibility !== false ? 'checked' : ''}> Visibile nei post social</label>
         </div>
         <div class="challenge-screen-sections-editor">
           ${sections.map((section, idx) => `
@@ -470,7 +496,7 @@ export function renderSuperadminChallengeManager(options = {}) {
                 ${FRIENDLY_SECTIONS.map((opt) => `<option value="${opt.id}" ${opt.id === section.id ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`).join('')}
               </select>
               <label><input type="checkbox" data-section-active ${section.isActive !== false ? 'checked' : ''}> Attiva</label>
-              <label><input type="checkbox" data-section-featured ${section.featuredOnly ? 'checked' : ''}> Solo featured</label>
+              <label><input type="checkbox" data-section-featured ${section.featuredOnly ? 'checked' : ''}> Mostra solo sfide in evidenza</label>
               <input data-section-order type="number" value="${Number.isFinite(Number(section.order)) ? Number(section.order) : idx}" min="0" style="max-width:100px;">
             </div>
           `).join('')}
@@ -478,7 +504,16 @@ export function renderSuperadminChallengeManager(options = {}) {
         <label style="display:block; margin-top:8px;">Challenge in evidenza (ID separati da virgola)
           <input id="sa-screen-featured" value="${escapeHtml((screenConfig.featuredChallengeIds || []).join(', '))}">
         </label>
-        <button id="sa-screen-save" class="btn-main" style="margin-top:8px;">Salva configurazione</button>
+        <button id="sa-screen-save" class="btn-main" style="margin-top:8px;">Salva configurazione centrale</button>
+      `,
+    })}
+    ${renderManagerCard({
+      title: 'Vista palestra (modalità gym admin)',
+      bodyHtml: `
+        <label style="display:block; margin-bottom:8px;">Seleziona palestra
+          <select id="sa-gym-view-id"><option value="">Scegli palestra</option>${gymOptions}</select>
+        </label>
+        <div id="sa-gym-view-mount"><p class="profile-subtitle">Seleziona una palestra per usare gli stessi controlli della sezione “Sfide palestra”.</p></div>
       `,
     })}
   `;
@@ -496,6 +531,29 @@ export function renderSuperadminChallengeManager(options = {}) {
 
   attachChallengeActions({ mountEl, onEditChallenge, onLifecycleAction, onDuplicateChallenge });
 
+  const gymViewSelect = mountEl.querySelector('#sa-gym-view-id');
+  const gymViewMount = mountEl.querySelector('#sa-gym-view-mount');
+  const renderGymView = () => {
+    if (!gymViewMount) return;
+    const gymId = gymViewSelect?.value || '';
+    if (!gymId) {
+      gymViewMount.innerHTML = '<p class="profile-subtitle">Seleziona una palestra per usare gli stessi controlli della sezione “Sfide palestra”.</p>';
+      return;
+    }
+    const local = challenges.filter((row) => row.scope === 'gym' && ((row.gymIds || []).includes(gymId) || row.gymId === gymId));
+    renderGymAdminChallengeManager({
+      mountEl: gymViewMount,
+      challenges: local,
+      gymId,
+      onSave: onSaveGymChallenge,
+      onLifecycleAction,
+      onEditChallenge,
+      onDuplicateChallenge,
+    });
+  };
+  if (gymViewSelect) gymViewSelect.onchange = renderGymView;
+  renderGymView();
+
   const saveScreenBtn = mountEl.querySelector('#sa-screen-save');
   if (saveScreenBtn) {
     saveScreenBtn.onclick = async () => {
@@ -506,7 +564,7 @@ export function renderSuperadminChallengeManager(options = {}) {
         .split(',')
         .map((v) => v.trim())
         .filter(Boolean);
-      const showEmptySections = Boolean(mountEl.querySelector('#sa-screen-show-empty')?.checked);
+      const showEmptySections = !Boolean(mountEl.querySelector('#sa-screen-show-empty')?.checked);
       const sectionsPayload = Array.from(mountEl.querySelectorAll('[data-section-row]')).map((row, idx) => ({
         id: row.querySelector('[data-section-id]')?.value || row.getAttribute('data-default-id') || `section_${idx + 1}`,
         title: row.querySelector('[data-section-title]')?.value || `Sezione ${idx + 1}`,
@@ -514,7 +572,29 @@ export function renderSuperadminChallengeManager(options = {}) {
         isActive: Boolean(row.querySelector('[data-section-active]')?.checked),
         featuredOnly: Boolean(row.querySelector('[data-section-featured]')?.checked),
       }));
-      await onSaveScreenConfig({ title, subtitle, featuredChallengeIds, showEmptySections, sections: sectionsPayload });
+      await onSaveScreenConfig({
+        title,
+        subtitle,
+        featuredChallengeIds,
+        showEmptySections,
+        sections: sectionsPayload,
+        season: {
+          label: mountEl.querySelector('#sa-season-label')?.value?.trim() || 'Stagione attiva',
+          startsAt: mountEl.querySelector('#sa-season-start')?.value || null,
+          endsAt: mountEl.querySelector('#sa-season-end')?.value || null,
+          isActive: Boolean(mountEl.querySelector('#sa-season-active')?.checked),
+        },
+        featured: {
+          durationDays: Number(mountEl.querySelector('#sa-featured-days')?.value || 14),
+          maxItems: Number(mountEl.querySelector('#sa-featured-max')?.value || 6),
+        },
+        rewards: {
+          badgeLabel: mountEl.querySelector('#sa-reward-badge-label')?.value?.trim() || 'Badge Challenger',
+          badgeType: mountEl.querySelector('#sa-reward-badge-type')?.value?.trim() || 'standard',
+          profileVisibility: Boolean(mountEl.querySelector('#sa-reward-profile')?.checked),
+          socialVisibility: Boolean(mountEl.querySelector('#sa-reward-social')?.checked),
+        },
+      });
     };
   }
 }
@@ -525,7 +605,7 @@ export function renderGymAdminChallengeManager(options = {}) {
 
   mountEl.innerHTML = `
     ${renderManagerCard({
-      title: 'Challenge palestra (guidata)',
+      title: 'Sfide palestra · Nuova challenge',
       bodyHtml: `
         <p class="profile-subtitle">Crea una challenge locale con linguaggio prodotto e obiettivi chiari.</p>
         <div class="challenge-admin-form-grid">
@@ -539,9 +619,9 @@ export function renderGymAdminChallengeManager(options = {}) {
           </label>
           <label>Target<input data-field="target" type="number" min="1" placeholder="Es. 15"></label>
           <label>Sezione app
-            <select data-field="displaySectionId"><option value="local_gym">Nella tua palestra</option><option value="weekly">Settimanali</option></select>
+            <select data-field="displaySectionId"><option value="local_gym">Dalle tue palestre</option><option value="weekly">Settimanali</option></select>
           </label>
-          <label>Reward<input data-field="rewardLabel" placeholder="Es. Bevanda omaggio"></label>
+          <label>Reward badge locale<input data-field="rewardLabel" placeholder="Es. Badge Local Hero"></label>
           <label>Stato
             <select data-field="lifecycleStatus"><option value="draft">Bozza</option><option value="published">Pubblica</option></select>
           </label>
@@ -549,11 +629,11 @@ export function renderGymAdminChallengeManager(options = {}) {
             ${DEFAULT_TIER_ROWS.map((tier) => `<label>${tier.label} soglia<input data-tier-threshold="${tier.id}" type="number" min="1" value="${tier.threshold}"></label>`).join('')}
           </div>
         </div>
-        <button id="gym-challenge-save" class="btn-main" style="margin-top:8px;">Salva challenge locale</button>
+        <button id="gym-challenge-save" class="btn-main" style="margin-top:8px;">Salva sfida palestra</button>
       `,
     })}
     ${renderManagerCard({
-      title: 'Challenge locali',
+      title: 'Gestione sfide palestra',
       bodyHtml: `<div class="challenge-admin-list">${challenges.map((c) => challengeRow(c, 'gym_admin')).join('') || '<p class="profile-empty">Nessuna challenge locale.</p>'}</div>`,
     })}
   `;
