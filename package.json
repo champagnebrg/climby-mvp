@@ -2,7 +2,7 @@
   "name": "climby-rules-tests",
   "private": true,
   "scripts": {
-    "test:rules": "firebase emulators:exec --project climby-rules-test --only firestore \"node --test tests/firestore-competition-live.rules.test.js\"",
+    "test:rules": "firebase emulators:exec --project climby-rules-test --only firestore \"node --test tests/firestore-competition-live.rules.test.js tests/firestore-challenges.rules.test.js\"",
     "deploy:indexes": "npm run deploy:indexes:dev",
     "deploy:firestore": "npm run deploy:firestore:dev",
     "deploy:indexes:dev": "firebase deploy --project climby-dev-1 --only firestore:indexes",
