@@ -44,11 +44,36 @@ function lifecycleBadge(challenge = {}) {
   const map = {
     draft: '📝 Bozza',
     published: '✅ Pubblicata',
-    inactive: '⏸️ Disattivata',
+    inactive: '⏸️ In pausa',
     archived: '📦 Archiviata',
-    deleted: '🗑️ Eliminata',
+    deleted: '📦 Archiviata',
   };
   return map[status] || status;
+}
+
+function challengeStatusLabel(status = '') {
+  const normalized = String(status || '').trim().toLowerCase();
+  const map = {
+    draft: 'Bozza',
+    published: 'Pubblicata',
+    inactive: 'In pausa',
+    archived: 'Archiviata',
+    deleted: 'Archiviata',
+  };
+  return map[normalized] || normalized || 'Bozza';
+}
+
+function redemptionStatusLabel(status = '') {
+  const normalized = String(status || '').trim().toLowerCase();
+  const map = {
+    locked: 'Bloccato',
+    unlocked: 'Sbloccato',
+    claimed: 'Richiesto',
+    redeemed: 'Riscattato',
+    expired: 'Scaduto',
+    rejected: 'Rifiutato',
+  };
+  return map[normalized] || normalized || 'Bloccato';
 }
 
 function formatDuration(challenge = {}) {
@@ -94,8 +119,14 @@ function resolveTierRows(challenge = {}) {
 }
 
 export function computeChallengeProgress(challenge = {}, metricMap = {}) {
+  const canonical = challenge?.canonicalProgress && typeof challenge.canonicalProgress === 'object'
+    ? challenge.canonicalProgress
+    : null;
   const metric = challenge?.rules?.metric || 'routes';
-  const value = Math.max(0, Number(metricMap?.[metric] || 0));
+  const canonicalValue = canonical ? Number(canonical.value) : NaN;
+  const value = Number.isFinite(canonicalValue)
+    ? Math.max(0, canonicalValue)
+    : Math.max(0, Number(metricMap?.[metric] || 0));
   const progressMode = challenge?.progressMode === 'tiered' ? 'tiered' : 'single_target';
 
   if (progressMode === 'tiered') {
@@ -123,7 +154,10 @@ export function computeChallengeProgress(challenge = {}, metricMap = {}) {
     };
   }
 
-  const target = Math.max(1, Number(challenge?.rules?.target) || 1);
+  const canonicalTarget = canonical ? Number(canonical.target) : NaN;
+  const target = Number.isFinite(canonicalTarget)
+    ? Math.max(1, canonicalTarget)
+    : Math.max(1, Number(challenge?.rules?.target) || 1);
   const pct = Math.max(0, Math.min(100, Math.round((value / target) * 100)));
   return {
     metric,
@@ -132,7 +166,7 @@ export function computeChallengeProgress(challenge = {}, metricMap = {}) {
     pct,
     completed: value >= target,
     progressMode,
-    statusLabel: value >= target ? 'Completata' : 'In corso',
+    statusLabel: canonical?.status === 'completed' ? 'Completata' : (value >= target ? 'Completata' : 'In corso'),
   };
 }
 
@@ -155,9 +189,32 @@ function sectionChallenges(section = {}, challenges = [], screenConfig = {}) {
 function rewardText(challenge = {}, progress = {}) {
   if (progress.progressMode === 'tiered' && progress.currentTier?.rewardLabel) return `🎁 ${progress.currentTier.rewardLabel}`;
   if (challenge.reward?.label) return `🎁 ${challenge.reward.label}`;
+  if (challenge.rewardConfig?.legacyLabel) return `🎁 ${challenge.rewardConfig.legacyLabel}`;
   if (progress.progressMode === 'tiered' && progress.currentTier?.pointsValue) return `⭐ ${progress.currentTier.pointsValue} CP`;
   if (Number.isFinite(Number(challenge.pointsValue))) return `⭐ ${challenge.pointsValue} CP`;
   return '';
+}
+
+function pointsText(challenge = {}, progress = {}) {
+  if (progress.progressMode === 'tiered') {
+    if (progress.currentTier?.pointsValue) return `⭐ Punti Climby: ${progress.currentTier.pointsValue} CP`;
+    return '⭐ Punti Climby: progressivi per livello';
+  }
+  if (Number.isFinite(Number(challenge.pointsValue))) return `⭐ Punti Climby: ${challenge.pointsValue} CP`;
+  return '⭐ Punti Climby: da policy challenge';
+}
+
+function rewardStatus(challenge = {}, progress = {}) {
+  const explicit = String(challenge?.redemptionStatus || challenge?.redemption?.status || '').trim().toLowerCase();
+  if (explicit === 'redeemed') return { label: redemptionStatusLabel('redeemed'), canClaim: false };
+  if (explicit === 'claimed') return { label: redemptionStatusLabel('claimed'), canClaim: false };
+  if (explicit === 'unlocked') return { label: redemptionStatusLabel('unlocked'), canClaim: true };
+  if (explicit === 'expired') return { label: redemptionStatusLabel('expired'), canClaim: false };
+  if (explicit === 'rejected') return { label: redemptionStatusLabel('rejected'), canClaim: false };
+  if (progress.completed && (challenge?.rewardConfig?.rewardId || challenge?.reward?.label || challenge?.rewardConfig?.legacyLabel)) {
+    return { label: redemptionStatusLabel('unlocked'), canClaim: true };
+  }
+  return { label: redemptionStatusLabel('locked'), canClaim: false };
 }
 
 function renderTierProgress(progress = {}) {
@@ -235,6 +292,8 @@ function buildGuidedPayload({ mountEl, role, gymContextId }) {
   const target = Number(mountEl.querySelector('[data-field="target"]')?.value || preset.target);
   const sectionId = mountEl.querySelector('[data-field="displaySectionId"]')?.value || preset.displaySectionIds[0] || 'weekly';
   const pointsTier = mountEl.querySelector('[data-field="pointsTier"]')?.value || preset.pointsTier || 'small';
+  const startsAt = mountEl.querySelector('[data-field="startsAt"]')?.value || null;
+  const endsAt = mountEl.querySelector('[data-field="endsAt"]')?.value || null;
 
   const gymSelect = mountEl.querySelector('[data-field="gymId"]');
   const sponsorId = mountEl.querySelector('[data-field="sponsorId"]')?.value?.trim() || null;
@@ -263,6 +322,9 @@ function buildGuidedPayload({ mountEl, role, gymContextId }) {
     gymIds,
     gymId: gymIds[0] || null,
     sponsorId: scope === 'sponsor' ? sponsorId : null,
+    templateId: mountEl.querySelector('[data-field="templateId"]')?.value || null,
+    startsAt,
+    endsAt,
   };
 
   if (progressMode === 'tiered') {
@@ -280,6 +342,65 @@ function buildGuidedPayload({ mountEl, role, gymContextId }) {
   if (!payload.title) throw new Error('Titolo obbligatorio');
   if (scope === 'gym' && !payload.gymIds.length) throw new Error('Seleziona una palestra');
   return payload;
+}
+
+function safeJsonParse(value, fallback = null) {
+  try {
+    return JSON.parse(String(value || ''));
+  } catch {
+    return fallback;
+  }
+}
+
+function applyTemplatePresetToForm(mountEl, template = {}, role = 'gym_admin') {
+  const defaultRule = template?.defaultRule || {};
+  const defaultPointsPolicy = template?.defaultPointsPolicy || {};
+  const allowed = new Set(Array.isArray(template?.allowedOverrides) ? template.allowedOverrides : []);
+  setFieldValue(mountEl, '[data-field="templateId"]', template.id || '');
+  setFieldValue(mountEl, '[data-field="title"]', template.name || '');
+  setFieldValue(mountEl, '[data-field="description"]', template.description || '');
+  setFieldValue(mountEl, '[data-field="target"]', Number(defaultRule.target) || 1);
+  setFieldValue(mountEl, '[data-field="pointsTier"]', defaultPointsPolicy.pointsTier || 'small');
+  setFieldValue(mountEl, '[data-field="progressMode"]', defaultRule.progressMode || 'single_target');
+
+  const fieldPolicy = [
+    { field: 'title', allowedKey: 'title' },
+    { field: 'description', allowedKey: 'description' },
+    { field: 'target', allowedKey: 'target' },
+    { field: 'displaySectionId', allowedKey: 'displaySectionId' },
+    { field: 'rewardLabel', allowedKey: 'rewardLabel' },
+  ];
+  fieldPolicy.forEach((entry) => {
+    const el = mountEl.querySelector(`[data-field="${entry.field}"]`);
+    if (!el) return;
+    el.disabled = role === 'gym_admin' && !allowed.has(entry.allowedKey);
+  });
+}
+
+function renderFormPreview(mountEl, selector = '#challenge-form-preview') {
+  const previewEl = mountEl.querySelector(selector);
+  if (!previewEl) return;
+  const title = mountEl.querySelector('[data-field="title"]')?.value || '-';
+  const target = mountEl.querySelector('[data-field="target"]')?.value || '-';
+  const pointsTier = mountEl.querySelector('[data-field="pointsTier"]')?.value || '-';
+  const progressMode = mountEl.querySelector('[data-field="progressMode"]')?.value || 'single_target';
+  const scope = mountEl.querySelector('[data-field="scope"]')?.value || 'gym';
+  const reward = mountEl.querySelector('[data-field="rewardLabel"]')?.value || '-';
+  const startsAt = mountEl.querySelector('[data-field="startsAt"]')?.value || '-';
+  const endsAt = mountEl.querySelector('[data-field="endsAt"]')?.value || '-';
+  const gym = mountEl.querySelector('[data-field="gymId"]')?.value || '-';
+  const sponsor = mountEl.querySelector('[data-field="sponsorId"]')?.value || '-';
+  const rewardType = reward === '-' ? 'Nessun premio configurato' : 'Badge / premio challenge';
+  const redemptionMode = scope === 'gym' ? 'Validazione palestra (manuale)' : 'Richiesta da utente con validazione admin';
+  previewEl.innerHTML = `
+    <div class="challenge-hub-meta"><span><b>1. Obiettivo</b></span><span>${escapeHtml(title)}</span></div>
+    <div class="challenge-hub-meta"><span><b>2. Target / progresso richiesto</b></span><span>${escapeHtml(progressMode === 'tiered' ? `Progressiva a livelli · soglia massima ${target}` : `Obiettivo unico · target ${target}`)}</span></div>
+    <div class="challenge-hub-meta"><span><b>3. Punti Climby</b></span><span>${escapeHtml(pointsTier)}</span></div>
+    <div class="challenge-hub-meta"><span><b>4. Premio (con tipo)</b></span><span>${escapeHtml(`${reward} · ${rewardType}`)}</span></div>
+    <div class="challenge-hub-meta"><span><b>5. Modalità di riscatto</b></span><span>${escapeHtml(redemptionMode)}</span></div>
+    <div class="challenge-hub-meta"><span><b>6. Date</b></span><span>${escapeHtml(`${startsAt} → ${endsAt}`)}</span></div>
+    <div class="challenge-hub-meta"><span><b>7. Gym / Sponsor</b></span><span>${escapeHtml(gym)} / ${escapeHtml(sponsor)}</span></div>
+  `;
 }
 
 function renderManagerCard({ title, bodyHtml }) {
@@ -300,12 +421,96 @@ function challengeRow(challenge = {}, role = 'superadmin') {
         <button class="btn-main" data-action="edit">Modifica</button>
         <button class="btn-main" data-action="duplicate">Duplica</button>
         <button class="btn-main" data-action="publish">Pubblica</button>
-        <button class="btn-main" data-action="inactive">Disattiva</button>
+        <button class="btn-main" data-action="inactive">Metti in pausa</button>
         <button class="btn-main" data-action="archive">Archivia</button>
         ${role === 'superadmin' ? '<button class="btn-main" data-action="delete">Elimina</button>' : ''}
       </div>
     </div>
   `;
+}
+
+function renderRedemptionQueueCard({ title = 'Queue redemption', redemptions = [] } = {}) {
+  const sorted = [...redemptions].sort((a, b) => {
+    const left = new Date(b?.claimedAt || b?.updatedAt || 0).getTime();
+    const right = new Date(a?.claimedAt || a?.updatedAt || 0).getTime();
+    return left - right;
+  });
+  const gyms = [...new Set(sorted.map((row) => row?.gymId).filter(Boolean))];
+  const rowsHtml = sorted.map((row) => `
+    <tr data-redemption-id="${escapeHtml(row.id || '')}">
+      <td>${escapeHtml(row.userId || '-')}</td>
+      <td>${escapeHtml(row.challengeInstanceId || '-')}</td>
+      <td>${escapeHtml(row.rewardId || '-')}</td>
+      <td data-col="status">${escapeHtml(redemptionStatusLabel(row.status || '-'))}</td>
+      <td data-col="gym">${escapeHtml(row.gymId || '-')}</td>
+      <td>${escapeHtml(row.claimedAt || row.updatedAt || '-')}</td>
+      <td style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn-main" data-action="redeem">Segna come riscattato</button>
+        <button class="btn-main" data-action="reject">Rifiuta</button>
+      </td>
+    </tr>
+  `).join('');
+
+  return renderManagerCard({
+    title,
+    bodyHtml: rowsHtml
+      ? `<div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+          <label>Filtro stato
+            <select data-redemption-filter="status">
+              <option value="">Tutti</option>
+              <option value="Bloccato">Bloccato</option>
+              <option value="Sbloccato">Sbloccato</option>
+              <option value="Richiesto">Richiesto</option>
+              <option value="Riscattato">Riscattato</option>
+              <option value="Scaduto">Scaduto</option>
+              <option value="Rifiutato">Rifiutato</option>
+            </select>
+          </label>
+          ${gyms.length ? `<label>Filtro gym
+            <select data-redemption-filter="gym">
+              <option value="">Tutte</option>
+              ${gyms.map((gymId) => `<option value="${escapeHtml(gymId)}">${escapeHtml(gymId)}</option>`).join('')}
+            </select>
+          </label>` : ''}
+        </div>
+        <div style="overflow:auto;"><table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr><th style="text-align:left;">User</th><th style="text-align:left;">Challenge</th><th style="text-align:left;">Reward</th><th style="text-align:left;">Stato</th><th style="text-align:left;">Gym</th><th style="text-align:left;">Claimed/Updated</th><th style="text-align:left;">Azioni</th></tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table></div>`
+      : '<p class="profile-empty">Nessuna redemption richiesta in coda.</p>',
+  });
+}
+
+function bindRedemptionQueueActions(mountEl, onRedemptionAction) {
+  const applyQueueFilters = () => {
+    const statusFilter = mountEl.querySelector('[data-redemption-filter="status"]')?.value || '';
+    const gymFilter = mountEl.querySelector('[data-redemption-filter="gym"]')?.value || '';
+    mountEl.querySelectorAll('tr[data-redemption-id]').forEach((row) => {
+      const status = row.querySelector('[data-col="status"]')?.textContent?.trim() || '';
+      const gym = row.querySelector('[data-col="gym"]')?.textContent?.trim() || '';
+      const visible = (!statusFilter || status === statusFilter) && (!gymFilter || gym === gymFilter);
+      row.style.display = visible ? '' : 'none';
+    });
+  };
+  mountEl.querySelectorAll('[data-redemption-filter]').forEach((el) => {
+    el.addEventListener('change', applyQueueFilters);
+  });
+  applyQueueFilters();
+
+  if (typeof onRedemptionAction !== 'function') return;
+  mountEl.querySelectorAll('tr[data-redemption-id] button[data-action]').forEach((btn) => {
+    btn.onclick = async () => {
+      const row = btn.closest('tr[data-redemption-id]');
+      const redemptionId = row?.getAttribute('data-redemption-id') || '';
+      if (!redemptionId) return;
+      const action = btn.getAttribute('data-action');
+      const nextStatus = action === 'redeem' ? 'redeemed' : (action === 'reject' ? 'rejected' : null);
+      if (!nextStatus) return;
+      await onRedemptionAction(redemptionId, nextStatus);
+    };
+  });
 }
 
 function attachChallengeActions({ mountEl, onEditChallenge, onLifecycleAction, onDuplicateChallenge }) {
@@ -343,7 +548,7 @@ function bindGuidedFormVisibility(mountEl) {
 }
 
 export function renderChallengesHubDynamic(options = {}) {
-  const { mountEl, challenges = [], screenConfig = {}, metricMap = {}, seasonalStats = {}, levelConfig = {}, favouriteGymIds = [] } = options;
+  const { mountEl, challenges = [], screenConfig = {}, metricMap = {}, seasonalStats = {}, levelConfig = {}, favouriteGymIds = [], onClaimReward } = options;
   if (!mountEl) return;
 
   const allowedSections = new Set(FRIENDLY_SECTIONS.map((row) => row.id));
@@ -359,6 +564,7 @@ export function renderChallengesHubDynamic(options = {}) {
       const cards = rows.map((challenge) => {
         const progress = computeChallengeProgress(challenge, metricMap);
         const reward = rewardText(challenge, progress);
+        const redemption = rewardStatus(challenge, progress);
         const badge = challenge?.categoryLabel || scopeLabel(challenge.scope);
         return `
           <article class="challenge-hub-card ${progress.completed ? 'highlight' : ''}">
@@ -375,13 +581,26 @@ export function renderChallengesHubDynamic(options = {}) {
             <div class="challenge-progress"><span style="width:${progress.pct}%"></span></div>
             ${renderTierProgress(progress)}
             <div class="challenge-hub-meta">
-              <span>📈 ${escapeHtml(progress.statusLabel)}</span>
+              <span><b>Obiettivo:</b> ${escapeHtml(challenge.title || 'Challenge')}</span>
               <span>${escapeHtml(formatDuration(challenge))}</span>
             </div>
             <div class="challenge-hub-meta">
-              <span>${escapeHtml(reward || '⭐ Punti centralizzati')}</span>
+              <span><b>Progresso:</b> ${escapeHtml(`${progress.value}/${progress.target}`)}</span>
+              <span>📈 ${escapeHtml(progress.statusLabel)}</span>
+            </div>
+            <div class="challenge-hub-meta">
+              <span><b>Punti:</b> ${escapeHtml(pointsText(challenge, progress).replace('⭐ ', ''))}</span>
               <span>${progress.completed ? '✅ Completata' : '🚀 Continua così'}</span>
             </div>
+            <div class="challenge-hub-meta">
+              <span><b>Premio:</b> ${escapeHtml((reward || 'Premio non disponibile').replace(/^🎁\s*/, ''))}</span>
+              <span><b>Stato premio:</b> ${escapeHtml(redemption.label)}</span>
+            </div>
+            <div class="challenge-hub-meta">
+              <span><b>Stato challenge:</b> ${escapeHtml(challengeStatusLabel(challenge.lifecycleStatus || challenge.status || 'draft'))}</span>
+              <span>${escapeHtml(scopeLabel(challenge.scope))}</span>
+            </div>
+            ${redemption.canClaim ? `<div class="challenge-hub-meta"><button class="btn-main" data-action="claim-reward" data-challenge-id="${escapeHtml(challenge.id || '')}" data-redemption-id="${escapeHtml(challenge?.redemption?.id || '')}">Riscatta premio</button><span>Richiesta premio disponibile</span></div>` : ''}
           </article>
         `;
       }).join('');
@@ -413,10 +632,27 @@ export function renderChallengesHubDynamic(options = {}) {
     </div>
     ${sectionsHtml || '<p class="profile-empty">Nessuna challenge attiva.</p>'}
   `;
+
+  mountEl.querySelectorAll('[data-action="claim-reward"]').forEach((btn) => {
+    btn.onclick = async () => {
+      const challengeId = btn.getAttribute('data-challenge-id') || '';
+      const redemptionId = btn.getAttribute('data-redemption-id') || '';
+      if (typeof onClaimReward === 'function') {
+        btn.disabled = true;
+        try {
+          await onClaimReward({ challengeId, redemptionId });
+        } finally {
+          btn.disabled = false;
+        }
+        return;
+      }
+      console.log('[challenges] claim reward placeholder', { challengeId, redemptionId });
+    };
+  });
 }
 
 export function renderSuperadminChallengeManager(options = {}) {
-  const { mountEl, challenges = [], gyms = [], screenConfig = {}, onSaveChallenge, onSaveScreenConfig, onLifecycleAction, onEditChallenge, onDuplicateChallenge, onSaveGymChallenge } = options;
+  const { mountEl, challenges = [], gyms = [], templates = [], screenConfig = {}, claimedRedemptions = [], onSaveChallenge, onSaveScreenConfig, onLifecycleAction, onEditChallenge, onDuplicateChallenge, onSaveGymChallenge, onSaveTemplate, onRedemptionAction } = options;
   if (!mountEl) return;
 
   const gymOptions = gyms.map((gym) => `<option value="${escapeHtml(gym.id)}">${escapeHtml(gym.name || gym.id)}</option>`).join('');
@@ -462,12 +698,14 @@ export function renderSuperadminChallengeManager(options = {}) {
             </select>
           </label>
           <label>Target iniziale<input data-field="target" type="number" min="1" placeholder="Es. 20"></label>
+          <label>Data inizio<input data-field="startsAt" type="date"></label>
+          <label>Data fine<input data-field="endsAt" type="date"></label>
           <label>Sezione in app
             <select data-field="displaySectionId">${FRIENDLY_SECTIONS.map((row) => `<option value="${row.id}">${escapeHtml(row.label)}</option>`).join('')}</select>
           </label>
           <label>Reward badge<input data-field="rewardLabel" placeholder="Es. Badge Challenger"></label>
           <label>Pubblicazione
-            <select data-field="lifecycleStatus"><option value="draft">Bozza</option><option value="published">Pubblica subito</option><option value="inactive">Disattiva</option></select>
+            <select data-field="lifecycleStatus"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="inactive">In pausa</option><option value="archived">Archiviata</option></select>
           </label>
           <label>Visibilità
             <select data-field="visibility"><option value="all_authenticated">Utenti autenticati</option><option value="members_only">Solo membri</option></select>
@@ -493,11 +731,34 @@ export function renderSuperadminChallengeManager(options = {}) {
           <button id="sa-challenge-save" class="btn-main">Crea challenge</button>
           <button id="sa-challenge-cancel-edit" class="btn-main" type="button" style="display:none;">Annulla modifica</button>
         </div>
+        <div id="challenge-form-preview" class="profile-section-card" style="margin-top:8px;"></div>
       `,
     })}
     ${renderManagerCard({
       title: 'Gestione challenge e lifecycle',
       bodyHtml: `<div class="challenge-admin-list">${challenges.map((c) => challengeRow(c, 'superadmin')).join('') || '<p class="profile-empty">Nessuna challenge.</p>'}</div>`,
+    })}
+    ${renderManagerCard({
+      title: 'Template sfide · standard / sponsor',
+      bodyHtml: `
+        <div class="challenge-admin-form-grid">
+          <input data-template-field="name" placeholder="Nome template">
+          <input data-template-field="description" placeholder="Descrizione template">
+          <select data-template-field="templateFamily">
+            <option value="standard">standard</option>
+            <option value="sponsor">sponsor</option>
+          </select>
+          <input data-template-field="defaultRuleMetric" placeholder="Metric (routes/days/streak/sectors/gyms)" value="routes">
+          <input data-template-field="defaultRuleTarget" type="number" min="1" value="10">
+          <select data-template-field="defaultPointsPolicyTier"><option value="small">small</option><option value="medium">medium</option><option value="large">large</option></select>
+          <input data-template-field="allowedOverrides" placeholder="title,description,target,rewardLabel,dates,displaySectionId" value="title,description,target,rewardLabel,dates">
+          <select data-template-field="status"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="inactive">In pausa</option></select>
+        </div>
+        <button id="sa-template-save" class="btn-main" style="margin-top:8px;">Salva template</button>
+        <div class="challenge-admin-list" style="margin-top:8px;">
+          ${templates.map((tpl) => `<div class="challenge-hub-meta"><span>${escapeHtml(tpl.name || '-')}${tpl.isSponsorTemplate ? ' · sponsor' : ''}</span><span>${escapeHtml(challengeStatusLabel(tpl.status || 'draft'))}</span></div>`).join('') || '<p class="profile-empty">Nessun template.</p>'}
+        </div>
+      `,
     })}
     ${renderManagerCard({
       title: 'Configurazione centrale · guidata',
@@ -560,6 +821,10 @@ export function renderSuperadminChallengeManager(options = {}) {
         <div id="sa-gym-view-mount"><p class="profile-subtitle">Seleziona una palestra per usare gli stessi controlli della sezione “Sfide palestra”.</p></div>
       `,
     })}
+    ${renderRedemptionQueueCard({
+      title: 'Queue redemption',
+      redemptions: claimedRedemptions,
+    })}
   `;
 
   bindGuidedFormVisibility(mountEl);
@@ -586,6 +851,8 @@ export function renderSuperadminChallengeManager(options = {}) {
     setFieldValue(mountEl, '[data-field="rewardLabel"]', source.reward?.label || '');
     setFieldValue(mountEl, '[data-field="progressMode"]', source.progressMode || 'single_target');
     setFieldValue(mountEl, '[data-field="target"]', source?.rules?.target || '');
+    setFieldValue(mountEl, '[data-field="startsAt"]', (source.startsAt || '').slice(0, 10));
+    setFieldValue(mountEl, '[data-field="endsAt"]', (source.endsAt || '').slice(0, 10));
     setFieldValue(mountEl, '[data-field="displaySectionId"]', source?.displaySectionIds?.[0] || 'weekly');
     setFieldValue(mountEl, '[data-field="pointsTier"]', source.pointsTier || 'small');
     setFieldValue(mountEl, '[data-field="gymId"]', source.gymId || source?.gymIds?.[0] || '');
@@ -613,11 +880,42 @@ export function renderSuperadminChallengeManager(options = {}) {
       if (editingId) payload.id = editingId;
       await onSaveChallenge(payload);
       resetEditState();
+      renderFormPreview(mountEl);
     };
   }
 
   const cancelEditBtn = mountEl.querySelector('#sa-challenge-cancel-edit');
   if (cancelEditBtn) cancelEditBtn.onclick = resetEditState;
+  mountEl.querySelectorAll('[data-field]').forEach((el) => {
+    el.addEventListener('input', () => renderFormPreview(mountEl));
+    el.addEventListener('change', () => renderFormPreview(mountEl));
+  });
+  renderFormPreview(mountEl);
+
+  const saveTemplateBtn = mountEl.querySelector('#sa-template-save');
+  if (saveTemplateBtn) {
+    saveTemplateBtn.onclick = async () => {
+      if (typeof onSaveTemplate !== 'function') return;
+      const overridesRaw = mountEl.querySelector('[data-template-field="allowedOverrides"]')?.value || '';
+      const family = mountEl.querySelector('[data-template-field="templateFamily"]')?.value || 'standard';
+      await onSaveTemplate({
+        name: mountEl.querySelector('[data-template-field="name"]')?.value || '',
+        description: mountEl.querySelector('[data-template-field="description"]')?.value || '',
+        templateFamily: family,
+        isSponsorTemplate: family === 'sponsor',
+        defaultRule: {
+          metric: mountEl.querySelector('[data-template-field="defaultRuleMetric"]')?.value || 'routes',
+          target: Number(mountEl.querySelector('[data-template-field="defaultRuleTarget"]')?.value || 1),
+          progressMode: 'single_target',
+        },
+        defaultPointsPolicy: {
+          pointsTier: mountEl.querySelector('[data-template-field="defaultPointsPolicyTier"]')?.value || 'small',
+        },
+        allowedOverrides: overridesRaw.split(',').map((v) => v.trim()).filter(Boolean),
+        status: mountEl.querySelector('[data-template-field="status"]')?.value || 'draft',
+      });
+    };
+  }
 
   attachChallengeActions({
     mountEl,
@@ -651,6 +949,7 @@ export function renderSuperadminChallengeManager(options = {}) {
   };
   if (gymViewSelect) gymViewSelect.onchange = renderGymView;
   renderGymView();
+  bindRedemptionQueueActions(mountEl, onRedemptionAction);
 
   const saveScreenBtn = mountEl.querySelector('#sa-screen-save');
   if (saveScreenBtn) {
@@ -688,8 +987,9 @@ export function renderSuperadminChallengeManager(options = {}) {
 }
 
 export function renderGymAdminChallengeManager(options = {}) {
-  const { mountEl, challenges = [], gymId = null, onSave, onLifecycleAction, onEditChallenge, onDuplicateChallenge } = options;
+  const { mountEl, challenges = [], templates = [], gymId = null, claimedRedemptions = [], onSave, onLifecycleAction, onEditChallenge, onDuplicateChallenge, onRedemptionAction } = options;
   if (!mountEl) return;
+  const usableTemplates = templates.filter((tpl) => !tpl.isSponsorTemplate && tpl.status !== 'inactive');
 
   mountEl.innerHTML = `
     ${renderManagerCard({
@@ -697,6 +997,15 @@ export function renderGymAdminChallengeManager(options = {}) {
       bodyHtml: `
         <p class="profile-subtitle">Crea o modifica challenge locali della tua palestra con un form guidato.</p>
         <input data-field="editingChallengeId" type="hidden" value="">
+        <input data-field="templateId" type="hidden" value="">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <select id="gym-template-select">
+            <option value="">Usa template...</option>
+            ${usableTemplates.map((tpl) => `<option value="${escapeHtml(tpl.id || '')}" data-template='${escapeHtml(JSON.stringify(tpl))}'>${escapeHtml(tpl.name || tpl.id)}</option>`).join('')}
+          </select>
+          <button id="gym-template-apply" class="btn-main" type="button">Usa template</button>
+          <button id="gym-template-custom" class="btn-main" type="button">Custom guidata</button>
+        </div>
         <button id="gym-challenge-open-create" class="btn-main" type="button">Crea sfida</button>
         <div id="gym-challenge-form-wrap" style="display:none; margin-top:8px;">
         <div class="challenge-admin-form-grid">
@@ -709,12 +1018,14 @@ export function renderGymAdminChallengeManager(options = {}) {
             <select data-field="progressMode"><option value="single_target">Obiettivo unico</option><option value="tiered">Progressiva a livelli</option></select>
           </label>
           <label>Target<input data-field="target" type="number" min="1" placeholder="Es. 15"></label>
+          <label>Data inizio<input data-field="startsAt" type="date"></label>
+          <label>Data fine<input data-field="endsAt" type="date"></label>
           <label>Sezione app
             <select data-field="displaySectionId"><option value="local_gym">Dalle tue palestre</option><option value="weekly">Settimanali</option></select>
           </label>
           <label>Reward badge locale<input data-field="rewardLabel" placeholder="Es. Badge Local Hero"></label>
           <label>Stato
-            <select data-field="lifecycleStatus"><option value="draft">Bozza</option><option value="published">Pubblica</option></select>
+            <select data-field="lifecycleStatus"><option value="draft">Bozza</option><option value="published">Pubblicata</option><option value="inactive">In pausa</option><option value="archived">Archiviata</option></select>
           </label>
           <div data-wrap="tiers" class="challenge-tiers-editor" style="display:none;">
             ${DEFAULT_TIER_ROWS.map((tier) => `
@@ -728,12 +1039,17 @@ export function renderGymAdminChallengeManager(options = {}) {
           <button id="gym-challenge-save" class="btn-main">Salva sfida palestra</button>
           <button id="gym-challenge-cancel-edit" class="btn-main" type="button">Chiudi</button>
         </div>
+        <div id="challenge-form-preview" class="profile-section-card" style="margin-top:8px;"></div>
         </div>
       `,
     })}
     ${renderManagerCard({
       title: 'Gestione sfide palestra',
       bodyHtml: `<div class="challenge-admin-list">${challenges.map((c) => challengeRow(c, 'gym_admin')).join('') || '<p class="profile-empty">Nessuna challenge locale.</p>'}</div>`,
+    })}
+    ${renderRedemptionQueueCard({
+      title: 'Queue redemption palestra',
+      redemptions: claimedRedemptions,
     })}
   `;
 
@@ -762,6 +1078,8 @@ export function renderGymAdminChallengeManager(options = {}) {
     setFieldValue(mountEl, '[data-field="templateType"]', source.templateType || 'gym_local');
     setFieldValue(mountEl, '[data-field="progressMode"]', source.progressMode || 'single_target');
     setFieldValue(mountEl, '[data-field="target"]', source?.rules?.target || '');
+    setFieldValue(mountEl, '[data-field="startsAt"]', (source.startsAt || '').slice(0, 10));
+    setFieldValue(mountEl, '[data-field="endsAt"]', (source.endsAt || '').slice(0, 10));
     setFieldValue(mountEl, '[data-field="displaySectionId"]', source?.displaySectionIds?.[0] || 'local_gym');
     setFieldValue(mountEl, '[data-field="rewardLabel"]', source.reward?.label || '');
     setFieldValue(mountEl, '[data-field="lifecycleStatus"]', source.lifecycleStatus || source.status || 'draft');
@@ -779,6 +1097,32 @@ export function renderGymAdminChallengeManager(options = {}) {
   if (createBtn) createBtn.onclick = openForm;
   if (cancelBtn) cancelBtn.onclick = closeForm;
 
+  const templateSelect = mountEl.querySelector('#gym-template-select');
+  const applyTemplateBtn = mountEl.querySelector('#gym-template-apply');
+  const customBtn = mountEl.querySelector('#gym-template-custom');
+  if (applyTemplateBtn) {
+    applyTemplateBtn.onclick = () => {
+      const templateId = templateSelect?.value || '';
+      if (!templateId) return;
+      const template = usableTemplates.find((row) => row.id === templateId);
+      if (!template) return;
+      openForm();
+      applyTemplatePresetToForm(mountEl, template, 'gym_admin');
+      renderFormPreview(mountEl);
+    };
+  }
+  if (customBtn) {
+    customBtn.onclick = () => {
+      setFieldValue(mountEl, '[data-field="templateId"]', '');
+      ['title', 'description', 'target', 'displaySectionId', 'rewardLabel'].forEach((field) => {
+        const el = mountEl.querySelector(`[data-field="${field}"]`);
+        if (el) el.disabled = false;
+      });
+      openForm();
+      renderFormPreview(mountEl);
+    };
+  }
+
   if (saveBtn) {
     saveBtn.onclick = async () => {
       if (typeof onSave !== 'function') return;
@@ -790,6 +1134,12 @@ export function renderGymAdminChallengeManager(options = {}) {
     };
   }
 
+  mountEl.querySelectorAll('[data-field]').forEach((el) => {
+    el.addEventListener('input', () => renderFormPreview(mountEl));
+    el.addEventListener('change', () => renderFormPreview(mountEl));
+  });
+  renderFormPreview(mountEl);
+
   attachChallengeActions({
     mountEl,
     onEditChallenge: async (challengeId) => {
@@ -799,4 +1149,5 @@ export function renderGymAdminChallengeManager(options = {}) {
     onLifecycleAction,
     onDuplicateChallenge,
   });
+  bindRedemptionQueueActions(mountEl, onRedemptionAction);
 }

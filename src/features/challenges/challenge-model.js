@@ -82,6 +82,33 @@ export const POINTS_POLICY_PRESETS = Object.freeze({
   large: 250,
 });
 
+export const REWARD_CONFIG_MODES = Object.freeze([
+  'none',
+  'single',
+]);
+
+export const TEMPLATE_FAMILIES = Object.freeze([
+  'standard',
+  'sponsor',
+  'gym',
+  'event',
+]);
+
+export const TEMPLATE_STATUSES = Object.freeze([
+  'draft',
+  'published',
+  'inactive',
+]);
+
+const TEMPLATE_OVERRIDE_FIELDS = Object.freeze([
+  'title',
+  'description',
+  'dates',
+  'rewardLabel',
+  'target',
+  'displaySectionId',
+]);
+
 const TEMPLATE_PRESETS = Object.freeze({
   weekly_routes: { metric: 'routes', target: 8, pointsTier: 'small', durationPreset: '7d', displaySectionIds: ['weekly'] },
   weekly_streak: { metric: 'streak', target: 4, pointsTier: 'medium', durationPreset: '7d', displaySectionIds: ['weekly'] },
@@ -158,6 +185,99 @@ function normalizeLifecycleStatus(value, fallbackStatus = CHALLENGE_STATUS_DRAFT
   return activeFlag ? CHALLENGE_STATUS_PUBLISHED : CHALLENGE_STATUS_DRAFT;
 }
 
+function normalizeRewardConfig(input = {}) {
+  const rewardConfig = input?.rewardConfig || {};
+  const mode = normalizeText(rewardConfig.mode).toLowerCase();
+  const rewardId = normalizeNullableText(rewardConfig.rewardId)
+    || normalizeNullableText(input.reward?.rewardId)
+    || null;
+  const legacyLabel = normalizeNullableText(input.reward?.label);
+
+  const normalizedMode = REWARD_CONFIG_MODES.includes(mode)
+    ? mode
+    : (rewardId || legacyLabel ? 'single' : 'none');
+
+  return {
+    mode: normalizedMode,
+    rewardId,
+    legacyLabel,
+  };
+}
+
+export function normalizeTemplateRecord(input = {}) {
+  const family = normalizeText(input.templateFamily).toLowerCase();
+  const status = normalizeText(input.status).toLowerCase();
+  const allowedOverrides = Array.isArray(input.allowedOverrides)
+    ? input.allowedOverrides.map((v) => normalizeText(v)).filter((v) => TEMPLATE_OVERRIDE_FIELDS.includes(v))
+    : ['title', 'description', 'dates', 'rewardLabel', 'target'];
+  const defaultRule = input.defaultRule && typeof input.defaultRule === 'object' ? input.defaultRule : {};
+  const defaultPointsPolicy = input.defaultPointsPolicy && typeof input.defaultPointsPolicy === 'object' ? input.defaultPointsPolicy : {};
+  const normalizedFamily = TEMPLATE_FAMILIES.includes(family) ? family : 'standard';
+  const isSponsorTemplate = Boolean(input.isSponsorTemplate) || normalizedFamily === 'sponsor';
+
+  return {
+    id: normalizeNullableText(input.id),
+    name: normalizeText(input.name),
+    description: normalizeText(input.description),
+    templateFamily: normalizedFamily,
+    isSponsorTemplate,
+    status: TEMPLATE_STATUSES.includes(status) ? status : 'draft',
+    defaultRule: {
+      metric: normalizeMetric(defaultRule.metric),
+      target: Math.max(1, Number(defaultRule.target) || 1),
+      progressMode: normalizeProgressMode(defaultRule.progressMode),
+    },
+    defaultPointsPolicy: {
+      pointsTier: ['small', 'medium', 'large'].includes(normalizeText(defaultPointsPolicy.pointsTier))
+        ? normalizeText(defaultPointsPolicy.pointsTier)
+        : 'small',
+      pointsValue: Number.isFinite(Number(defaultPointsPolicy.pointsValue))
+        ? Math.max(0, Number(defaultPointsPolicy.pointsValue))
+        : null,
+    },
+    allowedOverrides: [...new Set(allowedOverrides)],
+    sponsorId: normalizeNullableText(input.sponsorId),
+    createdAt: toIsoOrNull(input.createdAt),
+    updatedAt: toIsoOrNull(input.updatedAt),
+  };
+}
+
+export function buildChallengeDraftFromTemplate(templateInput = {}, overrides = {}, context = {}) {
+  const template = normalizeTemplateRecord(templateInput);
+  if (template.isSponsorTemplate && !context.allowSponsorTemplate) {
+    throw new Error('sponsor templates are not allowed in this flow');
+  }
+  const allowed = new Set(template.allowedOverrides || []);
+  const payload = {
+    templateId: template.id,
+    templateType: null,
+    title: template.name,
+    description: template.description,
+    progressMode: template.defaultRule.progressMode,
+    rules: {
+      metric: template.defaultRule.metric,
+      target: template.defaultRule.target,
+    },
+    pointsTier: template.defaultPointsPolicy.pointsTier,
+    pointsValue: template.defaultPointsPolicy.pointsValue,
+    scope: context.scope || 'gym',
+    sponsorId: template.isSponsorTemplate ? (template.sponsorId || context.sponsorId || null) : null,
+    displaySectionIds: [context.defaultSectionId || 'local_gym'],
+    reward: { label: null, rewardId: null },
+  };
+
+  if (allowed.has('title') && normalizeText(overrides.title)) payload.title = normalizeText(overrides.title);
+  if (allowed.has('description') && normalizeText(overrides.description)) payload.description = normalizeText(overrides.description);
+  if (allowed.has('rewardLabel')) payload.reward = { ...payload.reward, label: normalizeNullableText(overrides.rewardLabel) };
+  if (allowed.has('target')) payload.rules.target = Math.max(1, Number(overrides.target) || payload.rules.target);
+  if (allowed.has('displaySectionId')) payload.displaySectionIds = [normalizeText(overrides.displaySectionId) || payload.displaySectionIds[0]];
+  if (allowed.has('dates')) {
+    payload.startsAt = toIsoOrNull(overrides.startsAt);
+    payload.endsAt = toIsoOrNull(overrides.endsAt);
+  }
+  return payload;
+}
+
 export function normalizeChallengeRecord(input = {}) {
   const status = normalizeText(input.status).toLowerCase();
   const scope = normalizeText(input.scope).toLowerCase();
@@ -172,6 +292,7 @@ export function normalizeChallengeRecord(input = {}) {
   const progressMode = normalizeProgressMode(input.progressMode);
   const progressionTiers = normalizeProgressTiers(input?.progression?.tiers);
   const pointsTier = normalizeText(input.pointsTier) || preset?.pointsTier || 'small';
+  const rewardConfig = normalizeRewardConfig(input);
 
   return {
     title: normalizeText(input.title),
@@ -181,6 +302,7 @@ export function normalizeChallengeRecord(input = {}) {
     scope: normalizedScope,
     challengeKind: CHALLENGE_KINDS.includes(normalizeText(input.challengeKind)) ? normalizeText(input.challengeKind) : CHALLENGE_KIND_STANDARD,
     templateType: validTemplate,
+    templateId: normalizeNullableText(input.templateId),
     type: normalizeText(input.type) || 'standard',
     gymId: gymIds[0] || null,
     gymIds,
@@ -207,6 +329,7 @@ export function normalizeChallengeRecord(input = {}) {
       rewardId: normalizeNullableText(input.reward?.rewardId),
       label: normalizeNullableText(input.reward?.label),
     },
+    rewardConfig,
     tags: Array.isArray(input.tags) ? input.tags.map((v) => normalizeText(v)).filter(Boolean) : [],
     ownerType: normalizeText(input.ownerType) || 'superadmin',
     createdBy: normalizeNullableText(input.createdBy),

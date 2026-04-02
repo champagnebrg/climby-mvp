@@ -33,6 +33,44 @@ service cloud.firestore {
       return isSuperadmin() || isGymOwner(gymId) || managesGym(gymId);
     }
 
+    function isRewardRedemptionOwner() {
+      return verifiedEmail() && resource.data.userId == request.auth.uid;
+    }
+
+    function isRewardRedemptionOwnerCreate() {
+      return verifiedEmail() && request.resource.data.userId == request.auth.uid;
+    }
+
+    function canReadRewardRedemption() {
+      return isSuperadmin()
+        || isRewardRedemptionOwner()
+        || (resource.data.gymId is string && canManageGym(resource.data.gymId));
+    }
+
+    function canManageRewardRedemption() {
+      return isSuperadmin()
+        || (resource.data.gymId is string && canManageGym(resource.data.gymId));
+    }
+
+    function userClaimTransitionAllowed() {
+      return isRewardRedemptionOwner()
+        && resource.data.status == "unlocked"
+        && request.resource.data.status == "claimed";
+    }
+
+    function adminQueueTransitionAllowed() {
+      return canManageRewardRedemption()
+        && resource.data.status == "claimed"
+        && request.resource.data.status in ["redeemed", "rejected"];
+    }
+
+    function rewardRedemptionImmutableFieldsSafe() {
+      return request.resource.data.userId == resource.data.userId
+        && request.resource.data.rewardId == resource.data.rewardId
+        && request.resource.data.challengeInstanceId == resource.data.challengeInstanceId
+        && request.resource.data.gymId == resource.data.gymId;
+    }
+
     function isSelf(uid) {
       return signedIn() && request.auth.uid == uid;
     }
@@ -304,7 +342,14 @@ service cloud.firestore {
     }
 
     match /challengeTemplates/{templateId} {
-      allow read: if verifiedEmail() || isSuperadmin();
+      allow read: if isSuperadmin()
+        || (
+          verifiedEmail()
+          && (
+            !resource.data.isSponsorTemplate
+            || isGymAdminRole()
+          )
+        );
       allow create, update, delete: if isSuperadmin();
     }
 
@@ -335,6 +380,14 @@ service cloud.firestore {
               tier == "medium" ? 120 : 250
             )
           )
+          && (
+            !request.resource.data.keys().hasAny(["templateId"])
+            || request.resource.data.templateId == null
+            || (
+              exists(/databases/$(database)/documents/challengeTemplates/$(request.resource.data.templateId))
+              && get(/databases/$(database)/documents/challengeTemplates/$(request.resource.data.templateId)).data.isSponsorTemplate != true
+            )
+          )
           && request.resource.data.sponsorId == null;
       }
 
@@ -363,6 +416,16 @@ service cloud.firestore {
     match /rewards/{rewardId} {
       allow read: if verifiedEmail() || isSuperadmin();
       allow create, update, delete: if isSuperadmin();
+    }
+
+    match /rewardRedemptions/{redemptionId} {
+      allow read: if canReadRewardRedemption();
+      allow create: if isSuperadmin() || isRewardRedemptionOwnerCreate();
+      allow update: if rewardRedemptionImmutableFieldsSafe() && (
+        userClaimTransitionAllowed()
+        || adminQueueTransitionAllowed()
+      );
+      allow delete: if isSuperadmin();
     }
 
     match /sponsors/{sponsorId} {
