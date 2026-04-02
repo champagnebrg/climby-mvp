@@ -1,6 +1,7 @@
 import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { initializeApp } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { buildUnlockedRedemptionCandidate } from './redemption-utils.js';
 
 initializeApp();
 
@@ -105,6 +106,7 @@ export const onRouteProgressWriteAwardChallenges = onDocumentWritten('users/{uid
   const batch = db.batch();
   let pointsDelta = 0;
   const ledgerCandidates = [];
+  const redemptionCandidates = [];
 
   for (const challengeDoc of challengesSnap.docs) {
     const challenge = { id: challengeDoc.id, ...(challengeDoc.data() || {}) };
@@ -149,6 +151,18 @@ export const onRouteProgressWriteAwardChallenges = onDocumentWritten('users/{uid
       }
     }
 
+    const rewardCandidate = buildUnlockedRedemptionCandidate({
+      uid,
+      seasonId: season.id,
+      challengeId: challenge.id,
+      completed,
+      rewardId: challenge?.rewardConfig?.rewardId || null,
+      gymId: challenge?.gymId || (Array.isArray(challenge?.gymIds) ? challenge.gymIds[0] : null) || null,
+      nowIso,
+      claimMode: 'manual',
+    });
+    if (rewardCandidate) redemptionCandidates.push(rewardCandidate);
+
     for (const candidate of awardCandidates) {
       ledgerCandidates.push({
         ...candidate,
@@ -173,6 +187,15 @@ export const onRouteProgressWriteAwardChallenges = onDocumentWritten('users/{uid
         awardedAt: nowIso,
       });
       pointsDelta += candidate.points;
+    });
+  }
+
+  if (redemptionCandidates.length) {
+    const refs = redemptionCandidates.map((candidate) => db.collection('rewardRedemptions').doc(candidate.redemptionId));
+    const existing = await db.getAll(...refs);
+    redemptionCandidates.forEach((candidate, index) => {
+      if (existing[index]?.exists) return;
+      batch.create(refs[index], candidate.payload);
     });
   }
 

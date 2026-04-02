@@ -1,4 +1,45 @@
 export {
+  ROLE_SUPERADMIN,
+  ROLE_GYM_ADMIN,
+  ROLE_USER,
+  canonicalizeRole,
+  canManageGymChallenges,
+  canPublishGymChallenges,
+  canManageGlobalTemplates,
+  canManageSponsorChallenges,
+  canManageRewards,
+  isGymAdminRole,
+} from './permissions.js';
+
+export {
+  REWARD_TYPES,
+  REWARD_PROVIDER_TYPES,
+  REWARD_CLAIM_MODES,
+  REWARD_STATUSES,
+  normalizeRewardRecord,
+} from './reward-model.js';
+
+export {
+  REDEMPTION_STATUS_LOCKED,
+  REDEMPTION_STATUS_UNLOCKED,
+  REDEMPTION_STATUS_CLAIMED,
+  REDEMPTION_STATUS_REDEEMED,
+  REDEMPTION_STATUS_EXPIRED,
+  REDEMPTION_STATUS_REJECTED,
+  REDEMPTION_STATUSES,
+  canTransitionRedemption,
+  normalizeRedemption,
+} from './redemption-model.js';
+
+export {
+  createRedemption,
+  getUserRedemptions,
+  getChallengeRedemptions,
+  getClaimedRedemptions,
+  updateRedemptionStatus,
+} from './redemption-repository.js';
+
+export {
   CHALLENGE_SCOPE_GLOBAL,
   CHALLENGE_SCOPE_GYM,
   CHALLENGE_SCOPE_SPONSOR,
@@ -23,7 +64,11 @@ export {
   DURATION_PRESETS,
   CLIMBY_POINTS_LABEL,
   POINTS_POLICY_PRESETS,
+  TEMPLATE_FAMILIES,
+  TEMPLATE_STATUSES,
   normalizeChallengeRecord,
+  normalizeTemplateRecord,
+  buildChallengeDraftFromTemplate,
   buildChallengePayload,
   normalizeChallengeScreenConfig,
 } from './challenge-model.js';
@@ -33,7 +78,11 @@ export {
   saveChallenge,
   updateChallengeLifecycle,
   deleteChallengeIfSafe,
+  getUserChallengeProgress,
+  mergeChallengesWithProgress,
   listTemplates,
+  getTemplateById,
+  saveTemplate,
   getChallengeScreenConfig,
   saveChallengeScreenConfig,
 } from './challenge-repository.js';

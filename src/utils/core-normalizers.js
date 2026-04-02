@@ -17,7 +17,7 @@ export function normalizeGymIdSeed(text) {
 
 export function normalizeUserRole(rawRole) {
     if (rawRole === 'superadmin') return 'superadmin';
-    if (rawRole === 'gym_admin' || rawRole === 'admin') return 'admin';
+    if (rawRole === 'gym_admin' || rawRole === 'admin') return 'gym_admin';
     return 'user';
 }
 

@@ -7,6 +7,7 @@ import {
   buildChallengePayload,
   normalizeChallengeRecord,
   normalizeChallengeScreenConfig,
+  normalizeTemplateRecord,
 } from './challenge-model.js';
 
 function ensureDeps(options = {}) {
@@ -77,6 +78,39 @@ export async function listChallenges(options = {}, context = {}) {
     .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
 }
 
+function applyProgressFilter(options = {}, field, value) {
+  const baseRef = getCollectionRef(options, 'userChallengeProgress');
+  if (typeof options.query === 'function' && typeof options.where === 'function') {
+    return options.query(baseRef, options.where(field, '==', value));
+  }
+  return baseRef;
+}
+
+export async function getUserChallengeProgress(options = {}, userId) {
+  if (!userId) throw new Error('userId is required');
+  const snap = await options.getDocs(applyProgressFilter(options, 'userId', userId));
+  return snap.docs
+    .map((row) => ({ id: row.id, ...(row.data() || {}) }))
+    .filter((row) => row.userId === userId)
+    .sort((a, b) => String(a.challengeId || '').localeCompare(String(b.challengeId || '')));
+}
+
+export function mergeChallengesWithProgress(challenges = [], progressRows = []) {
+  const progressByChallengeId = new Map();
+  progressRows.forEach((row) => {
+    const challengeId = String(row.challengeId || '').trim();
+    if (!challengeId) return;
+    progressByChallengeId.set(challengeId, row);
+  });
+  return challenges.map((challenge) => {
+    const progress = progressByChallengeId.get(challenge.id) || null;
+    return {
+      ...challenge,
+      canonicalProgress: progress,
+    };
+  });
+}
+
 export async function saveChallenge(options = {}) {
   const payload = buildChallengePayload(options.data || {}, {
     now: options.now,
@@ -127,7 +161,29 @@ export async function deleteChallengeIfSafe(options = {}) {
 
 export async function listTemplates(options = {}) {
   const snap = await options.getDocs(getCollectionRef(options, 'challengeTemplates'));
-  return snap.docs.map((row) => ({ id: row.id, ...(row.data() || {}) }));
+  return snap.docs.map((row) => normalizeTemplateRecord({ id: row.id, ...(row.data() || {}) }));
+}
+
+export async function getTemplateById(options = {}, templateId) {
+  if (!templateId) throw new Error('templateId is required');
+  const snap = await options.getDoc(getDocRef(options, 'challengeTemplates', templateId));
+  if (!snap.exists()) return null;
+  return normalizeTemplateRecord({ id: snap.id, ...(snap.data() || {}) });
+}
+
+export async function saveTemplate(options = {}) {
+  const payload = normalizeTemplateRecord({
+    ...(options.data || {}),
+    updatedAt: options.now || new Date(),
+    createdAt: options.createdAt || options.now || new Date(),
+  });
+  if (!payload.name) throw new Error('Template name is required');
+  if (options.templateId) {
+    await options.setDoc(getDocRef(options, 'challengeTemplates', options.templateId), payload, { merge: true });
+    return { ...payload, id: options.templateId };
+  }
+  const ref = await options.addDoc(getCollectionRef(options, 'challengeTemplates'), payload);
+  return { ...payload, id: ref.id };
 }
 
 export async function saveChallengeScreenConfig(options = {}) {

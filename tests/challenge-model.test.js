@@ -68,3 +68,84 @@ test('screen config keeps guided flags', async () => {
   assert.equal(row.season.isActive, true);
   assert.equal(row.rewards.badgeLabel, 'Badge Challenger');
 });
+
+test('legacy admin role is canonicalized to gym_admin', async () => {
+  const { normalizeUserRole } = await import('../src/utils/core-normalizers.js');
+  assert.equal(normalizeUserRole('admin'), 'gym_admin');
+  assert.equal(normalizeUserRole('gym_admin'), 'gym_admin');
+});
+
+test('challenge rewardConfig falls back from legacy reward.label', async () => {
+  const { normalizeChallengeRecord } = await import('../src/features/challenges/challenge-model.js');
+  const row = normalizeChallengeRecord({
+    title: 'Reward fallback',
+    reward: { label: 'Birra gratis' },
+  });
+  assert.equal(row.rewardConfig.mode, 'single');
+  assert.equal(row.rewardConfig.rewardId, null);
+  assert.equal(row.rewardConfig.legacyLabel, 'Birra gratis');
+});
+
+test('superadmin inherits gym admin capability for gym challenges', async () => {
+  const { canManageGymChallenges } = await import('../src/features/challenges/permissions.js');
+  assert.equal(canManageGymChallenges({ role: 'superadmin' }, 'gym1'), true);
+  assert.equal(canManageGymChallenges({ role: 'gym_admin', gymManaged: 'gym1' }, 'gym1'), true);
+  assert.equal(canManageGymChallenges({ role: 'admin', gymManaged: 'gym1' }, 'gym1'), true);
+  assert.equal(canManageGymChallenges({ role: 'gym_admin', gymManaged: 'gym2' }, 'gym1'), false);
+});
+
+test('reward model normalizes typed reward payload', async () => {
+  const { normalizeRewardRecord } = await import('../src/features/challenges/reward-model.js');
+  const row = normalizeRewardRecord({
+    type: 'gym_beer',
+    providerType: 'gym',
+    providerId: 'gym1',
+    claimMode: 'qr',
+    title: 'Birra gratis',
+    description: 'Una birra al bar',
+  });
+  assert.equal(row.type, 'gym_beer');
+  assert.equal(row.providerType, 'gym');
+  assert.equal(row.providerId, 'gym1');
+  assert.equal(row.claimMode, 'qr');
+  assert.equal(row.title, 'Birra gratis');
+  assert.equal(row.status, 'active');
+});
+
+
+test('challenge rewardConfig keeps explicit rewardId and legacy label compatibility', async () => {
+  const { normalizeChallengeRecord } = await import('../src/features/challenges/challenge-model.js');
+  const row = normalizeChallengeRecord({
+    title: 'Reward id support',
+    rewardConfig: { rewardId: 'reward_abc' },
+    reward: { label: 'Premio legacy' },
+  });
+  assert.equal(row.rewardConfig.mode, 'single');
+  assert.equal(row.rewardConfig.rewardId, 'reward_abc');
+  assert.equal(row.rewardConfig.legacyLabel, 'Premio legacy');
+});
+
+test('computeChallengeProgress prefers canonical backend progress when available', async () => {
+  const { computeChallengeProgress } = await import('../src/features/challenges/challenge-ui.js');
+  const progress = computeChallengeProgress({
+    rules: { metric: 'routes', target: 20 },
+    canonicalProgress: { value: 12, target: 30, status: 'in_progress' },
+  }, { routes: 99 });
+  assert.equal(progress.value, 12);
+  assert.equal(progress.target, 30);
+});
+
+test('computeChallengeProgress falls back to client metric map when canonical progress is absent', async () => {
+  const { computeChallengeProgress } = await import('../src/features/challenges/challenge-ui.js');
+  const progress = computeChallengeProgress({
+    rules: { metric: 'routes', target: 20 },
+  }, { routes: 7 });
+  assert.equal(progress.value, 7);
+  assert.equal(progress.target, 20);
+});
+
+test('permissions canonicalize legacy admin to gym_admin role', async () => {
+  const { canonicalizeRole, canManageGymChallenges } = await import('../src/features/challenges/permissions.js');
+  assert.equal(canonicalizeRole('admin'), 'gym_admin');
+  assert.equal(canManageGymChallenges({ role: 'admin', gymManaged: 'gym1' }, 'gym1'), true);
+});
